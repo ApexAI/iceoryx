@@ -192,7 +192,7 @@ TEST_F(WaitSet_test, TriggerRemovesItselfFromWaitsetWhenGoingOutOfScope)
     EXPECT_FALSE(anotherTrigger->has_error());
 }
 
-TEST_F(WaitSet_test, MultipleTimerRemovingThemselfFromWaitsetWhenGoingOutOfScope)
+TEST_F(WaitSet_test, MultipleTriggerRemovingThemselfFromWaitsetWhenGoingOutOfScope)
 {
     iox::cxx::vector<expected<TriggerHandle, WaitSetError>*, iox::MAX_NUMBER_OF_TRIGGERS_PER_WAITSET> trigger;
     for (uint64_t i = 0; i < iox::MAX_NUMBER_OF_TRIGGERS_PER_WAITSET - 3; ++i)
