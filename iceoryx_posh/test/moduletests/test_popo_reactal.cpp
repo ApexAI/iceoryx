@@ -42,4 +42,8 @@ class Reactal_test : public Test
 
 TEST_F(Reactal_test, Simple)
 {
+    Reactal<2> reactal;
+    auto delegator = reactal.acquireCallbackDelegator();
+    auto callback = [] { printf("hello world\n"); };
+    delegator.delegateCall(callback);
 }

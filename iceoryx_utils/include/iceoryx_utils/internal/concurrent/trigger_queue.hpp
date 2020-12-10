@@ -120,7 +120,10 @@ class TriggerQueue
     ///         true.
     bool push(const T& in);
 
-    bool blocking_push(const T& in);
+    bool blocking_push(const T& in)
+    {
+        return push(in);
+    }
 
     /// @brief  This is a blocking pop. If the queue is empty it blocks until
     ///         an element is push'ed into the queue otherwise it returns the

@@ -43,13 +43,13 @@ inline Reactal<NumberOfThreads>::~Reactal()
 template <uint64_t NumberOfThreads>
 inline CallbackDelegator Reactal<NumberOfThreads>::acquireCallbackDelegator() noexcept
 {
-    return CallbackDelegator({*this, &Reactal::executeCallback}, {*this, &Reactal::releaseCallbackDelegator});
+    return CallbackDelegator({*this, &Reactal::execute<cxx::function_ref<void()>>},
+                             {*this, &Reactal::releaseCallbackDelegator});
 }
-
 
 template <uint64_t NumberOfThreads>
 template <typename T>
-inline void Reactal<NumberOfThreads>::executeCallback(const T& callback) noexcept
+inline void Reactal<NumberOfThreads>::execute(const T callback) noexcept
 {
     m_callbacks.blocking_push(callback_t(cxx::in_place_type<T>(), callback));
 }
@@ -57,7 +57,7 @@ inline void Reactal<NumberOfThreads>::executeCallback(const T& callback) noexcep
 template <uint64_t NumberOfThreads>
 inline void Reactal<NumberOfThreads>::releaseCallbackDelegator(CallbackDelegator& handle) noexcept
 {
-    executeCallback(cxx::MethodCallback<void>(handle, &CallbackDelegator::unblockDestructor));
+    execute(cxx::MethodCallback<void>(handle, &CallbackDelegator::unblockDestructor));
 }
 
 template <uint64_t NumberOfThreads>

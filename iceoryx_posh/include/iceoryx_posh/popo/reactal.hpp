@@ -48,7 +48,7 @@ class Reactal
 
   private:
     template <typename T>
-    void executeCallback(const T& callback) noexcept;
+    void execute(const T callback) noexcept;
     void releaseCallbackDelegator(CallbackDelegator& handle) noexcept;
     void reactAndListenLoop() noexcept;
 
