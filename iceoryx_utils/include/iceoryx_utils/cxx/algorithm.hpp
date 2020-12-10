@@ -92,6 +92,9 @@ constexpr bool doesContainType() noexcept;
 template <typename T, typename CompareType, typename Next, typename... Remainder>
 constexpr bool doesContainType() noexcept;
 
+template <typename Container, typename Functor>
+void forEach(Container& container, const Functor& functor) noexcept;
+
 } // namespace algorithm
 } // namespace iox
 
