@@ -107,12 +107,20 @@ class TriggerQueue
     ///         the optional method has_value().
     static cxx::optional<TriggerQueue> CreateTriggerQueue();
 
+    /// The default constructor needs to be private since we should use the
+    /// factory methode CreateTriggerQueue to create a new trigger queue. A
+    /// trigger queue constructor can fail if the semaphore construction fails
+    /// and the factory method handles that case with an optional
+    TriggerQueue() = default;
+
     /// @brief Pushs an element into the trigger queue and notifies one thread
     ///         which is waiting in blocking_pop().
     ///         If the queue is full it returns false and no element is inserted
     ///         and nothing is notified. If the push was successfull, it returns
     ///         true.
     bool push(const T& in);
+
+    bool blocking_push(const T& in);
 
     /// @brief  This is a blocking pop. If the queue is empty it blocks until
     ///         an element is push'ed into the queue otherwise it returns the
@@ -146,12 +154,6 @@ class TriggerQueue
     friend class cxx::optional<TriggerQueue<T, CAPACITY>>;
 
   private:
-    /// The default constructor needs to be private since we should use the
-    /// factory methode CreateTriggerQueue to create a new trigger queue. A
-    /// trigger queue constructor can fail if the semaphore construction fails
-    /// and the factory method handles that case with an optional
-    TriggerQueue() = default;
-
     cxx::expected<posix::Semaphore, posix::SemaphoreError> m_semaphore =
         posix::Semaphore::create(posix::CreateUnnamedSingleProcessSemaphore, 0);
     bool m_isInitialized = !m_semaphore.has_error();

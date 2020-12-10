@@ -66,6 +66,15 @@ inline constexpr bool doesContainType() noexcept
     return doesContainType<T, CompareType>() || doesContainType<T, Next, Remainder...>();
 }
 
+template <typename Container, typename Functor>
+inline void forEach(Container& container, const Functor& functor) noexcept
+{
+    for (auto& element : container)
+    {
+        functor(element);
+    }
+}
+
 
 } // namespace algorithm
 } // namespace iox
