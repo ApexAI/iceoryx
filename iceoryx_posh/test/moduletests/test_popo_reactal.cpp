@@ -36,14 +36,11 @@ class Reactal_test : public Test
         }
     }
 
-    Reactal<1> m_sut;
+    Reactal m_sut;
 };
 
 
 TEST_F(Reactal_test, Simple)
 {
-    Reactal<2> reactal;
-    auto delegator = reactal.acquireCallbackDelegator();
-    auto callback = [] { printf("hello world\n"); };
-    delegator.delegateCall(callback);
+    Reactal reactal;
 }

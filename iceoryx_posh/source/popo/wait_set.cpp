@@ -108,7 +108,10 @@ typename WaitSet::TriggerInfoVector WaitSet::waitAndReturnTriggeredTriggers(cons
         return triggers;
     }
 
-    return (wait()) ? triggers : createVectorWithTriggeredTriggers();
+    // reset
+    // uniqueLock.unlock();
+
+    return (wait()) ? triggers : (lock)createVectorWithTriggeredTriggers();
 }
 
 uint64_t WaitSet::size() const noexcept

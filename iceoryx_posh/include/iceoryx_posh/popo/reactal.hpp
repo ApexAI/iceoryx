@@ -15,47 +15,43 @@
 #ifndef IOX_POSH_POPO_REACTAL_HPP
 #define IOX_POSH_POPO_REACTAL_HPP
 
-#include "iceoryx_posh/popo/callback_delegator.hpp"
-#include "iceoryx_utils/cxx/algorithm.hpp"
-#include "iceoryx_utils/cxx/function_ref.hpp"
-#include "iceoryx_utils/cxx/method_callback.hpp"
-#include "iceoryx_utils/cxx/variant.hpp"
+#include "iceoryx_posh/popo/user_trigger.hpp"
+#include "iceoryx_posh/popo/wait_set.hpp"
 #include "iceoryx_utils/cxx/vector.hpp"
-#include "iceoryx_utils/internal/concurrent/trigger_queue.hpp"
 
 #include <atomic>
+#include <mutex>
 #include <thread>
 
 namespace iox
 {
 namespace popo
 {
-template <uint64_t NumberOfThreads>
 class Reactal
 {
   public:
-    using callback_t = cxx::variant<cxx::function_ref<void()>, cxx::MethodCallback<void>>;
-    enum class CallbackType : uint64_t
-    {
-        FUNCTION_REF = 0,
-        METHOD_CALLBACK = 1
-    };
-
     Reactal() noexcept;
     ~Reactal();
 
-    CallbackDelegator acquireCallbackDelegator() noexcept;
+    template <typename T>
+    cxx::expected<TriggerHandle, WaitSetError>
+    acquireTrigger(T* const origin,
+                   const cxx::ConstMethodCallback<bool>& hasTriggeredCallback,
+                   const Trigger::Callback<T> callback) noexcept;
+
 
   private:
-    template <typename T>
-    void execute(const T callback) noexcept;
-    void releaseCallbackDelegator(CallbackDelegator& handle) noexcept;
+    void removeTrigger(const uint64_t uniqueTriggerId) noexcept;
     void reactAndListenLoop() noexcept;
 
   private:
-    cxx::vector<std::thread, NumberOfThreads> m_threads;
+    std::thread m_thread;
     std::atomic_bool m_keepRunning{true};
-    concurrent::TriggerQueue<callback_t, 100> m_callbacks;
+
+    std::recursive_mutex m_waitsetMutex;
+    WaitSet m_waitset;
+    UserTrigger m_cleanupTrigger;
+    std::atomic<uint64_t> m_pendingCleanups{0U};
 };
 } // namespace popo
 } // namespace iox

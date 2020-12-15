@@ -76,8 +76,8 @@ add_library(iceoryx_posh
     source/mepoo/segment_manager.cpp
     source/mepoo/mepoo_segment.cpp
     source/mepoo/memory_info.cpp
-    source/popo/callback_delegator.cpp
     source/popo/delivery_fifo.cpp
+    source/popo/reactal.cpp
     source/popo/receiver_port.cpp
     source/popo/receiver_port_data.cpp
     source/popo/sender_port.cpp
