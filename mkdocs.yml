@@ -12,3 +12,7 @@ plugins:
   - search
 theme:
   name: 'material'
+  font: false # don't load fonts from Google due to GDPR
+  palette:
+    primary: light blue
+  copyright: Copyright &copy; 2020 Eclipse Foundation
