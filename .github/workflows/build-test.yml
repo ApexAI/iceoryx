@@ -67,7 +67,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: compiler versions
+      - name: compiler version
         run: |
           echo $(clang --version)
 
@@ -110,7 +110,7 @@ jobs:
       
       - name: compiler version
         run: |
-          cl
+          cl.exe /?
 
       - name: Build sources
         run: |
