@@ -53,6 +53,7 @@ jobs:
 
       - name: Test Execution
         run: |
+          source /opt/ros/foxy/setup.bash
           cd $GITHUB_WORKSPACE
           colcon test --return-code-on-test-failure
           testpassed=$?
