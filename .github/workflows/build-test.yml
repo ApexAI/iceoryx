@@ -79,7 +79,7 @@ jobs:
         env:
           CACHE_EXISTS: "${{steps.cache-ncurses.outputs.cache-hit}}"
           NCURSES_SOURCE: "https://github.com/mirror/ncurses.git"
-      # tinfo library which is required by iceoryx_introspection isn't available in mac
+      # tinfo library which is required by iceoryx_introspection isn't available in macos
         run: |
           if [[ "$CACHE_EXISTS" == 'true' ]]; then
             echo "Using Cached version of ncurses..."
