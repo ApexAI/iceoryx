@@ -73,7 +73,7 @@ jobs:
         id: cache-ncurses
         with:
           path: "${{env.NCURSES_HOME}}"
-          key: ${{secrets.NCURSES_VERSION}}
+          key: "${{env.NCURSES_VERSION}}"
 
       - name: Build and install ncurses
         env:
