@@ -57,7 +57,7 @@ jobs:
     # Softwares installed in macos-latest instance
     # https://github.com/actions/virtual-environments/blob/master/images/macos/macos-10.14-Readme.md
     env:
-      NCURSES_VERSION: "v6.2"
+      NCURSES_VERSION: "v6.1"
       NCURSES_HOME: "$GITHUB_WORKSPACE/build/install/prefix/"
 
     steps:
