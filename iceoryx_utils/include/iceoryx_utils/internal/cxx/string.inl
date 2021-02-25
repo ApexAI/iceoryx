@@ -301,6 +301,44 @@ inline void string<Capacity>::clear() noexcept
 }
 
 template <uint64_t Capacity>
+inline char& string<Capacity>::at(const uint64_t pos) noexcept
+{
+    if (pos > size() - 1U)
+    {
+        std::cerr << "Out of bounds access! Current size of the cxx::string is " << size() << " but given position is "
+                  << pos << "." << std::endl;
+        // alternative to termination?
+        std::terminate();
+    }
+    return m_rawstring[pos];
+}
+
+template <uint64_t Capacity>
+inline const char& string<Capacity>::at(const uint64_t pos) const noexcept
+{
+    if (pos > size() - 1U)
+    {
+        std::cerr << "Out of bounds access! Current size of the cxx::string is " << size() << " but given position is "
+                  << pos << "." << std::endl;
+        // alternative to termination?
+        std::terminate();
+    }
+    return m_rawstring[pos];
+}
+
+template <uint64_t Capacity>
+inline char& string<Capacity>::operator[](const uint64_t pos) noexcept
+{
+    return at(pos);
+}
+
+template <uint64_t Capacity>
+inline const char& string<Capacity>::operator[](const uint64_t pos) const noexcept
+{
+    return at(pos);
+}
+
+template <uint64_t Capacity>
 inline string<Capacity>::operator std::string() const noexcept
 {
     return std::string(c_str());

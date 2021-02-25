@@ -510,6 +510,26 @@ class string
                             iox::cxx::optional<uint64_t>>::type
     find_last_of(const T& t, const uint64_t pos = Capacity) const noexcept;
 
+    /// @brief returns a reference to the character stored at pos
+    /// @param[in] pos position of the character to return
+    /// @return reference to the character
+    char& at(const uint64_t pos) noexcept;
+
+    /// @brief returns a const reference to the character stored at pos
+    /// @param[in] pos position of the character to return
+    /// @return const reference to the character
+    const char& at(const uint64_t pos) const noexcept;
+
+    /// @brief returns a reference to the character stored at pos
+    /// @param[in] pos position of the character to return
+    /// @return reference to the character
+    char& operator[](const uint64_t pos) noexcept;
+
+    /// @brief returns a const reference to the character stored at pos
+    /// @param[in] pos position of the character to return
+    /// @return const reference to the character
+    const char& operator[](const uint64_t pos) const noexcept;
+
     template <uint64_t N>
     friend class string;
 
