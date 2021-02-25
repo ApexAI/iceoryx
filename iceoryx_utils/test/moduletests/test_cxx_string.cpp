@@ -1,4 +1,5 @@
-// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2019 - 2020 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1135,7 +1136,7 @@ TYPED_TEST(stringTyped_test, StreamInputOfSizeCapacityWorks)
     EXPECT_THAT(testStream.str(), Eq(testFixedString.c_str()));
 }
 
-/// @ note constexpr bool empty() const noexcept
+/// @note constexpr bool empty() const noexcept
 TYPED_TEST(stringTyped_test, NewlyCreatedStringIsEmpty)
 {
     using MyString = typename TestFixture::stringType;
@@ -1148,6 +1149,29 @@ TYPED_TEST(stringTyped_test, StringWithContentIsNotEmtpy)
     using MyString = typename TestFixture::stringType;
     MyString sut(TruncateToCapacity, "Dr.SchluepferStrikesAgain!");
     EXPECT_THAT(sut.empty(), Eq(false));
+}
+
+/// @note void clear() noexcept
+TYPED_TEST(stringTyped_test, ClearEmptyStringDoesNotChangeString)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+
+    this->testSubject.clear();
+    EXPECT_THAT(this->testSubject.empty(), Eq(true));
+    EXPECT_THAT(this->testSubject.capacity(), Eq(STRINGCAP));
+}
+
+TYPED_TEST(stringTyped_test, ClearNotEmptyStringResultsInEmptyStringWithUnchangedCapacity)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    this->testSubject = "M";
+    ASSERT_THAT(this->testSubject.empty(), Eq(false));
+
+    this->testSubject.clear();
+    EXPECT_THAT(this->testSubject.empty(), Eq(true));
+    EXPECT_THAT(this->testSubject.capacity(), Eq(STRINGCAP));
 }
 
 /// @note template <uint64_t N>

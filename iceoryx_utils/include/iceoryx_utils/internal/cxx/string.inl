@@ -1,4 +1,5 @@
-// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2019 - 2020 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -290,6 +291,13 @@ template <uint64_t Capacity>
 inline constexpr bool string<Capacity>::empty() const noexcept
 {
     return m_rawstringSize == 0U;
+}
+
+template <uint64_t Capacity>
+inline void string<Capacity>::clear() noexcept
+{
+    m_rawstring[0U] = '\0';
+    m_rawstringSize = 0U;
 }
 
 template <uint64_t Capacity>

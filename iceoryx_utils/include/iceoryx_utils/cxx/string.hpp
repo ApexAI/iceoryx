@@ -1,4 +1,5 @@
-// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2019 - 2020 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -404,6 +405,9 @@ class string
     ///
     /// @return true if size() == 0 otherwise false
     constexpr bool empty() const noexcept;
+
+    /// @brief clears the content of the string
+    void clear() noexcept;
 
     /// @brief converts the string to a std::string
     ///
