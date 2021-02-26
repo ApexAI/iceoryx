@@ -2148,5 +2148,73 @@ TEST(String100, FindLastOfForNotIncludedSTDStringFails)
     res = testString.find_last_of(testStdString, 50U);
     EXPECT_THAT(res.has_value(), Eq(false));
 }
+
+TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaAtFails)
+{
+    EXPECT_DEATH(this->testSubject.at(0U), ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaAtFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    EXPECT_DEATH(this->testSubject.at(STRINGCAP), ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaAtReturnsCorrectCharacter)
+{
+    this->testSubject = "M";
+    EXPECT_THAT(this->testSubject.at(0U), Eq('M'));
+}
+
+TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaAtSucceeds)
+{
+    constexpr char START_CHARACTER = 'M';
+    constexpr char NEW_CHARACTER = 'L';
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+
+    std::string testSTDString(STRINGCAP, START_CHARACTER);
+    ASSERT_THAT(this->testSubject.unsafe_assign(testSTDString), Eq(true));
+
+    ASSERT_THAT(this->testSubject.at(STRINGCAP - 1), Eq(START_CHARACTER));
+    this->testSubject.at(STRINGCAP - 1) = NEW_CHARACTER;
+    testSTDString.at(STRINGCAP - 1) = NEW_CHARACTER;
+    EXPECT_THAT(this->testSubject.c_str(), StrEq(testSTDString));
+}
+
+TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaSubscriptFails)
+{
+    EXPECT_DEATH(this->testSubject[0U], ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaSubscriptFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    EXPECT_DEATH(this->testSubject[STRINGCAP], ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaSubscriptReturnsCorrectCharacter)
+{
+    this->testSubject = "L";
+    EXPECT_THAT(this->testSubject[0U], Eq('L'));
+}
+
+TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaSubscriptSucceeds)
+{
+    constexpr char START_CHARACTER = 'F';
+    constexpr char NEW_CHARACTER = 'S';
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+
+    std::string testSTDString(STRINGCAP, START_CHARACTER);
+    ASSERT_THAT(this->testSubject.unsafe_assign(testSTDString), Eq(true));
+
+    ASSERT_THAT(this->testSubject[STRINGCAP - 1], Eq(START_CHARACTER));
+    this->testSubject[STRINGCAP - 1] = NEW_CHARACTER;
+    testSTDString[STRINGCAP - 1] = NEW_CHARACTER;
+    EXPECT_THAT(this->testSubject.c_str(), StrEq(testSTDString));
+}
 } // namespace
 
