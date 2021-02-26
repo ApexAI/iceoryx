@@ -541,12 +541,11 @@ inline
 }
 
 template <uint64_t Capacity>
-inline iox::cxx::optional<string<Capacity>> string<Capacity>::substr(const uint64_t pos,
-                                                                     const uint64_t count) const noexcept
+inline optional<string<Capacity>> string<Capacity>::substr(const uint64_t pos, const uint64_t count) const noexcept
 {
     if (pos > m_rawstringSize)
     {
-        return iox::cxx::nullopt;
+        return nullopt;
     }
 
     uint64_t length = count;
@@ -562,7 +561,7 @@ inline iox::cxx::optional<string<Capacity>> string<Capacity>::substr(const uint6
 }
 
 template <uint64_t Capacity>
-inline iox::cxx::optional<string<Capacity>> string<Capacity>::substr(const uint64_t pos) const noexcept
+inline optional<string<Capacity>> string<Capacity>::substr(const uint64_t pos) const noexcept
 {
     return substr(pos, m_rawstringSize);
 }
@@ -571,17 +570,17 @@ template <uint64_t Capacity>
 template <typename T>
 inline typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                    || internal::IsCxxString<T>::value,
-                               iox::cxx::optional<uint64_t>>::type
+                               optional<uint64_t>>::type
 string<Capacity>::find(const T& t, const uint64_t pos) const noexcept
 {
     if (pos > m_rawstringSize)
     {
-        return iox::cxx::nullopt;
+        return nullopt;
     }
     const char* found = std::strstr(c_str() + pos, internal::GetData<T>::call(t));
     if (found == nullptr)
     {
-        return iox::cxx::nullopt;
+        return nullopt;
     }
     return (found - c_str());
 }
@@ -590,12 +589,12 @@ template <uint64_t Capacity>
 template <typename T>
 inline typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                    || internal::IsCxxString<T>::value,
-                               iox::cxx::optional<uint64_t>>::type
+                               optional<uint64_t>>::type
 string<Capacity>::find_first_of(const T& t, const uint64_t pos) const noexcept
 {
     if (pos > m_rawstringSize)
     {
-        return iox::cxx::nullopt;
+        return nullopt;
     }
     const char* found = nullptr;
     const char* data = internal::GetData<T>::call(t);
@@ -607,19 +606,19 @@ string<Capacity>::find_first_of(const T& t, const uint64_t pos) const noexcept
             return p;
         }
     }
-    return iox::cxx::nullopt;
+    return nullopt;
 }
 
 template <uint64_t Capacity>
 template <typename T>
 inline typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                    || internal::IsCxxString<T>::value,
-                               iox::cxx::optional<uint64_t>>::type
+                               optional<uint64_t>>::type
 string<Capacity>::find_last_of(const T& t, const uint64_t pos) const noexcept
 {
     if (m_rawstringSize == 0U)
     {
-        return iox::cxx::nullopt;
+        return nullopt;
     }
 
     auto p = pos;
@@ -642,7 +641,7 @@ string<Capacity>::find_last_of(const T& t, const uint64_t pos) const noexcept
     {
         return 0U;
     }
-    return iox::cxx::nullopt;
+    return nullopt;
 }
 } // namespace cxx
 } // namespace iox

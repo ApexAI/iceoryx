@@ -456,7 +456,7 @@ class string
     ///
     /// @return an optional containing the substring, iox::cxx::nullopt if pos is greater than the size of the original
     /// string
-    iox::cxx::optional<string<Capacity>> substr(const uint64_t pos, const uint64_t count) const noexcept;
+    optional<string<Capacity>> substr(const uint64_t pos, const uint64_t count) const noexcept;
 
     /// @brief creates a substring containing the characters from pos until size(); iox::cxx::nullopt is returned if pos
     /// is greater than the size of the original string
@@ -465,7 +465,7 @@ class string
     ///
     /// @return an optional containing the substring, iox::cxx::nullopt if pos is greater than the size of the original
     /// string
-    iox::cxx::optional<string<Capacity>> substr(const uint64_t pos = 0U) const noexcept;
+    optional<string<Capacity>> substr(const uint64_t pos = 0U) const noexcept;
 
     /// @brief finds the first occurence of the given character sequence; returns the position of the first character of
     /// the found substring, returns iox::cxx::nullopt if no substring is found or if pos is greater than this' size
@@ -478,7 +478,7 @@ class string
     template <typename T>
     typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                 || internal::IsCxxString<T>::value,
-                            iox::cxx::optional<uint64_t>>::type
+                            optional<uint64_t>>::type
     find(const T& t, const uint64_t pos = 0U) const noexcept;
 
     /// @brief finds the first occurence of a character equal to one of the characters of the given character sequence
@@ -493,7 +493,7 @@ class string
     template <typename T>
     typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                 || internal::IsCxxString<T>::value,
-                            iox::cxx::optional<uint64_t>>::type
+                            optional<uint64_t>>::type
     find_first_of(const T& t, const uint64_t pos = 0U) const noexcept;
 
     /// @brief finds the last occurence of a character equal to one of the characters of the given character sequence
@@ -507,7 +507,7 @@ class string
     template <typename T>
     typename std::enable_if<std::is_same<T, std::string>::value || internal::IsCharArray<T>::value
                                 || internal::IsCxxString<T>::value,
-                            iox::cxx::optional<uint64_t>>::type
+                            optional<uint64_t>>::type
     find_last_of(const T& t, const uint64_t pos = Capacity) const noexcept;
 
     /// @brief returns a reference to the character stored at pos
