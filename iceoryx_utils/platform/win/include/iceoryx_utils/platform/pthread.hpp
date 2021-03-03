@@ -49,4 +49,17 @@ int pthread_mutex_lock(pthread_mutex_t* mutex);
 int pthread_mutex_trylock(pthread_mutex_t* mutex);
 int pthread_mutex_unlock(pthread_mutex_t* mutex);
 
+inline int iox_pthread_setname_np(pthread_t thread, const char* name)
+{
+    return 0;
+}
+
+
+inline int pthread_getname_np(pthread_t thread,
+                       const char *name, size_t len)
+{
+    return 0;
+}
+
+
 #endif // IOX_UTILS_WIN_PLATFORM_PTHREAD_HPP

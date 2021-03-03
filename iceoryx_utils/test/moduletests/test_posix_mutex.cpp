@@ -86,3 +86,22 @@ TEST_F(Mutex_test, DestructorFailsOnLockedMutex)
 
     internal::CaptureStderr();
 }
+
+TEST_F(Mutex_test, LockedMutexBlocks)
+{
+    std::atomic_bool isLockFinished{false};
+    sut.lock();
+
+    std::thread lockThread([&]{ 
+        sut.lock();
+        isLockFinished.store(true); 
+        });
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    EXPECT_THAT(isLockFinished.load(), Eq(false));
+
+    sut.unlock();
+    lockThread.join();
+
+    EXPECT_THAT(isLockFinished.load(), Eq(true));
+}
