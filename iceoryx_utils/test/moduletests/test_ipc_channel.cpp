@@ -14,7 +14,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#if !defined(_WIN32)
 #include "iceoryx_utils/internal/posix_wrapper/message_queue.hpp"
 #include "iceoryx_utils/internal/posix_wrapper/unix_domain_socket.hpp"
 
@@ -405,4 +404,4 @@ TYPED_TEST(IpcChannel_test, TimedReceiveWorks)
     // Check if timedReceive has blocked for ~timeout and has not returned immediately
     EXPECT_GT(timeDiff, timeout - minTimeoutTolerance);
 }
-#endif
+
