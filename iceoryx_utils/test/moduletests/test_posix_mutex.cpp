@@ -18,6 +18,7 @@
 #include "iceoryx_utils/internal/posix_wrapper/mutex.hpp"
 #include "test.hpp"
 
+#include <atomic>
 #include <thread>
 
 using namespace ::testing;
@@ -92,10 +93,11 @@ TEST_F(Mutex_test, LockedMutexBlocks)
     std::atomic_bool isLockFinished{false};
     sut.lock();
 
-    std::thread lockThread([&]{ 
+    std::thread lockThread([&] {
         sut.lock();
-        isLockFinished.store(true); 
-        });
+        isLockFinished.store(true);
+        sut.unlock();
+    });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     EXPECT_THAT(isLockFinished.load(), Eq(false));
