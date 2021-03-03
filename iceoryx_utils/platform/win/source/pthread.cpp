@@ -90,7 +90,8 @@ int pthread_mutex_trylock(pthread_mutex_t* mutex)
 
 int pthread_mutex_unlock(pthread_mutex_t* mutex)
 {
-    if (!Win32Call(ReleaseMutex(mutex->handle)))
+    auto releaseResult = Win32Call(ReleaseMutex(mutex->handle));
+    if (!releaseResult)
     {
         return EPERM;
     }
