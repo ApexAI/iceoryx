@@ -72,6 +72,14 @@ TEST_F(Mutex_test, LockAndUnlock)
     EXPECT_THAT(sut.unlock(), Eq(true));
 }
 
+TEST_F(Mutex_test, LockAndUnlockRepeatedly)
+{
+    EXPECT_THAT(sut.lock(), Eq(true));
+    EXPECT_THAT(sut.unlock(), Eq(true));
+    EXPECT_THAT(sut.lock(), Eq(true));
+    EXPECT_THAT(sut.unlock(), Eq(true));
+}
+
 // in qnx you can destroy a locked mutex, without error if the thread holding the lock is destructing it.
 TEST_F(Mutex_test, DestructorFailsOnLockedMutex)
 {

@@ -46,14 +46,13 @@ int pthread_mutexattr_setprotocol(pthread_mutexattr_t* attr, int protocol)
 
 int pthread_mutex_destroy(pthread_mutex_t* mutex)
 {
-    auto releaseResult = Win32Call(ReleaseMutex(mutex->handle));
     Win32Call(CloseHandle(mutex->handle));
     return 0;
 }
 
 int pthread_mutex_init(pthread_mutex_t* mutex, const pthread_mutexattr_t* attr)
 {
-    mutex->handle = Win32Call(CreateMutexA(NULL, TRUE, NULL));
+    mutex->handle = Win32Call(CreateMutexA(NULL, FALSE, NULL));
     if (mutex->handle == NULL)
     {
         return EINVAL;
@@ -76,7 +75,7 @@ int pthread_mutex_lock(pthread_mutex_t* mutex)
 
 int pthread_mutex_trylock(pthread_mutex_t* mutex)
 {
-    DWORD waitResult = Win32Call(WaitForSingleObjectEx(mutex->handle, 1, true));
+    DWORD waitResult = Win32Call(WaitForSingleObject(mutex->handle, 0));
 
     switch (waitResult)
     {
@@ -91,8 +90,7 @@ int pthread_mutex_trylock(pthread_mutex_t* mutex)
 
 int pthread_mutex_unlock(pthread_mutex_t* mutex)
 {
-    auto releaseResult = Win32Call(ReleaseMutex(mutex->handle));
-    if (!releaseResult)
+    if (!Win32Call(ReleaseMutex(mutex->handle)))
     {
         return EPERM;
     }
