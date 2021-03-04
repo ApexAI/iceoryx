@@ -193,7 +193,7 @@ bool IpcInterfaceBase::hasClosableIpcChannel() const noexcept
 bool IpcInterfaceBase::cleanupOutdatedIpcChannel(const ProcessName_t& name) noexcept
 {
     return IpcChannelType::unlinkIfExists(name)
-        .or_else([&name](auto&) { LogWarn() << "IPC channel still there, doing an unlink of " << name; })
+        .and_then([&name](auto&) { LogWarn() << "IPC channel still there, doing an unlink of " << name; })
         .value_or(false);
 }
 
