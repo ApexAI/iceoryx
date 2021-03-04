@@ -140,6 +140,10 @@ cxx::expected<bool, IpcChannelError> MessageQueue::unlinkIfExists(const IpcChann
     if (!mqCall.hasErrors())
     {
         // ENOENT is set if the message queue could not be unlinked
+        if (mqCall.getErrNum() == ENOENT)
+        {
+            return cxx::error<IpcChannelError>(IpcChannelError::NO_SUCH_CHANNEL);
+        }
         return cxx::success<bool>(mqCall.getErrNum() != ENOENT);
     }
     else

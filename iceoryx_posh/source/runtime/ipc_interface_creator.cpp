@@ -28,7 +28,18 @@ IpcInterfaceCreator::IpcInterfaceCreator(const ProcessName_t& name,
 {
     // check if the IPC channel is still there (e.g. because of no proper termination
     // of the process)
-    cleanupOutdatedIpcChannel(name);
+    if (cleanupOutdatedIpcChannel(name))
+    {
+        // m_initalized = false;
+
+        if (!cleanupOutdatedIpcChannel(name))
+        {
+            // If the channel still exists, some application has the file descriptor still open
+            LogError()
+                << "An application with the same name is still running. Starting the same app twice is not supported.";
+            //errorHandler()
+        }
+    }
 
     openIpcChannel(posix::IpcChannelSide::SERVER);
 }
