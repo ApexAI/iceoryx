@@ -49,12 +49,18 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster)
                 apt-get update -q -y
-                apt-get install -q -y git gcc g++ cmake libacl1-dev libncurses5-dev
+                apt-get install -q -y git gcc g++ libacl1-dev libncurses5-dev
                 ;;
             esac
 
           # Produce a binary artifact and place it in the mounted volume
           run: |
+            mkdir ~/temp
+            cd ~/temp
+            wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3-linux-aarch64.sh
+            sudo mkdir /opt/cmake
+            sh cmake-3.20.0-rc3-linux-aarch64.sh --prefix=/opt/cmake --skip-license
+            sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
             cd /artifacts
             tools/iceoryx_build_test.sh
 
