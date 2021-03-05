@@ -58,9 +58,9 @@ jobs:
             mkdir ~/temp
             cd ~/temp
             wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3-linux-aarch64.sh
-            sudo mkdir /opt/cmake
+            mkdir /opt/cmake
             sh cmake-3.20.0-rc3-linux-aarch64.sh --prefix=/opt/cmake --skip-license
-            sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+            ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
             cd /artifacts
             tools/iceoryx_build_test.sh
 
