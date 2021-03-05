@@ -30,14 +30,12 @@ IpcInterfaceCreator::IpcInterfaceCreator(const ProcessName_t& name,
     // of the process)
     if (cleanupOutdatedIpcChannel(name))
     {
-        // m_initalized = false;
-
         if (!cleanupOutdatedIpcChannel(name))
         {
             // If the channel still exists, some application has the file descriptor still open
             LogError()
                 << "An application with the same name is still running. Starting the same app twice is not supported.";
-            //errorHandler()
+            errorHandler(Error::kPOSH__RUNTIME_APP_WITH_SAME_NAME_STILL_RUNNING, nullptr, iox::ErrorLevel::FATAL);
         }
     }
 
