@@ -153,7 +153,7 @@ cxx::expected<bool, IpcChannelError> UnixDomainSocket::unlinkIfExists(const NoPa
         {
             return cxx::error<IpcChannelError>(IpcChannelError::NO_SUCH_CHANNEL);
         }
-        return cxx::success<bool>(unlinkCall.getErrNum() != ENOENT);
+        return cxx::success<bool>(true);
     }
     else
     {
