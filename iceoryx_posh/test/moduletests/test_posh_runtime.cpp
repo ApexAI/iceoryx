@@ -552,3 +552,10 @@ TEST(PoshRuntimeFactory_test, DISABLED_SetEmptyRuntimeFactoryFails)
     // just in case the previous test doesn't die and breaks the following tests
     PoshRuntimeTestAccess::resetRuntimeFactory();
 }
+
+TEST_F(PoshRuntime_test, DISABLED_DestructionLeadsToUnregisterCall)
+{
+    m_runtime->~PoshRuntime();
+    // EXPECT_CALL(m_roudiEnv.m_roudiApp, unregisterProcess).Times(1);
+    PoshRuntimeTestAccess::resetRuntimeFactory();
+}
