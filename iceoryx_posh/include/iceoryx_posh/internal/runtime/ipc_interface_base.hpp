@@ -176,6 +176,7 @@ class IpcInterfaceBase
     /// @brief Since there might be an outdated IPC channel due to an unclean temination
     ///        this function closes the IPC channel if it's existing.
     /// @param[in] name of the IPC channel to clean up
+    /// @return true if an existing channel was cleaned up, false otherwise
     static bool cleanupOutdatedIpcChannel(const ProcessName_t& name) noexcept;
 
     friend class IpcInterfaceUser;
