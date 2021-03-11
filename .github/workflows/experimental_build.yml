@@ -11,6 +11,42 @@ on:
     branches: [ master ]
 
 jobs:
+  build_job_latest_clang_gcc:
+    runs-on: ubuntu-latest
+    name: Build on latest clang release
+
+    steps:
+      - name: Install iceoryx dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libacl1-dev libncurses5-dev
+
+      - name: Install latest clang stable release
+        run: |
+          REPO_NAME="deb http://apt.llvm.org/focal/ llvm-toolchain-focal main"
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+          add-apt-repository "${REPO_NAME}"
+          apt-get update
+          apt-get install -y clang
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build sources
+        shell: bash
+        env:
+          CC:   clang
+          CXX:  clang++
+        run: |
+          echo $(clang --version)
+          sudo $GITHUB_WORKSPACE/tools/add_test_users.sh
+          $GITHUB_WORKSPACE/tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
+
+      - name: Run all tests
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          tools/run_tests.sh all
+
   build_job_gcc54_aarch64:
     runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
@@ -63,39 +99,3 @@ jobs:
             tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
             cd build
             tools/run_tests.sh all
-
-  build_job_latest_clang_gcc:
-    runs-on: ubuntu-latest
-    name: Build on latest clang release
-
-    steps:
-      - name: Install iceoryx dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libacl1-dev libncurses5-dev
-
-      - name: Install latest clang stable release
-        run: |
-          REPO_NAME="deb http://apt.llvm.org/focal/ llvm-toolchain-focal main"
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-          add-apt-repository "${REPO_NAME}"
-          apt-get update
-          apt-get install -y clang
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Build sources
-        shell: bash
-        env:
-          CC:   clang
-          CXX:  clang++
-        run: |
-          echo $(clang --version)
-          sudo $GITHUB_WORKSPACE/tools/add_test_users.sh
-          $GITHUB_WORKSPACE/tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
-
-      - name: Run all tests
-        run: |
-          cd $GITHUB_WORKSPACE/build
-          tools/run_tests.sh all
