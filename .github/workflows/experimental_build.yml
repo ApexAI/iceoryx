@@ -62,7 +62,7 @@ jobs:
             /tmp/cmake-install.sh --skip-license --prefix=/usr/bin/cmake
             rm /tmp/cmake-install.sh
             cd /artifacts
-            echo $PATH
+            export PATH="/usr/bin/cmake/bin:${PATH}"
             tools/iceoryx_build_test.sh
 
       # - name: Show the artifact
