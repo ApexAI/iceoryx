@@ -14,7 +14,6 @@ jobs:
   build_job_latest_clang_gcc:
     runs-on: ubuntu-latest
     name: Build on latest clang release
-    continue-on-error: true
     steps:
       - name: Install iceoryx dependencies
         run: |
@@ -34,6 +33,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build sources
+        continue-on-error: true
         shell: bash
         env:
           CC:   clang
@@ -44,6 +44,7 @@ jobs:
           $GITHUB_WORKSPACE/tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
 
       - name: Run all tests
+        continue-on-error: true
         run: |
           cd $GITHUB_WORKSPACE/build
           tools/run_tests.sh all
@@ -51,7 +52,6 @@ jobs:
   build_job_gcc54_aarch64:
     runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
-    continue-on-error: true
     strategy:
       matrix:
         include:
@@ -61,6 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2.1.0
       - uses: uraimo/run-on-arch-action@v2.0.5
+        continue-on-error: true
         name: Build artifact
         id: build
         with:
