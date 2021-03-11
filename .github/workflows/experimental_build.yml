@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           REPO_NAME="deb http://apt.llvm.org/focal/ llvm-toolchain-focal main"
-          sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           sudo add-apt-repository "${REPO_NAME}"
           sudo apt-get update
           sudo apt-get install -y clang
