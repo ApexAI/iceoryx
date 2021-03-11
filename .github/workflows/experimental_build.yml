@@ -6,14 +6,14 @@ name: Experimental build
 # events but only for the master branch
 on:
   push:
-    branches: [ master, iox-#495-add-gcc-5.4-CI-job ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
-  build_job_latest_clang_gcc:
+  build_job_latest_clang:
     runs-on: ubuntu-latest
-    name: Build on latest clang release
+    name: Build on latest Clang Release
     steps:
       - name: Install iceoryx dependencies
         run: |
@@ -36,8 +36,8 @@ jobs:
         continue-on-error: true
         shell: bash
         env:
-          CC:   clang
-          CXX:  clang++
+          CC: clang
+          CXX: clang++
         run: |
           echo $(clang --version)
           sudo $GITHUB_WORKSPACE/tools/add_test_users.sh
@@ -76,7 +76,7 @@ jobs:
           dockerRunArgs: |
             --volume "$GITHUB_WORKSPACE:/artifacts"
 
-          env: | # YAML, but pipe character is necessary
+          env: |
             artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
 
           shell: /bin/sh
