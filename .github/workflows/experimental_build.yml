@@ -14,7 +14,7 @@ jobs:
   build_job_latest_clang_gcc:
     runs-on: ubuntu-latest
     name: Build on latest clang release
-
+    continue-on-error: true
     steps:
       - name: Install iceoryx dependencies
         run: |
@@ -51,7 +51,7 @@ jobs:
   build_job_gcc54_aarch64:
     runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
-
+    continue-on-error: true
     strategy:
       matrix:
         include:
