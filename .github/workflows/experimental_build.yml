@@ -49,7 +49,7 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster)
                 apt-get update -q -y
-                apt-get install -q -y git gcc g++ libacl1-dev libncurses5-dev wget
+                apt-get install -q -y git gcc g++ libacl1-dev libncurses5-dev wget make
                 ;;
             esac
 
