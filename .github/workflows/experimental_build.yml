@@ -49,55 +49,31 @@ jobs:
           cd $GITHUB_WORKSPACE/build
           tools/run_tests.sh all
 
-  build_job_gcc54_aarch64:
-    runs-on: ubuntu-latest
-    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
-    strategy:
-      matrix:
-        include:
-          - arch: aarch64
-            distro: ubuntu16.04
+  build_job_gcc54:
+    runs-on: ubuntu-16.04
+    name: Build on Ubuntu 16.04
 
     steps:
-      - uses: actions/checkout@v2.1.0
-      - uses: uraimo/run-on-arch-action@v2.0.5
+      - name: compiler versions
+        run: |
+          echo $(gcc --version)
+          echo $(clang --version)
+
+      - name: Install iceoryx dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libacl1-dev libncurses5-dev
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build sources
         continue-on-error: true
-        name: Build artifact
-        id: build
-        with:
-          arch: ${{ matrix.arch }}
-          distro: ${{ matrix.distro }}
+        run: |
+          sudo $GITHUB_WORKSPACE/tools/add_test_users.sh
+          $GITHUB_WORKSPACE/tools/iceoryx_build_test.sh build-all out-of-tree test-add-user
 
-          githubToken: ${{ github.token }}
-
-          setup: |
-            mkdir -p "${PWD}/artifacts"
-
-          dockerRunArgs: |
-            --volume "$GITHUB_WORKSPACE:/artifacts"
-
-          env: |
-            artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
-
-          shell: /bin/sh
-
-          install: |
-            case "${{ matrix.distro }}" in
-              ubuntu*|jessie|stretch|buster)
-                apt-get update -q -y
-                apt-get install -q -y git gcc g++ libacl1-dev libncurses5-dev wget make maven openjdk-11-jdk-headless
-                ;;
-            esac
-
-          run: |
-            wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3-linux-aarch64.sh \
-            -q -O /tmp/cmake-install.sh
-            chmod u+x /tmp/cmake-install.sh
-            mkdir /usr/bin/cmake
-            /tmp/cmake-install.sh --skip-license --prefix=/usr/bin/cmake
-            rm /tmp/cmake-install.sh
-            cd /artifacts
-            export PATH="/usr/bin/cmake/bin:${PATH}"
-            tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
-            cd build
-            tools/run_tests.sh all
+      - name: Run all tests
+        run: |
+          cd $GITHUB_WORKSPACE/build
+          tools/run_tests.sh all
