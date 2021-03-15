@@ -26,7 +26,7 @@ using namespace ::testing;
 using namespace iox;
 using namespace iox::posix;
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(QNX) || defined(QNX__) || defined(__QNX__)
 using IpcChannelTypes = Types<UnixDomainSocket>;
 #else
 using IpcChannelTypes = Types<MessageQueue, UnixDomainSocket>;

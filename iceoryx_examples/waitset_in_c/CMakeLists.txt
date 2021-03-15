@@ -26,11 +26,6 @@ if ( NOT ICEORYX_CXX_STANDARD )
     include(IceoryxPlatform)
 endif ()
 
-# compiler flag not supported on C
-if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    list(REMOVE_ITEM ICEORYX_WARNINGS "-Wno-noexcept-type")
-endif()
-
 add_executable(iox-ex-c-waitset-publisher ./ice_c_waitset_publisher.c)
 target_link_libraries(iox-ex-c-waitset-publisher
     iceoryx_binding_c::iceoryx_binding_c
