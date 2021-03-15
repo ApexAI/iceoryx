@@ -53,11 +53,6 @@ class UnixDomainSocket : public DesignPattern::Creation<UnixDomainSocket, IpcCha
     /// @brief for calling private constructor in create method
     friend class DesignPattern::Creation<UnixDomainSocket, IpcChannelError>;
 
-    /// @brief default constructor. The result is an invalid UnixDomainSocket object which can be reassigned later by
-    /// using the
-    /// move constructor.
-    UnixDomainSocket() noexcept;
-
     UnixDomainSocket(const UnixDomainSocket& other) = delete;
     UnixDomainSocket(UnixDomainSocket&& other) noexcept;
     UnixDomainSocket& operator=(const UnixDomainSocket& other) = delete;

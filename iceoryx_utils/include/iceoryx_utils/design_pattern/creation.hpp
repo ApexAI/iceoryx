@@ -18,6 +18,7 @@
 #define IOX_UTILS_DESIGN_PATTERN_CREATION_HPP
 
 #include "iceoryx_utils/cxx/expected.hpp"
+#include "iceoryx_utils/cxx/type_traits.hpp"
 
 #include <utility>
 
@@ -98,6 +99,9 @@ template <typename DerivedClass, typename ErrorType>
 class Creation
 {
   public:
+    /// @todo
+    // static_assert(!std::is_default_constructible<DerivedClass>::value,
+    //              "DerivedClass shall only be constructable by the creation pattern!");
     using CreationPattern_t = Creation<DerivedClass, ErrorType>;
     using result_t = iox::cxx::expected<DerivedClass, ErrorType>;
     using errorType_t = ErrorType;

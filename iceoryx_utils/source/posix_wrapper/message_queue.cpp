@@ -28,11 +28,6 @@ namespace iox
 {
 namespace posix
 {
-MessageQueue::MessageQueue()
-{
-    this->m_isInitialized = false;
-    this->m_errorValue = IpcChannelError::NOT_INITIALIZED;
-}
 
 MessageQueue::MessageQueue(const IpcChannelName_t& name,
                            const IpcChannelMode mode,

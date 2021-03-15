@@ -83,11 +83,6 @@ static constexpr OpenNamedSemaphore_t OpenNamedSemaphore = OpenNamedSemaphore_t(
 class Semaphore : public DesignPattern::Creation<Semaphore, SemaphoreError>
 {
   public:
-    /// @brief Default constructor which creates an uninitialized semaphore.
-    ///         This semaphore object is unusable you need to reassign it with
-    ///         an object created by the semaphore factory methods
-    Semaphore() noexcept;
-
     /// @brief Move constructor.
     Semaphore(Semaphore&& rhs) noexcept;
 

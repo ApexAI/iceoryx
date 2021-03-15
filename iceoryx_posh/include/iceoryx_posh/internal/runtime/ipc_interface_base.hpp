@@ -199,7 +199,8 @@ class IpcInterfaceBase
     //        same InterfaceName are using the same IPC channel
     IpcInterfaceBase(const ProcessName_t& InterfaceName,
                      const uint64_t maxMessages,
-                     const uint64_t messageSize) noexcept;
+                     const uint64_t messageSize,
+                     const posix::IpcChannelSide channelSide) noexcept;
     virtual ~IpcInterfaceBase() noexcept = default;
 
     /// @brief delete copy and move ctor and assignment since they are not needed
@@ -213,14 +214,6 @@ class IpcInterfaceBase
     /// @param[out] answer Raw message is setting this IpcMessage
     /// @return answer.isValid()
     static bool setMessageFromString(const char* buffer, IpcMessage& answer) noexcept;
-
-    /// @brief Opens a IPC channel and default permissions
-    ///         stored in m_perms and stores the descriptor
-    /// @param[in] channelSide of the queue. SERVER will also destroy the IPC channel in the dTor, while CLIENT
-    /// keeps the IPC channel in the file system after the dTor is called
-    /// @return Returns true if a IPC channel could be opened, otherwise
-    ///             false.
-    bool openIpcChannel(const posix::IpcChannelSide channelSide) noexcept;
 
     /// @brief Closes a IPC channel
     /// @return Returns true if the IPC channel could be closed, otherwise

@@ -31,12 +31,6 @@ namespace posix
 {
 constexpr char UnixDomainSocket::PATH_PREFIX[];
 
-UnixDomainSocket::UnixDomainSocket() noexcept
-{
-    this->m_isInitialized = false;
-    this->m_errorValue = IpcChannelError::NOT_INITIALIZED;
-}
-
 UnixDomainSocket::UnixDomainSocket(const IpcChannelName_t& name,
                                    const IpcChannelMode mode,
                                    const IpcChannelSide channelSide,

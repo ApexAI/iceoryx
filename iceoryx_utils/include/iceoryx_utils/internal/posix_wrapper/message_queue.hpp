@@ -58,10 +58,6 @@ class MessageQueue : public DesignPattern::Creation<MessageQueue, IpcChannelErro
     /// for calling private constructor in create method
     friend class DesignPattern::Creation<MessageQueue, IpcChannelError>;
 
-    /// default constructor. The result is an invalid MessageQueue object which can be reassigned later by using the
-    /// move constructor.
-    MessageQueue();
-
     MessageQueue(const MessageQueue& other) = delete;
     MessageQueue(MessageQueue&& other);
     MessageQueue& operator=(const MessageQueue& other) = delete;

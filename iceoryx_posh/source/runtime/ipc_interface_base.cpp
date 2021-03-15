@@ -64,17 +64,35 @@ std::string IpcMessageErrorTypeToString(const IpcMessageErrorType msg) noexcept
 
 IpcInterfaceBase::IpcInterfaceBase(const ProcessName_t& InterfaceName,
                                    const uint64_t maxMessages,
-                                   const uint64_t messageSize) noexcept
+                                   const uint64_t messageSize,
+                                   const posix::IpcChannelSide channelSide) noexcept
     : m_interfaceName(InterfaceName)
+    , m_maxMessageSize(messageSize)
+    , m_maxMessages(maxMessages)
+    , m_channelSide(channelSide)
+    , m_ipcChannel(std::move(
+          IpcChannelType::create(
+              m_interfaceName, posix::IpcChannelMode::BLOCKING, m_channelSide, m_maxMessageSize, m_maxMessages)
+              .and_then([this, messageSize, channelSide](auto&) {
+                  if (m_maxMessageSize > posix::MessageQueue::MAX_MESSAGE_SIZE)
+                  {
+                      LogWarn() << "Message size too large, reducing from " << messageSize << " to "
+                                << posix::MessageQueue::MAX_MESSAGE_SIZE;
+                      m_maxMessageSize = posix::MessageQueue::MAX_MESSAGE_SIZE;
+                  }
+
+                  if (channelSide == posix::IpcChannelSide::SERVER)
+                  {
+                      // check if the IPC channel is still there (e.g. because of no proper termination
+                      // of the process)
+                      cleanupOutdatedIpcChannel(m_interfaceName);
+                  }
+              })
+              .or_else([](auto&) {
+                  /// @todo errorhandler
+              })
+              .value()))
 {
-    m_maxMessages = maxMessages;
-    m_maxMessageSize = messageSize;
-    if (m_maxMessageSize > posix::MessageQueue::MAX_MESSAGE_SIZE)
-    {
-        LogWarn() << "Message size too large, reducing from " << messageSize << " to "
-                  << posix::MessageQueue::MAX_MESSAGE_SIZE;
-        m_maxMessageSize = posix::MessageQueue::MAX_MESSAGE_SIZE;
-    }
 }
 
 bool IpcInterfaceBase::receive(IpcMessage& answer) const noexcept
@@ -157,18 +175,6 @@ bool IpcInterfaceBase::isInitialized() const noexcept
     return m_ipcChannel.isInitialized();
 }
 
-bool IpcInterfaceBase::openIpcChannel(const posix::IpcChannelSide channelSide) noexcept
-{
-    m_ipcChannel.destroy();
-
-    m_channelSide = channelSide;
-    IpcChannelType::create(
-        m_interfaceName, posix::IpcChannelMode::BLOCKING, m_channelSide, m_maxMessageSize, m_maxMessages)
-        .and_then([this](auto& ipcChannel) { this->m_ipcChannel = std::move(ipcChannel); });
-
-    return m_ipcChannel.isInitialized();
-}
-
 bool IpcInterfaceBase::closeIpcChannel() noexcept
 {
     return !m_ipcChannel.destroy().has_error();
@@ -176,7 +182,8 @@ bool IpcInterfaceBase::closeIpcChannel() noexcept
 
 bool IpcInterfaceBase::reopen() noexcept
 {
-    return openIpcChannel(m_channelSide);
+    /// @todo
+    return false;
 }
 
 bool IpcInterfaceBase::ipcChannelMapsToFile() noexcept

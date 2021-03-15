@@ -48,7 +48,6 @@ class SharedPointer : public DesignPattern::Creation<SharedPointer<T>, SharedPoi
   public:
     using CreationPattern_t = DesignPattern::Creation<SharedPointer<T>, SharedPointerError>;
 
-    SharedPointer() = default;
     SharedPointer(const SharedPointer&) = default;
     SharedPointer(SharedPointer&&) = default;
     ~SharedPointer() noexcept;

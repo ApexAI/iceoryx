@@ -24,13 +24,8 @@ namespace runtime
 IpcInterfaceCreator::IpcInterfaceCreator(const ProcessName_t& name,
                                          const uint64_t maxMessages,
                                          const uint64_t messageSize) noexcept
-    : IpcInterfaceBase(name, maxMessages, messageSize)
+    : IpcInterfaceBase(name, maxMessages, messageSize, posix::IpcChannelSide::SERVER)
 {
-    // check if the IPC channel is still there (e.g. because of no proper termination
-    // of the process)
-    cleanupOutdatedIpcChannel(name);
-
-    openIpcChannel(posix::IpcChannelSide::SERVER);
 }
 
 void IpcInterfaceCreator::cleanupResource()

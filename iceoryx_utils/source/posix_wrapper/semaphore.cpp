@@ -23,10 +23,6 @@ namespace iox
 {
 namespace posix
 {
-Semaphore::Semaphore() noexcept
-{
-}
-
 Semaphore::Semaphore(Semaphore&& rhs) noexcept
 {
     *this = std::move(rhs);
