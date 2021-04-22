@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<lattix version="9.0">
+ <project_rules>
+  <partition name="$root">
+   <rule name="generic">
+    <access verb="can-use" nametype="partition" name="$root"/>
+    <access verb="can-use" nametype="language" name="*"/>
+    <access verb="can-use" nametype="language" name="unresolved.**"/>
+    <access verb="can-use" nametype="language" name="multidef.**"/>
+   </rule>
+  </partition>
+ </project_rules>
+</lattix>

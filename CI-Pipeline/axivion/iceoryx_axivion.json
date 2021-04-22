@@ -1,0 +1,3510 @@
+{
+    "Analysis": {
+        "AutosarC++19_03-A0.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.1.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A0.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A1.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A1.4.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A10.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A10.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A10.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A10.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A10.3.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A11.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A11.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A11.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A12.8.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.5.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A13.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A14.7.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A14.8.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.3.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.3.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.4.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.4.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A15.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A16.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A16.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A16.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A16.7.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A17.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A17.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.5.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.5.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.9.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.9.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A18.9.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.10.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.10.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.10.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.10.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.11.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.13.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.7.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.7.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.7.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.8.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A2.8.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A21.8.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A23.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A26.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A26.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A27.0.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A3.9.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A4.10.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A4.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A4.7.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.0.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.1.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.10.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.16.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.2.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.2.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A5.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.5.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A6.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.1.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.2.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A7.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.4.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-A8.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-A9.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.10": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.1.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M0.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M10.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M10.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M10.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M10.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M10.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M11.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M12.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M14.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M14.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.1.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.3.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.3.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M15.3.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.0.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.1.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M16.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M17.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M17.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M17.0.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M18.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M18.0.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M18.0.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M18.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M18.7.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M19.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M2.10.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M2.13.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M2.13.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M2.13.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M2.7.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M27.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.2.1": {
+            "_active": true,
+            "check_parameter_types": true
+        },
+        "AutosarC++19_03-M3.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.2.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.9.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M3.9.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M4.10.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M4.10.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M4.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M4.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.10": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.11": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.12": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.14": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.15": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.16": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.17": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.18": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.20": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.21": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.0.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.14.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.17.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.18.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.19.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.10": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.11": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.12": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.8": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.2.9": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.3.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M5.8.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.2.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.2.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.2.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.4.7": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.5.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.5.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.5.5": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.5.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.6.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M6.6.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.1.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.3.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.3.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.3.6": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.4.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.4.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.5.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M7.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M8.0.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M8.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M8.4.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M8.4.4": {
+            "_active": true
+        },
+        "AutosarC++19_03-M8.5.2": {
+            "_active": true
+        },
+        "AutosarC++19_03-M9.3.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M9.3.3": {
+            "_active": true
+        },
+        "AutosarC++19_03-M9.6.1": {
+            "_active": true
+        },
+        "AutosarC++19_03-M9.6.4": {
+            "_active": true
+        },
+        "CWE-Api-Function-Errors-242": {
+            "_active": true
+        },
+        "CWE-Api-Function-Errors-477": {
+            "_active": true
+        },
+        "CWE-Api-Function-Errors-676": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-1071": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-1082": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-1087": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-1126": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-1127": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-478": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-547": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-561": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-562": {
+            "_active": true
+        },
+        "CWE-Bad-Coding-Practices-563": {
+            "_active": true
+        },
+        "CWE-Behavioral-Problems-480": {
+            "_active": true
+        },
+        "CWE-Behavioral-Problems-483": {
+            "_active": true
+        },
+        "CWE-Behavioral-Problems-484": {
+            "_active": true
+        },
+        "CWE-Behavioral-Problems-783": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1055": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1056": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1064": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1074": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1075": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1080": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1086": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1119": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1121": {
+            "_active": true
+        },
+        "CWE-Complexity-Issues-1124": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-1069": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-248": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-252": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-253": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-396": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-397": {
+            "_active": true
+        },
+        "CWE-Error-Conditions-617": {
+            "_active": true
+        },
+        "CWE-Expression-Issues-480": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-466": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-467": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-468": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-469": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-476": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-587": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-763": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-824": {
+            "_active": true
+        },
+        "CWE-Pointer-Issues-825": {
+            "_active": true
+        },
+        "CertC++-ARR30": {
+            "_active": true
+        },
+        "CertC++-ARR37": {
+            "_active": true
+        },
+        "CertC++-ARR39": {
+            "_active": true
+        },
+        "CertC++-CON40": {
+            "_active": true
+        },
+        "CertC++-CON52": {
+            "_active": true
+        },
+        "CertC++-CTR56": {
+            "_active": true
+        },
+        "CertC++-DCL30": {
+            "_active": true
+        },
+        "CertC++-DCL39": {
+            "_active": true
+        },
+        "CertC++-DCL40": {
+            "_active": true
+        },
+        "CertC++-DCL50": {
+            "_active": true
+        },
+        "CertC++-DCL51": {
+            "_active": true
+        },
+        "CertC++-DCL52": {
+            "_active": true
+        },
+        "CertC++-DCL55": {
+            "_active": true
+        },
+        "CertC++-DCL57": {
+            "_active": true
+        },
+        "CertC++-DCL58": {
+            "_active": true
+        },
+        "CertC++-DCL59": {
+            "_active": true
+        },
+        "CertC++-DCL60": {
+            "_active": true
+        },
+        "CertC++-ENV30": {
+            "_active": true
+        },
+        "CertC++-ENV32": {
+            "_active": true
+        },
+        "CertC++-ENV33": {
+            "_active": true
+        },
+        "CertC++-ERR30": {
+            "_active": true
+        },
+        "CertC++-ERR32": {
+            "_active": true
+        },
+        "CertC++-ERR33": {
+            "_active": true
+        },
+        "CertC++-ERR34": {
+            "_active": true
+        },
+        "CertC++-ERR51": {
+            "_active": true
+        },
+        "CertC++-ERR52": {
+            "_active": true
+        },
+        "CertC++-ERR53": {
+            "_active": true
+        },
+        "CertC++-ERR54": {
+            "_active": true
+        },
+        "CertC++-ERR55": {
+            "_active": true
+        },
+        "CertC++-ERR58": {
+            "_active": true
+        },
+        "CertC++-ERR61": {
+            "_active": true
+        },
+        "CertC++-ERR62": {
+            "_active": true
+        },
+        "CertC++-EXP34": {
+            "_active": true
+        },
+        "CertC++-EXP35": {
+            "_active": true
+        },
+        "CertC++-EXP36": {
+            "_active": true
+        },
+        "CertC++-EXP37": {
+            "_active": true
+        },
+        "CertC++-EXP42": {
+            "_active": true
+        },
+        "CertC++-EXP45": {
+            "_active": true
+        },
+        "CertC++-EXP46": {
+            "_active": true
+        },
+        "CertC++-EXP47": {
+            "_active": true
+        },
+        "CertC++-EXP50": {
+            "_active": true
+        },
+        "CertC++-EXP52": {
+            "_active": true
+        },
+        "CertC++-EXP55": {
+            "_active": true
+        },
+        "CertC++-EXP59": {
+            "_active": true
+        },
+        "CertC++-FIO30": {
+            "_active": true
+        },
+        "CertC++-FIO34": {
+            "_active": true
+        },
+        "CertC++-FIO37": {
+            "_active": true
+        },
+        "CertC++-FIO38": {
+            "_active": true
+        },
+        "CertC++-FIO47": {
+            "_active": true
+        },
+        "CertC++-FLP30": {
+            "_active": true
+        },
+        "CertC++-FLP32": {
+            "_active": true
+        },
+        "CertC++-FLP37": {
+            "_active": true
+        },
+        "CertC++-INT34": {
+            "_active": true
+        },
+        "CertC++-INT36": {
+            "_active": true
+        },
+        "CertC++-INT50": {
+            "_active": true
+        },
+        "CertC++-MEM30": {
+            "_active": true
+        },
+        "CertC++-MEM31": {
+            "_active": true
+        },
+        "CertC++-MEM34": {
+            "_active": true
+        },
+        "CertC++-MEM35": {
+            "_active": true
+        },
+        "CertC++-MEM36": {
+            "_active": true
+        },
+        "CertC++-MEM50": {
+            "_active": true
+        },
+        "CertC++-MEM51": {
+            "_active": true
+        },
+        "CertC++-MSC30": {
+            "_active": true
+        },
+        "CertC++-MSC32": {
+            "_active": true
+        },
+        "CertC++-MSC33": {
+            "_active": true
+        },
+        "CertC++-MSC37": {
+            "_active": true
+        },
+        "CertC++-MSC50": {
+            "_active": true
+        },
+        "CertC++-MSC51": {
+            "_active": true
+        },
+        "CertC++-MSC52": {
+            "_active": true
+        },
+        "CertC++-MSC53": {
+            "_active": true
+        },
+        "CertC++-OOP50": {
+            "_active": true
+        },
+        "CertC++-OOP52": {
+            "_active": true
+        },
+        "CertC++-OOP53": {
+            "_active": true
+        },
+        "CertC++-PRE30": {
+            "_active": true
+        },
+        "CertC++-PRE31": {
+            "_active": true
+        },
+        "CertC++-PRE32": {
+            "_active": true
+        },
+        "CertC++-SIG31": {
+            "_active": true
+        },
+        "CertC++-SIG34": {
+            "_active": true
+        },
+        "CertC++-SIG35": {
+            "_active": true
+        },
+        "CertC++-STR30": {
+            "_active": true
+        },
+        "CertC++-STR31": {
+            "_active": true
+        },
+        "CertC++-STR32": {
+            "_active": true
+        },
+        "CertC++-STR34": {
+            "_active": true
+        },
+        "CertC++-STR37": {
+            "_active": true
+        },
+        "CertC++-STR38": {
+            "_active": true
+        },
+        "CertC-ARR01": {
+            "_active": false
+        },
+        "CertC-ARR02": {
+            "_active": false
+        },
+        "CertC-ARR30": {
+            "_active": false
+        },
+        "CertC-ARR36": {
+            "_active": false
+        },
+        "CertC-ARR37": {
+            "_active": false
+        },
+        "CertC-ARR39": {
+            "_active": false
+        },
+        "CertC-CON32": {
+            "_active": false
+        },
+        "CertC-CON40": {
+            "_active": false
+        },
+        "CertC-DCL00": {
+            "_active": false
+        },
+        "CertC-DCL01": {
+            "_active": false
+        },
+        "CertC-DCL02": {
+            "_active": false
+        },
+        "CertC-DCL03": {
+            "_active": false
+        },
+        "CertC-DCL04": {
+            "_active": false
+        },
+        "CertC-DCL05": {
+            "_active": false
+        },
+        "CertC-DCL06": {
+            "_active": false
+        },
+        "CertC-DCL07": {
+            "_active": false
+        },
+        "CertC-DCL09": {
+            "_active": false
+        },
+        "CertC-DCL11": {
+            "_active": false
+        },
+        "CertC-DCL12": {
+            "_active": false
+        },
+        "CertC-DCL13": {
+            "_active": false
+        },
+        "CertC-DCL15": {
+            "_active": false
+        },
+        "CertC-DCL16": {
+            "_active": false
+        },
+        "CertC-DCL18": {
+            "_active": false
+        },
+        "CertC-DCL19": {
+            "_active": false
+        },
+        "CertC-DCL20": {
+            "_active": false
+        },
+        "CertC-DCL21": {
+            "_active": false
+        },
+        "CertC-DCL23": {
+            "_active": false
+        },
+        "CertC-DCL30": {
+            "_active": false
+        },
+        "CertC-DCL31": {
+            "_active": false
+        },
+        "CertC-DCL36": {
+            "_active": false
+        },
+        "CertC-DCL37": {
+            "_active": false
+        },
+        "CertC-DCL38": {
+            "_active": false
+        },
+        "CertC-DCL39": {
+            "_active": false
+        },
+        "CertC-DCL40": {
+            "_active": false
+        },
+        "CertC-DCL41": {
+            "_active": false
+        },
+        "CertC-ENV30": {
+            "_active": false
+        },
+        "CertC-ENV32": {
+            "_active": false
+        },
+        "CertC-ENV33": {
+            "_active": false
+        },
+        "CertC-ERR07": {
+            "_active": false
+        },
+        "CertC-ERR30": {
+            "_active": false
+        },
+        "CertC-ERR32": {
+            "_active": false
+        },
+        "CertC-ERR33": {
+            "_active": false
+        },
+        "CertC-ERR34": {
+            "_active": false
+        },
+        "CertC-EXP00": {
+            "_active": false
+        },
+        "CertC-EXP02": {
+            "_active": false
+        },
+        "CertC-EXP05": {
+            "_active": false
+        },
+        "CertC-EXP07": {
+            "_active": false
+        },
+        "CertC-EXP10": {
+            "_active": false
+        },
+        "CertC-EXP12": {
+            "_active": false
+        },
+        "CertC-EXP14": {
+            "_active": false
+        },
+        "CertC-EXP15": {
+            "_active": false
+        },
+        "CertC-EXP19": {
+            "_active": false
+        },
+        "CertC-EXP20": {
+            "_active": false
+        },
+        "CertC-EXP30": {
+            "_active": false
+        },
+        "CertC-EXP32": {
+            "_active": false
+        },
+        "CertC-EXP33": {
+            "_active": false
+        },
+        "CertC-EXP34": {
+            "_active": false
+        },
+        "CertC-EXP35": {
+            "_active": false
+        },
+        "CertC-EXP36": {
+            "_active": false
+        },
+        "CertC-EXP37": {
+            "_active": false
+        },
+        "CertC-EXP40": {
+            "_active": false
+        },
+        "CertC-EXP42": {
+            "_active": false
+        },
+        "CertC-EXP44": {
+            "_active": false
+        },
+        "CertC-EXP45": {
+            "_active": false
+        },
+        "CertC-EXP46": {
+            "_active": false
+        },
+        "CertC-EXP47": {
+            "_active": false
+        },
+        "CertC-FIO30": {
+            "_active": false
+        },
+        "CertC-FIO34": {
+            "_active": false
+        },
+        "CertC-FIO37": {
+            "_active": false
+        },
+        "CertC-FIO38": {
+            "_active": false
+        },
+        "CertC-FIO47": {
+            "_active": false
+        },
+        "CertC-FLP02": {
+            "_active": false
+        },
+        "CertC-FLP04": {
+            "_active": false
+        },
+        "CertC-FLP06": {
+            "_active": false
+        },
+        "CertC-FLP07": {
+            "_active": false
+        },
+        "CertC-FLP30": {
+            "_active": false
+        },
+        "CertC-FLP32": {
+            "_active": false
+        },
+        "CertC-FLP37": {
+            "_active": false
+        },
+        "CertC-INT00": {
+            "_active": false
+        },
+        "CertC-INT01": {
+            "_active": false
+        },
+        "CertC-INT05": {
+            "_active": false
+        },
+        "CertC-INT07": {
+            "_active": false
+        },
+        "CertC-INT08": {
+            "_active": false
+        },
+        "CertC-INT09": {
+            "_active": false
+        },
+        "CertC-INT12": {
+            "_active": false
+        },
+        "CertC-INT13": {
+            "_active": false
+        },
+        "CertC-INT15": {
+            "_active": false
+        },
+        "CertC-INT17": {
+            "_active": false
+        },
+        "CertC-INT34": {
+            "_active": false
+        },
+        "CertC-INT36": {
+            "_active": false
+        },
+        "CertC-MEM01": {
+            "_active": false
+        },
+        "CertC-MEM02": {
+            "_active": false
+        },
+        "CertC-MEM30": {
+            "_active": false
+        },
+        "CertC-MEM31": {
+            "_active": false
+        },
+        "CertC-MEM33": {
+            "_active": false
+        },
+        "CertC-MEM34": {
+            "_active": false
+        },
+        "CertC-MEM35": {
+            "_active": false
+        },
+        "CertC-MEM36": {
+            "_active": false
+        },
+        "CertC-MSC24": {
+            "_active": false
+        },
+        "CertC-MSC30": {
+            "_active": false
+        },
+        "CertC-MSC32": {
+            "_active": false
+        },
+        "CertC-MSC33": {
+            "_active": false
+        },
+        "CertC-MSC37": {
+            "_active": false
+        },
+        "CertC-POS30": {
+            "_active": false
+        },
+        "CertC-POS33": {
+            "_active": false
+        },
+        "CertC-POS34": {
+            "_active": false
+        },
+        "CertC-POS35": {
+            "_active": false
+        },
+        "CertC-POS36": {
+            "_active": false
+        },
+        "CertC-POS37": {
+            "_active": false
+        },
+        "CertC-POS39": {
+            "_active": false
+        },
+        "CertC-POS47": {
+            "_active": false
+        },
+        "CertC-POS49": {
+            "_active": false
+        },
+        "CertC-POS54": {
+            "_active": false
+        },
+        "CertC-PRE00": {
+            "_active": false
+        },
+        "CertC-PRE01": {
+            "_active": false
+        },
+        "CertC-PRE02": {
+            "_active": false
+        },
+        "CertC-PRE03": {
+            "_active": false
+        },
+        "CertC-PRE04": {
+            "_active": false
+        },
+        "CertC-PRE05": {
+            "_active": false
+        },
+        "CertC-PRE06": {
+            "_active": false
+        },
+        "CertC-PRE07": {
+            "_active": false
+        },
+        "CertC-PRE08": {
+            "_active": false
+        },
+        "CertC-PRE09": {
+            "_active": false
+        },
+        "CertC-PRE10": {
+            "_active": false
+        },
+        "CertC-PRE11": {
+            "_active": false
+        },
+        "CertC-PRE12": {
+            "_active": false
+        },
+        "CertC-PRE13": {
+            "_active": false
+        },
+        "CertC-PRE30": {
+            "_active": false
+        },
+        "CertC-PRE31": {
+            "_active": false
+        },
+        "CertC-PRE32": {
+            "_active": false
+        },
+        "CertC-SIG30": {
+            "_active": false
+        },
+        "CertC-SIG31": {
+            "_active": false
+        },
+        "CertC-SIG34": {
+            "_active": false
+        },
+        "CertC-SIG35": {
+            "_active": false
+        },
+        "CertC-STR04": {
+            "_active": false
+        },
+        "CertC-STR05": {
+            "_active": false
+        },
+        "CertC-STR07": {
+            "_active": false
+        },
+        "CertC-STR09": {
+            "_active": false
+        },
+        "CertC-STR10": {
+            "_active": false
+        },
+        "CertC-STR11": {
+            "_active": false
+        },
+        "CertC-STR30": {
+            "_active": false
+        },
+        "CertC-STR31": {
+            "_active": false
+        },
+        "CertC-STR32": {
+            "_active": false
+        },
+        "CertC-STR34": {
+            "_active": false
+        },
+        "CertC-STR37": {
+            "_active": false
+        },
+        "CertC-STR38": {
+            "_active": false
+        },
+        "CloneDetection": {
+            "_active": true
+        },
+        "CycleDetection-CallgraphCycles": {
+            "_active": true
+        },
+        "CycleDetection-IncludeCycles": {
+            "_active": true
+        },
+        "FaultDetection-BadEnumValue": {
+            "_active": false
+        },
+        "FaultDetection-BufferOverflow": {
+            "_active": false
+        },
+        "FaultDetection-DeadBranches": {
+            "_active": false
+        },
+        "FaultDetection-DeadCatch": {
+            "_active": false
+        },
+        "FaultDetection-DivisionByZero": {
+            "_active": false
+        },
+        "FaultDetection-DoubleFree": {
+            "_active": false
+        },
+        "FaultDetection-EscapingLocalAddress": {
+            "_active": false
+        },
+        "FaultDetection-ExceptionInsideThrow": {
+            "_active": false
+        },
+        "FaultDetection-ExceptionSpecificationViolation": {
+            "_active": false
+        },
+        "FaultDetection-FileModeConflict": {
+            "_active": false
+        },
+        "FaultDetection-ForbiddenOperations": {
+            "_active": false
+        },
+        "FaultDetection-IntegerOverflow": {
+            "_active": false
+        },
+        "FaultDetection-InvalidArgumentInCall": {
+            "_active": false
+        },
+        "FaultDetection-MemoryLeak": {
+            "_active": false
+        },
+        "FaultDetection-MissingRequiredOperations": {
+            "_active": false
+        },
+        "FaultDetection-NoexceptViolations": {
+            "_active": false
+        },
+        "FaultDetection-NullPointerDereference": {
+            "_active": false
+        },
+        "FaultDetection-OutOfBounds": {
+            "_active": false
+        },
+        "FaultDetection-RemovableStatements": {
+            "_active": false
+        },
+        "FaultDetection-StackFree": {
+            "_active": false
+        },
+        "FaultDetection-TaintAnalysis": {
+            "_active": false
+        },
+        "FaultDetection-UncaughtExceptionEscapingMain": {
+            "_active": false
+        },
+        "FaultDetection-UncaughtExceptionInXtor": {
+            "_active": false
+        },
+        "FaultDetection-UncaughtExceptionOutsideMain": {
+            "_active": false
+        },
+        "FaultDetection-UninitializedVariable": {
+            "_active": false
+        },
+        "FaultDetection-UnrelatedPointerComparison": {
+            "_active": false
+        },
+        "FaultDetection-UnrelatedPointerSubtraction": {
+            "_active": false
+        },
+        "FaultDetection-UnusedAssignments": {
+            "_active": false
+        },
+        "FaultDetection-UseAfterFree": {
+            "_active": false
+        },
+        "FaultDetection-WrongReleaseFunction": {
+            "_active": false
+        },
+        "Metric-Calling.CPP": {
+            "_active": true
+        },
+        "Metric-CloneRatio": {
+            "_active": true
+        },
+        "Metric-CloneRatioFromRFG": {
+            "_active": true
+        },
+        "Metric-Comment.Density": {
+            "_active": true
+        },
+        "Metric-Comment.Internal": {
+            "_active": true
+        },
+        "Metric-Comment.Preceding": {
+            "_active": true
+        },
+        "Metric-Coupling": {
+            "_active": true
+        },
+        "Metric-ExtendedMcCabe": {
+            "_active": true
+        },
+        "Metric-Fan.In": {
+            "_active": true
+        },
+        "Metric-Fan.In.Call": {
+            "_active": true
+        },
+        "Metric-Fan.Out": {
+            "_active": true
+        },
+        "Metric-Fan.Out.Call": {
+            "_active": true
+        },
+        "Metric-HIS.APCGCYCLE": {
+            "_active": true
+        },
+        "Metric-HIS.CALLING": {
+            "_active": true
+        },
+        "Metric-HIS.CALLS": {
+            "_active": true
+        },
+        "Metric-HIS.COMF": {
+            "_active": true
+        },
+        "Metric-HIS.GOTO": {
+            "_active": true
+        },
+        "Metric-HIS.LEVEL": {
+            "_active": true
+        },
+        "Metric-HIS.NOMV": {
+            "_active": true
+        },
+        "Metric-HIS.NOMVPR": {
+            "_active": true
+        },
+        "Metric-HIS.PARAM": {
+            "_active": true
+        },
+        "Metric-HIS.PATH": {
+            "_active": true
+        },
+        "Metric-HIS.RETURN": {
+            "_active": true
+        },
+        "Metric-HIS.STMT": {
+            "_active": true
+        },
+        "Metric-HIS.VG": {
+            "_active": true
+        },
+        "Metric-HIS.VOCF": {
+            "_active": true
+        },
+        "Metric-Halstead.DifferentOperands": {
+            "_active": true
+        },
+        "Metric-Halstead.DifferentOperators": {
+            "_active": true
+        },
+        "Metric-Halstead.Difficulty": {
+            "_active": true
+        },
+        "Metric-Halstead.Effort": {
+            "_active": true
+        },
+        "Metric-Halstead.Length": {
+            "_active": true
+        },
+        "Metric-Halstead.TotalOperands": {
+            "_active": true
+        },
+        "Metric-Halstead.TotalOperators": {
+            "_active": true
+        },
+        "Metric-Halstead.Vocabulary": {
+            "_active": true
+        },
+        "Metric-Halstead.VocabularyFrequency": {
+            "_active": true
+        },
+        "Metric-Halstead.Volume": {
+            "_active": true
+        },
+        "Metric-ImportCSV": {
+            "_active": false
+        },
+        "Metric-ImportRFGMetricAttribute": {
+            "_active": false
+        },
+        "Metric-Includes.DirectIncluders": {
+            "_active": true
+        },
+        "Metric-Includes.DirectIncludes": {
+            "_active": true
+        },
+        "Metric-Includes.IncludeBurden": {
+            "_active": true
+        },
+        "Metric-Includes.MaximumIncludeDepth": {
+            "_active": true
+        },
+        "Metric-Includes.MaximumIncluderDepth": {
+            "_active": true
+        },
+        "Metric-Includes.TransitiveIncluders": {
+            "_active": true
+        },
+        "Metric-Includes.TransitiveIncludes": {
+            "_active": true
+        },
+        "Metric-InverseCoupling": {
+            "_active": true
+        },
+        "Metric-IssueCount.Architecture": {
+            "_active": true
+        },
+        "Metric-IssueCount.Clone": {
+            "_active": true
+        },
+        "Metric-IssueCount.Cycle": {
+            "_active": true
+        },
+        "Metric-IssueCount.DeadEntity": {
+            "_active": true
+        },
+        "Metric-IssueCount.Metric": {
+            "_active": true
+        },
+        "Metric-IssueCount.Style": {
+            "_active": true
+        },
+        "Metric-LOC": {
+            "_active": true
+        },
+        "Metric-Lines.Class.Code": {
+            "_active": true
+        },
+        "Metric-Lines.Class.Comment": {
+            "_active": true
+        },
+        "Metric-Lines.Class.CommentRatio": {
+            "_active": true
+        },
+        "Metric-Lines.Class.LOC": {
+            "_active": true
+        },
+        "Metric-Lines.Code": {
+            "_active": true
+        },
+        "Metric-Lines.Comment": {
+            "_active": true
+        },
+        "Metric-Lines.Empty": {
+            "_active": true
+        },
+        "Metric-Lines.File.Code": {
+            "_active": true
+        },
+        "Metric-Lines.File.Comment": {
+            "_active": true
+        },
+        "Metric-Lines.File.CommentRatio": {
+            "_active": true
+        },
+        "Metric-Lines.File.LOC": {
+            "_active": true
+        },
+        "Metric-Lines.LOC": {
+            "_active": true
+        },
+        "Metric-Lines.OnlyComment": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Define": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Elif": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Else": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Endif": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Error": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Ident": {
+            "_active": true
+        },
+        "Metric-Lines.PP.If": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Ifdef": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Ifndef": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Include": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Line": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Pragma": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Sharp": {
+            "_active": true
+        },
+        "Metric-Lines.PP.SharpSharp": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Undef": {
+            "_active": true
+        },
+        "Metric-Lines.PP.Warning": {
+            "_active": true
+        },
+        "Metric-Lines.Preproc": {
+            "_active": true
+        },
+        "Metric-Lines.Routine.Code": {
+            "_active": true
+        },
+        "Metric-Lines.Routine.Comment": {
+            "_active": true
+        },
+        "Metric-Lines.Routine.CommentRatio": {
+            "_active": true
+        },
+        "Metric-Lines.Routine.CommentRatio.LOCQualified": {
+            "_active": true
+        },
+        "Metric-Lines.Routine.LOC": {
+            "_active": true
+        },
+        "Metric-LogNPathCeiling": {
+            "_active": true
+        },
+        "Metric-LogNPathFloor": {
+            "_active": true
+        },
+        "Metric-MIPerRoutine": {
+            "_active": true
+        },
+        "Metric-MaximumExtendedNesting": {
+            "_active": true
+        },
+        "Metric-MaximumNesting": {
+            "_active": true
+        },
+        "Metric-McCabeComplexity": {
+            "_active": true
+        },
+        "Metric-NPath": {
+            "_active": true
+        },
+        "Metric-NumberOfCalledRoutines": {
+            "_active": true
+        },
+        "Metric-NumberOfCallingRoutines": {
+            "_active": true
+        },
+        "Metric-NumberOfGotos": {
+            "_active": true
+        },
+        "Metric-NumberOfInvocations": {
+            "_active": true
+        },
+        "Metric-NumberOfParameters": {
+            "_active": true
+        },
+        "Metric-NumberOfReturns": {
+            "_active": true
+        },
+        "Metric-NumberOfSCCs": {
+            "_active": true
+        },
+        "Metric-NumberOfStatements": {
+            "_active": true
+        },
+        "Metric-OO.CBO": {
+            "_active": true
+        },
+        "Metric-OO.CBOa": {
+            "_active": true
+        },
+        "Metric-OO.CBOs": {
+            "_active": true
+        },
+        "Metric-OO.DAC": {
+            "_active": true
+        },
+        "Metric-OO.DIT": {
+            "_active": true
+        },
+        "Metric-OO.LCOM": {
+            "_active": true
+        },
+        "Metric-OO.LCOMs": {
+            "_active": true
+        },
+        "Metric-OO.NIVOC": {
+            "_active": true
+        },
+        "Metric-OO.NOA": {
+            "_active": true
+        },
+        "Metric-OO.NOCC": {
+            "_active": true
+        },
+        "Metric-OO.NOFA": {
+            "_active": true
+        },
+        "Metric-OO.NOMA": {
+            "_active": true
+        },
+        "Metric-OO.NOMO": {
+            "_active": true
+        },
+        "Metric-OO.NOPC": {
+            "_active": true
+        },
+        "Metric-OO.RFC": {
+            "_active": true
+        },
+        "Metric-OO.WMC.McCabeComplexity": {
+            "_active": true
+        },
+        "Metric-OO.WMC.One": {
+            "_active": true
+        },
+        "Metric-SwitchComplexity": {
+            "_active": true
+        },
+        "Metric-Template": {
+            "_active": false
+        },
+        "Metric-TokenFileMetric.Check": {
+            "_active": true
+        },
+        "Metric-TokenFileMetric.Debug": {
+            "_active": true
+        },
+        "Metric-TokenFileMetric.Fixme": {
+            "_active": true
+        },
+        "Metric-TokenFileMetric.Hack": {
+            "_active": true
+        },
+        "Metric-TokenFileMetric.Todo": {
+            "_active": true
+        },
+        "Metric-TokenFileMetric.XXX": {
+            "_active": true
+        },
+        "Metric-TokenMetric.Check": {
+            "_active": true
+        },
+        "Metric-TokenMetric.Debug": {
+            "_active": true
+        },
+        "Metric-TokenMetric.Fixme": {
+            "_active": true
+        },
+        "Metric-TokenMetric.Hack": {
+            "_active": true
+        },
+        "Metric-TokenMetric.Todo": {
+            "_active": true
+        },
+        "Metric-TokenMetric.XXX": {
+            "_active": true
+        },
+        "MisraC++-0.1.1": {
+            "_active": true
+        },
+        "MisraC++-0.1.10": {
+            "_active": true
+        },
+        "MisraC++-0.1.11": {
+            "_active": true
+        },
+        "MisraC++-0.1.12": {
+            "_active": true
+        },
+        "MisraC++-0.1.2": {
+            "_active": true
+        },
+        "MisraC++-0.1.3": {
+            "_active": true
+        },
+        "MisraC++-0.1.4": {
+            "_active": true
+        },
+        "MisraC++-0.1.5": {
+            "_active": true
+        },
+        "MisraC++-0.1.6": {
+            "_active": true
+        },
+        "MisraC++-0.1.7": {
+            "_active": true
+        },
+        "MisraC++-0.1.8": {
+            "_active": true
+        },
+        "MisraC++-0.1.9": {
+            "_active": true
+        },
+        "MisraC++-0.2.1": {
+            "_active": true
+        },
+        "MisraC++-0.3.1": {
+            "_active": true
+        },
+        "MisraC++-0.3.2": {
+            "_active": true
+        },
+        "MisraC++-0.4.2": {
+            "_active": true
+        },
+        "MisraC++-1.0.1": {
+            "_active": true
+        },
+        "MisraC++-10.1.1": {
+            "_active": true
+        },
+        "MisraC++-10.1.2": {
+            "_active": true
+        },
+        "MisraC++-10.1.3": {
+            "_active": true
+        },
+        "MisraC++-10.2.1": {
+            "_active": true
+        },
+        "MisraC++-10.3.1": {
+            "_active": true
+        },
+        "MisraC++-10.3.2": {
+            "_active": true
+        },
+        "MisraC++-10.3.3": {
+            "_active": true
+        },
+        "MisraC++-11.0.1": {
+            "_active": true
+        },
+        "MisraC++-12.1.1": {
+            "_active": true
+        },
+        "MisraC++-12.1.2": {
+            "_active": true
+        },
+        "MisraC++-12.1.3": {
+            "_active": true
+        },
+        "MisraC++-12.8.1": {
+            "_active": true
+        },
+        "MisraC++-12.8.2": {
+            "_active": true
+        },
+        "MisraC++-14.5.1": {
+            "_active": true
+        },
+        "MisraC++-14.5.2": {
+            "_active": true
+        },
+        "MisraC++-14.5.3": {
+            "_active": true
+        },
+        "MisraC++-14.6.1": {
+            "_active": true
+        },
+        "MisraC++-14.6.2": {
+            "_active": true
+        },
+        "MisraC++-14.7.1": {
+            "_active": true
+        },
+        "MisraC++-14.7.2": {
+            "_active": true
+        },
+        "MisraC++-14.7.3": {
+            "_active": true
+        },
+        "MisraC++-14.8.1": {
+            "_active": true
+        },
+        "MisraC++-14.8.2": {
+            "_active": true
+        },
+        "MisraC++-15.0.1": {
+            "_active": true
+        },
+        "MisraC++-15.0.2": {
+            "_active": true
+        },
+        "MisraC++-15.0.3": {
+            "_active": true
+        },
+        "MisraC++-15.1.1": {
+            "_active": true
+        },
+        "MisraC++-15.1.2": {
+            "_active": true
+        },
+        "MisraC++-15.1.3": {
+            "_active": true
+        },
+        "MisraC++-15.3.1": {
+            "_active": true
+        },
+        "MisraC++-15.3.2": {
+            "_active": true
+        },
+        "MisraC++-15.3.3": {
+            "_active": true
+        },
+        "MisraC++-15.3.4": {
+            "_active": true
+        },
+        "MisraC++-15.3.5": {
+            "_active": true
+        },
+        "MisraC++-15.3.6": {
+            "_active": true
+        },
+        "MisraC++-15.3.7": {
+            "_active": true
+        },
+        "MisraC++-15.4.1": {
+            "_active": true
+        },
+        "MisraC++-15.5.1": {
+            "_active": true
+        },
+        "MisraC++-15.5.2": {
+            "_active": true
+        },
+        "MisraC++-15.5.3": {
+            "_active": true
+        },
+        "MisraC++-16.0.1": {
+            "_active": true
+        },
+        "MisraC++-16.0.2": {
+            "_active": true
+        },
+        "MisraC++-16.0.3": {
+            "_active": true
+        },
+        "MisraC++-16.0.4": {
+            "_active": true
+        },
+        "MisraC++-16.0.5": {
+            "_active": true
+        },
+        "MisraC++-16.0.6": {
+            "_active": true
+        },
+        "MisraC++-16.0.7": {
+            "_active": true
+        },
+        "MisraC++-16.0.8": {
+            "_active": true
+        },
+        "MisraC++-16.1.1": {
+            "_active": true
+        },
+        "MisraC++-16.1.2": {
+            "_active": true
+        },
+        "MisraC++-16.2.1": {
+            "_active": true
+        },
+        "MisraC++-16.2.2": {
+            "_active": true
+        },
+        "MisraC++-16.2.3": {
+            "_active": true
+        },
+        "MisraC++-16.2.4": {
+            "_active": true
+        },
+        "MisraC++-16.2.5": {
+            "_active": true
+        },
+        "MisraC++-16.2.6": {
+            "_active": true
+        },
+        "MisraC++-16.3.1": {
+            "_active": true
+        },
+        "MisraC++-16.3.2": {
+            "_active": true
+        },
+        "MisraC++-16.6.1": {
+            "_active": true
+        },
+        "MisraC++-17.0.1": {
+            "_active": true
+        },
+        "MisraC++-17.0.2": {
+            "_active": true
+        },
+        "MisraC++-17.0.3": {
+            "_active": true
+        },
+        "MisraC++-17.0.5": {
+            "_active": true
+        },
+        "MisraC++-18.0.1": {
+            "_active": true
+        },
+        "MisraC++-18.0.2": {
+            "_active": true
+        },
+        "MisraC++-18.0.3": {
+            "_active": true
+        },
+        "MisraC++-18.0.4": {
+            "_active": true
+        },
+        "MisraC++-18.0.5": {
+            "_active": true
+        },
+        "MisraC++-18.2.1": {
+            "_active": true
+        },
+        "MisraC++-18.4.1": {
+            "_active": true
+        },
+        "MisraC++-18.7.1": {
+            "_active": true
+        },
+        "MisraC++-19.3.1": {
+            "_active": true
+        },
+        "MisraC++-2.10.1": {
+            "_active": true
+        },
+        "MisraC++-2.10.2": {
+            "_active": true
+        },
+        "MisraC++-2.10.3": {
+            "_active": true
+        },
+        "MisraC++-2.10.4": {
+            "_active": true
+        },
+        "MisraC++-2.10.5": {
+            "_active": true
+        },
+        "MisraC++-2.10.6": {
+            "_active": true
+        },
+        "MisraC++-2.13.1": {
+            "_active": true
+        },
+        "MisraC++-2.13.2": {
+            "_active": true
+        },
+        "MisraC++-2.13.3": {
+            "_active": true
+        },
+        "MisraC++-2.13.4": {
+            "_active": true
+        },
+        "MisraC++-2.13.5": {
+            "_active": true
+        },
+        "MisraC++-2.3.1": {
+            "_active": true
+        },
+        "MisraC++-2.5.1": {
+            "_active": true
+        },
+        "MisraC++-2.7.1": {
+            "_active": true
+        },
+        "MisraC++-2.7.2": {
+            "_active": true
+        },
+        "MisraC++-2.7.3": {
+            "_active": true
+        },
+        "MisraC++-27.0.1": {
+            "_active": true
+        },
+        "MisraC++-3.1.1": {
+            "_active": true
+        },
+        "MisraC++-3.1.2": {
+            "_active": true
+        },
+        "MisraC++-3.1.3": {
+            "_active": true
+        },
+        "MisraC++-3.2.1": {
+            "_active": true,
+            "check_parameter_types": true
+        },
+        "MisraC++-3.2.2": {
+            "_active": true
+        },
+        "MisraC++-3.2.3": {
+            "_active": true
+        },
+        "MisraC++-3.2.4": {
+            "_active": true
+        },
+        "MisraC++-3.3.1": {
+            "_active": true
+        },
+        "MisraC++-3.3.2": {
+            "_active": true
+        },
+        "MisraC++-3.4.1": {
+            "_active": true
+        },
+        "MisraC++-3.9.1": {
+            "_active": true
+        },
+        "MisraC++-3.9.2": {
+            "_active": true
+        },
+        "MisraC++-3.9.3": {
+            "_active": true
+        },
+        "MisraC++-4.10.1": {
+            "_active": true
+        },
+        "MisraC++-4.10.2": {
+            "_active": true
+        },
+        "MisraC++-4.5.1": {
+            "_active": true
+        },
+        "MisraC++-4.5.2": {
+            "_active": true
+        },
+        "MisraC++-4.5.3": {
+            "_active": true
+        },
+        "MisraC++-5.0.1": {
+            "_active": true
+        },
+        "MisraC++-5.0.10": {
+            "_active": true
+        },
+        "MisraC++-5.0.11": {
+            "_active": true
+        },
+        "MisraC++-5.0.12": {
+            "_active": true
+        },
+        "MisraC++-5.0.13": {
+            "_active": true
+        },
+        "MisraC++-5.0.14": {
+            "_active": true
+        },
+        "MisraC++-5.0.15": {
+            "_active": true
+        },
+        "MisraC++-5.0.16": {
+            "_active": true
+        },
+        "MisraC++-5.0.17": {
+            "_active": true
+        },
+        "MisraC++-5.0.18": {
+            "_active": true
+        },
+        "MisraC++-5.0.19": {
+            "_active": true
+        },
+        "MisraC++-5.0.2": {
+            "_active": true
+        },
+        "MisraC++-5.0.20": {
+            "_active": true
+        },
+        "MisraC++-5.0.21": {
+            "_active": true
+        },
+        "MisraC++-5.0.3": {
+            "_active": true
+        },
+        "MisraC++-5.0.4": {
+            "_active": true
+        },
+        "MisraC++-5.0.5": {
+            "_active": true
+        },
+        "MisraC++-5.0.6": {
+            "_active": true
+        },
+        "MisraC++-5.0.7": {
+            "_active": true
+        },
+        "MisraC++-5.0.8": {
+            "_active": true
+        },
+        "MisraC++-5.0.9": {
+            "_active": true
+        },
+        "MisraC++-5.14.1": {
+            "_active": true
+        },
+        "MisraC++-5.17.1": {
+            "_active": true
+        },
+        "MisraC++-5.18.1": {
+            "_active": true
+        },
+        "MisraC++-5.19.1": {
+            "_active": true
+        },
+        "MisraC++-5.2.1": {
+            "_active": true
+        },
+        "MisraC++-5.2.10": {
+            "_active": true
+        },
+        "MisraC++-5.2.11": {
+            "_active": true
+        },
+        "MisraC++-5.2.12": {
+            "_active": true
+        },
+        "MisraC++-5.2.2": {
+            "_active": true
+        },
+        "MisraC++-5.2.3": {
+            "_active": true
+        },
+        "MisraC++-5.2.4": {
+            "_active": true
+        },
+        "MisraC++-5.2.5": {
+            "_active": true
+        },
+        "MisraC++-5.2.6": {
+            "_active": true
+        },
+        "MisraC++-5.2.7": {
+            "_active": true
+        },
+        "MisraC++-5.2.8": {
+            "_active": true
+        },
+        "MisraC++-5.2.9": {
+            "_active": true
+        },
+        "MisraC++-5.3.1": {
+            "_active": true
+        },
+        "MisraC++-5.3.2": {
+            "_active": true
+        },
+        "MisraC++-5.3.3": {
+            "_active": true
+        },
+        "MisraC++-5.3.4": {
+            "_active": true
+        },
+        "MisraC++-5.8.1": {
+            "_active": true
+        },
+        "MisraC++-6.2.1": {
+            "_active": true
+        },
+        "MisraC++-6.2.2": {
+            "_active": true
+        },
+        "MisraC++-6.2.3": {
+            "_active": true
+        },
+        "MisraC++-6.3.1": {
+            "_active": true
+        },
+        "MisraC++-6.4.1": {
+            "_active": true
+        },
+        "MisraC++-6.4.2": {
+            "_active": true
+        },
+        "MisraC++-6.4.3": {
+            "_active": true
+        },
+        "MisraC++-6.4.4": {
+            "_active": true
+        },
+        "MisraC++-6.4.5": {
+            "_active": true
+        },
+        "MisraC++-6.4.6": {
+            "_active": true
+        },
+        "MisraC++-6.4.7": {
+            "_active": true
+        },
+        "MisraC++-6.4.8": {
+            "_active": true
+        },
+        "MisraC++-6.5.1": {
+            "_active": true
+        },
+        "MisraC++-6.5.2": {
+            "_active": true
+        },
+        "MisraC++-6.5.3": {
+            "_active": true
+        },
+        "MisraC++-6.5.4": {
+            "_active": true
+        },
+        "MisraC++-6.5.5": {
+            "_active": true
+        },
+        "MisraC++-6.5.6": {
+            "_active": true
+        },
+        "MisraC++-6.6.1": {
+            "_active": true
+        },
+        "MisraC++-6.6.2": {
+            "_active": true
+        },
+        "MisraC++-6.6.3": {
+            "_active": true
+        },
+        "MisraC++-6.6.4": {
+            "_active": true
+        },
+        "MisraC++-6.6.5": {
+            "_active": true
+        },
+        "MisraC++-7.1.1": {
+            "_active": true
+        },
+        "MisraC++-7.1.2": {
+            "_active": true
+        },
+        "MisraC++-7.2.1": {
+            "_active": true
+        },
+        "MisraC++-7.3.1": {
+            "_active": true
+        },
+        "MisraC++-7.3.2": {
+            "_active": true
+        },
+        "MisraC++-7.3.3": {
+            "_active": true
+        },
+        "MisraC++-7.3.4": {
+            "_active": true
+        },
+        "MisraC++-7.3.5": {
+            "_active": true
+        },
+        "MisraC++-7.3.6": {
+            "_active": true
+        },
+        "MisraC++-7.4.1": {
+            "_active": true
+        },
+        "MisraC++-7.4.2": {
+            "_active": true
+        },
+        "MisraC++-7.4.3": {
+            "_active": true
+        },
+        "MisraC++-7.5.1": {
+            "_active": true
+        },
+        "MisraC++-7.5.2": {
+            "_active": true
+        },
+        "MisraC++-7.5.3": {
+            "_active": true
+        },
+        "MisraC++-7.5.4": {
+            "_active": true
+        },
+        "MisraC++-8.0.1": {
+            "_active": true
+        },
+        "MisraC++-8.3.1": {
+            "_active": true
+        },
+        "MisraC++-8.4.1": {
+            "_active": true
+        },
+        "MisraC++-8.4.2": {
+            "_active": true
+        },
+        "MisraC++-8.4.3": {
+            "_active": true
+        },
+        "MisraC++-8.4.4": {
+            "_active": true
+        },
+        "MisraC++-8.5.1": {
+            "_active": true,
+            "report_missing_base_constructors": true
+        },
+        "MisraC++-8.5.2": {
+            "_active": true
+        },
+        "MisraC++-8.5.3": {
+            "_active": true
+        },
+        "MisraC++-9.3.1": {
+            "_active": true
+        },
+        "MisraC++-9.3.2": {
+            "_active": true
+        },
+        "MisraC++-9.3.3": {
+            "_active": true
+        },
+        "MisraC++-9.5.1": {
+            "_active": true
+        },
+        "MisraC++-9.6.1": {
+            "_active": true
+        },
+        "MisraC++-9.6.2": {
+            "_active": true
+        },
+        "MisraC++-9.6.3": {
+            "_active": true
+        },
+        "MisraC++-9.6.4": {
+            "_active": true
+        },
+        "MisraC2012-1.1": {
+            "_active": false
+        },
+        "MisraC2012-1.2": {
+            "_active": false
+        },
+        "MisraC2012-1.3": {
+            "_active": false
+        },
+        "MisraC2012-1.4": {
+            "_active": false
+        },
+        "MisraC2012-10.1": {
+            "_active": false
+        },
+        "MisraC2012-10.2": {
+            "_active": false
+        },
+        "MisraC2012-10.3": {
+            "_active": false
+        },
+        "MisraC2012-10.4": {
+            "_active": false
+        },
+        "MisraC2012-10.5": {
+            "_active": false
+        },
+        "MisraC2012-10.6": {
+            "_active": false
+        },
+        "MisraC2012-10.7": {
+            "_active": false
+        },
+        "MisraC2012-10.8": {
+            "_active": false
+        },
+        "MisraC2012-11.1": {
+            "_active": false
+        },
+        "MisraC2012-11.2": {
+            "_active": false
+        },
+        "MisraC2012-11.3": {
+            "_active": false
+        },
+        "MisraC2012-11.4": {
+            "_active": false
+        },
+        "MisraC2012-11.5": {
+            "_active": false
+        },
+        "MisraC2012-11.6": {
+            "_active": false
+        },
+        "MisraC2012-11.7": {
+            "_active": false
+        },
+        "MisraC2012-11.8": {
+            "_active": false
+        },
+        "MisraC2012-11.9": {
+            "_active": false
+        },
+        "MisraC2012-12.1": {
+            "_active": false
+        },
+        "MisraC2012-12.2": {
+            "_active": false
+        },
+        "MisraC2012-12.3": {
+            "_active": false
+        },
+        "MisraC2012-12.4": {
+            "_active": false
+        },
+        "MisraC2012-12.5": {
+            "_active": false
+        },
+        "MisraC2012-13.1": {
+            "_active": false
+        },
+        "MisraC2012-13.2": {
+            "_active": false
+        },
+        "MisraC2012-13.3": {
+            "_active": false
+        },
+        "MisraC2012-13.4": {
+            "_active": false
+        },
+        "MisraC2012-13.5": {
+            "_active": false
+        },
+        "MisraC2012-13.6": {
+            "_active": false
+        },
+        "MisraC2012-14.1": {
+            "_active": false
+        },
+        "MisraC2012-14.2": {
+            "_active": false
+        },
+        "MisraC2012-14.3": {
+            "_active": false
+        },
+        "MisraC2012-14.4": {
+            "_active": false
+        },
+        "MisraC2012-15.1": {
+            "_active": false
+        },
+        "MisraC2012-15.2": {
+            "_active": false
+        },
+        "MisraC2012-15.3": {
+            "_active": false
+        },
+        "MisraC2012-15.4": {
+            "_active": false
+        },
+        "MisraC2012-15.5": {
+            "_active": false
+        },
+        "MisraC2012-15.6": {
+            "_active": false
+        },
+        "MisraC2012-15.7": {
+            "_active": false
+        },
+        "MisraC2012-16.1": {
+            "_active": false
+        },
+        "MisraC2012-16.2": {
+            "_active": false
+        },
+        "MisraC2012-16.3": {
+            "_active": false
+        },
+        "MisraC2012-16.4": {
+            "_active": false
+        },
+        "MisraC2012-16.5": {
+            "_active": false
+        },
+        "MisraC2012-16.6": {
+            "_active": false
+        },
+        "MisraC2012-16.7": {
+            "_active": false
+        },
+        "MisraC2012-17.1": {
+            "_active": false
+        },
+        "MisraC2012-17.2": {
+            "_active": false
+        },
+        "MisraC2012-17.3": {
+            "_active": false
+        },
+        "MisraC2012-17.4": {
+            "_active": false
+        },
+        "MisraC2012-17.5": {
+            "_active": false
+        },
+        "MisraC2012-17.6": {
+            "_active": false
+        },
+        "MisraC2012-17.7": {
+            "_active": false
+        },
+        "MisraC2012-17.8": {
+            "_active": false
+        },
+        "MisraC2012-18.1": {
+            "_active": false
+        },
+        "MisraC2012-18.2": {
+            "_active": false
+        },
+        "MisraC2012-18.3": {
+            "_active": false
+        },
+        "MisraC2012-18.4": {
+            "_active": false
+        },
+        "MisraC2012-18.5": {
+            "_active": false
+        },
+        "MisraC2012-18.6": {
+            "_active": false
+        },
+        "MisraC2012-18.7": {
+            "_active": false
+        },
+        "MisraC2012-18.8": {
+            "_active": false
+        },
+        "MisraC2012-19.1": {
+            "_active": false
+        },
+        "MisraC2012-19.2": {
+            "_active": false
+        },
+        "MisraC2012-2.1": {
+            "_active": false
+        },
+        "MisraC2012-2.2": {
+            "_active": false
+        },
+        "MisraC2012-2.3": {
+            "_active": false
+        },
+        "MisraC2012-2.4": {
+            "_active": false
+        },
+        "MisraC2012-2.5": {
+            "_active": false
+        },
+        "MisraC2012-2.6": {
+            "_active": false
+        },
+        "MisraC2012-2.7": {
+            "_active": false
+        },
+        "MisraC2012-20.1": {
+            "_active": false
+        },
+        "MisraC2012-20.10": {
+            "_active": false
+        },
+        "MisraC2012-20.11": {
+            "_active": false
+        },
+        "MisraC2012-20.12": {
+            "_active": false
+        },
+        "MisraC2012-20.13": {
+            "_active": false
+        },
+        "MisraC2012-20.14": {
+            "_active": false
+        },
+        "MisraC2012-20.2": {
+            "_active": false
+        },
+        "MisraC2012-20.3": {
+            "_active": false
+        },
+        "MisraC2012-20.4": {
+            "_active": false
+        },
+        "MisraC2012-20.5": {
+            "_active": false
+        },
+        "MisraC2012-20.6": {
+            "_active": false
+        },
+        "MisraC2012-20.7": {
+            "_active": false
+        },
+        "MisraC2012-20.8": {
+            "_active": false
+        },
+        "MisraC2012-20.9": {
+            "_active": false
+        },
+        "MisraC2012-21.1": {
+            "_active": false
+        },
+        "MisraC2012-21.10": {
+            "_active": false
+        },
+        "MisraC2012-21.11": {
+            "_active": false
+        },
+        "MisraC2012-21.12": {
+            "_active": false
+        },
+        "MisraC2012-21.13": {
+            "_active": false
+        },
+        "MisraC2012-21.14": {
+            "_active": false
+        },
+        "MisraC2012-21.15": {
+            "_active": false
+        },
+        "MisraC2012-21.16": {
+            "_active": false
+        },
+        "MisraC2012-21.17": {
+            "_active": false
+        },
+        "MisraC2012-21.18": {
+            "_active": false
+        },
+        "MisraC2012-21.19": {
+            "_active": false
+        },
+        "MisraC2012-21.2": {
+            "_active": false
+        },
+        "MisraC2012-21.20": {
+            "_active": false
+        },
+        "MisraC2012-21.21": {
+            "_active": false
+        },
+        "MisraC2012-21.3": {
+            "_active": false
+        },
+        "MisraC2012-21.4": {
+            "_active": false
+        },
+        "MisraC2012-21.5": {
+            "_active": false
+        },
+        "MisraC2012-21.6": {
+            "_active": false
+        },
+        "MisraC2012-21.7": {
+            "_active": false
+        },
+        "MisraC2012-21.8": {
+            "_active": false
+        },
+        "MisraC2012-21.9": {
+            "_active": false
+        },
+        "MisraC2012-22.1": {
+            "_active": false
+        },
+        "MisraC2012-22.10": {
+            "_active": false
+        },
+        "MisraC2012-22.2": {
+            "_active": false
+        },
+        "MisraC2012-22.3": {
+            "_active": false
+        },
+        "MisraC2012-22.4": {
+            "_active": false
+        },
+        "MisraC2012-22.5": {
+            "_active": false
+        },
+        "MisraC2012-22.6": {
+            "_active": false
+        },
+        "MisraC2012-22.7": {
+            "_active": false
+        },
+        "MisraC2012-22.8": {
+            "_active": false
+        },
+        "MisraC2012-22.9": {
+            "_active": false
+        },
+        "MisraC2012-3.1": {
+            "_active": false
+        },
+        "MisraC2012-3.2": {
+            "_active": false
+        },
+        "MisraC2012-4.1": {
+            "_active": false
+        },
+        "MisraC2012-4.2": {
+            "_active": false
+        },
+        "MisraC2012-5.1": {
+            "_active": false
+        },
+        "MisraC2012-5.2": {
+            "_active": false
+        },
+        "MisraC2012-5.3": {
+            "_active": false
+        },
+        "MisraC2012-5.4": {
+            "_active": false
+        },
+        "MisraC2012-5.5": {
+            "_active": false
+        },
+        "MisraC2012-5.6": {
+            "_active": false
+        },
+        "MisraC2012-5.7": {
+            "_active": false
+        },
+        "MisraC2012-5.8": {
+            "_active": false
+        },
+        "MisraC2012-5.9": {
+            "_active": false
+        },
+        "MisraC2012-6.1": {
+            "_active": false
+        },
+        "MisraC2012-6.2": {
+            "_active": false
+        },
+        "MisraC2012-7.1": {
+            "_active": false
+        },
+        "MisraC2012-7.2": {
+            "_active": false
+        },
+        "MisraC2012-7.3": {
+            "_active": false
+        },
+        "MisraC2012-7.4": {
+            "_active": false
+        },
+        "MisraC2012-8.1": {
+            "_active": false
+        },
+        "MisraC2012-8.10": {
+            "_active": false
+        },
+        "MisraC2012-8.11": {
+            "_active": false
+        },
+        "MisraC2012-8.12": {
+            "_active": false
+        },
+        "MisraC2012-8.13": {
+            "_active": false
+        },
+        "MisraC2012-8.14": {
+            "_active": false
+        },
+        "MisraC2012-8.2": {
+            "_active": false
+        },
+        "MisraC2012-8.3": {
+            "_active": false
+        },
+        "MisraC2012-8.4": {
+            "_active": false
+        },
+        "MisraC2012-8.5": {
+            "_active": false
+        },
+        "MisraC2012-8.6": {
+            "_active": false
+        },
+        "MisraC2012-8.7": {
+            "_active": false
+        },
+        "MisraC2012-8.8": {
+            "_active": false
+        },
+        "MisraC2012-8.9": {
+            "_active": false
+        },
+        "MisraC2012-9.1": {
+            "_active": false
+        },
+        "MisraC2012-9.2": {
+            "_active": false
+        },
+        "MisraC2012-9.3": {
+            "_active": false
+        },
+        "MisraC2012-9.4": {
+            "_active": false
+        },
+        "MisraC2012-9.5": {
+            "_active": false
+        },
+        "MisraC2012Directive-1.1": {
+            "_active": false
+        },
+        "MisraC2012Directive-2.1": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.1": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.10": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.11": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.12": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.13": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.14": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.2": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.3": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.4": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.5": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.6": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.7": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.8": {
+            "_active": false
+        },
+        "MisraC2012Directive-4.9": {
+            "_active": false
+        },
+        "Parallelism-IncorrectCriticalRegion": {
+            "_active": false
+        },
+        "Parallelism-UnsafeVarAccess": {
+            "_active": false
+        },
+        "SaveRFG": {
+            "_active": true,
+            "rfg_file": "/builds/cc/iceoryx-pipeline/CI-Pipeline/artifacts/axivion/iceoryx.rfg"
+        },
+        "StaticSemanticAnalysis": {
+            "_active": true
+        }
+    },
+    "Project": {
+        "Project-GlobalOptions": {
+            "ci_mode": {
+                "clean_after": false,
+                "clean_before": false
+            },
+            "directory": "/builds/cc/iceoryx-pipeline/iceoryx",
+            "ir": "/builds/cc/iceoryx-pipeline/CI-Pipeline/artifacts/axivion/iceoryx.ir",
+            "name": "iceoryx"
+        }
+    },
+    "Results": {
+        "CSVReport": {
+            "_active": false,
+            "filename": ""
+        },
+        "Dashboard": {
+            "dashboard_url": ""
+        },
+        "Database": {
+            "ci_mode": {
+                "directory": "/builds/cc/iceoryx-pipeline/CI-Pipeline/artifacts/axivion"
+            }
+        },
+        "JSONReport": {
+            "_active": false,
+            "filename": ""
+        }
+    },
+    "_Format": "1.0",
+    "_Version": "7.1.3",
+    "_VersionNum": [
+        7,
+        1,
+        3,
+        6163
+    ]
+}
