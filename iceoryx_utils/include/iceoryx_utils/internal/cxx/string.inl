@@ -308,13 +308,7 @@ inline char& string<Capacity>::at(const uint64_t pos) noexcept
 template <uint64_t Capacity>
 inline const char& string<Capacity>::at(const uint64_t pos) const noexcept
 {
-    if (pos + 1U > size())
-    {
-        std::cerr << "Out of bounds access! Current size of the cxx::string is " << size() << " but given position is "
-                  << pos << "." << std::endl;
-        // alternative to termination?
-        std::terminate();
-    }
+    Expects(pos + 1U <= size() && "Out of bounds access!");
     return m_rawstring[pos];
 }
 

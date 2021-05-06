@@ -2149,6 +2149,7 @@ TEST(String100, FindLastOfForNotIncludedSTDStringFails)
     EXPECT_THAT(res.has_value(), Eq(false));
 }
 
+/// @note char& at(const uint64_t pos) noexcept
 TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaAtFails)
 {
     EXPECT_DEATH(this->testSubject.at(0U), ".");
@@ -2183,25 +2184,62 @@ TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaAtSu
     EXPECT_THAT(this->testSubject.c_str(), StrEq(testSTDString));
 }
 
-TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaSubscriptFails)
+/// @note const char& at(const uint64_t pos) const noexcept
+TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaConstAtFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut;
+    EXPECT_DEATH(sut.at(0U), ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaConstAtFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut;
+    EXPECT_DEATH(sut.at(STRINGCAP), ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaConstAtReturnsCorrectCharacter)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut("M");
+    EXPECT_THAT(sut.at(0U), Eq('M'));
+}
+
+TYPED_TEST(stringTyped_test, AccessMaxPositionOfNotEmptyStringViaConstAtSucceeds)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+
+    std::string testSTDString(STRINGCAP, 'M');
+    const string<STRINGCAP> sut(TruncateToCapacity, testSTDString);
+
+    EXPECT_THAT(sut.at(STRINGCAP - 1), Eq('M'));
+}
+
+/// @note char& operator[](const uint64_t pos) noexcept
+TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaSubscriptOperatorFails)
 {
     EXPECT_DEATH(this->testSubject[0U], ".");
 }
 
-TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaSubscriptFails)
+TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaSubscriptOperatorFails)
 {
     using MyString = typename TestFixture::stringType;
     constexpr auto STRINGCAP = MyString().capacity();
     EXPECT_DEATH(this->testSubject[STRINGCAP], ".");
 }
 
-TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaSubscriptReturnsCorrectCharacter)
+TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaSubscriptOperatorReturnsCorrectCharacter)
 {
     this->testSubject = "L";
     EXPECT_THAT(this->testSubject[0U], Eq('L'));
 }
 
-TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaSubscriptSucceeds)
+TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaSubscriptOperatorSucceeds)
 {
     constexpr char START_CHARACTER = 'F';
     constexpr char NEW_CHARACTER = 'S';
@@ -2215,6 +2253,42 @@ TYPED_TEST(stringTyped_test, AccessAndAssignToMaxPositionOfNotEmptyStringViaSubs
     this->testSubject[STRINGCAP - 1] = NEW_CHARACTER;
     testSTDString[STRINGCAP - 1] = NEW_CHARACTER;
     EXPECT_THAT(this->testSubject.c_str(), StrEq(testSTDString));
+}
+
+/// @note const char& operator[](const uint64_t pos) const noexcept
+TYPED_TEST(stringTyped_test, AccessPositionOfEmptyStringViaConstSubscriptOperatorFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut;
+    EXPECT_DEATH(sut[0U], ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessPositionOutOfBoundsViaConstSubscriptOperatorFails)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut;
+    EXPECT_DEATH(sut[STRINGCAP], ".");
+}
+
+TYPED_TEST(stringTyped_test, AccessFirstPositionOfNotEmptyStringViaConstSubscriptOperatorReturnsCorrectCharacter)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+    const string<STRINGCAP> sut("L");
+    EXPECT_THAT(sut[0U], Eq('L'));
+}
+
+TYPED_TEST(stringTyped_test, AccessMaxPositionOfNotEmptyStringViaConstSubscriptOperatorSucceeds)
+{
+    using MyString = typename TestFixture::stringType;
+    constexpr auto STRINGCAP = MyString().capacity();
+
+    std::string testSTDString(STRINGCAP, 'L');
+    const string<STRINGCAP> sut(TruncateToCapacity, testSTDString);
+
+    EXPECT_THAT(sut[STRINGCAP - 1], Eq('L'));
 }
 } // namespace
 

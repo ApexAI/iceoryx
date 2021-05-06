@@ -17,6 +17,7 @@
 #ifndef IOX_UTILS_CXX_STRING_HPP
 #define IOX_UTILS_CXX_STRING_HPP
 
+#include "iceoryx_utils/cxx/helplets.hpp"
 #include "iceoryx_utils/internal/cxx/string_internal.hpp"
 #include "optional.hpp"
 
@@ -513,21 +514,25 @@ class string
     /// @brief returns a reference to the character stored at pos
     /// @param[in] pos position of the character to return
     /// @return reference to the character
+    /// @note out of bounds access leads to program termination
     char& at(const uint64_t pos) noexcept;
 
     /// @brief returns a const reference to the character stored at pos
     /// @param[in] pos position of the character to return
     /// @return const reference to the character
+    /// @note out of bounds access leads to program termination
     const char& at(const uint64_t pos) const noexcept;
 
     /// @brief returns a reference to the character stored at pos
     /// @param[in] pos position of the character to return
     /// @return reference to the character
+    /// @note out of bounds access leads to program termination
     char& operator[](const uint64_t pos) noexcept;
 
     /// @brief returns a const reference to the character stored at pos
     /// @param[in] pos position of the character to return
     /// @return const reference to the character
+    /// @note out of bounds access leads to program termination
     const char& operator[](const uint64_t pos) const noexcept;
 
     template <uint64_t N>
