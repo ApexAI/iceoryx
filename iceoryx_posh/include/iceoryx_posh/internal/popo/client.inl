@@ -21,10 +21,12 @@ namespace iox
 {
 namespace popo
 {
-template <typename Req, typename Res>
-Client<Req, Res>::Client(const capro::ServiceDescription& service) noexcept
+template <typename Req, typename Res, typename Port>
+Client<Req, Res, Port>::Client(const capro::ServiceDescription& service) noexcept
+// : m_port(*iox::runtime::PoshRuntime::getInstance().getMiddlewareClient(service))
 {
     std::cout << "TODO: create client" << std::endl;
+    iox::runtime::PoshRuntime::getInstance().getMiddlewareClient(service);
 }
 
 } // namespace popo

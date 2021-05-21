@@ -598,6 +598,20 @@ popo::ConditionVariableData* PoshRuntime::getMiddlewareConditionVariable() noexc
     return maybeConditionVariable.value();
 }
 
+popo::ClientPortUser::MemberType_t* PoshRuntime::getMiddlewareClient(const capro::ServiceDescription& service,
+                                                                     const PortConfigInfo& portConfigInfo) noexcept
+{
+    std::cout << "TODO: get client port" << std::endl;
+    return nullptr;
+}
+
+popo::ServerPortUser::MemberType_t* PoshRuntime::getMiddlewareServer(const capro::ServiceDescription& service,
+                                                                     const PortConfigInfo& portConfigInfo) noexcept
+{
+    std::cout << "TODO: get server port" << std::endl;
+    return nullptr;
+}
+
 bool PoshRuntime::sendRequestToRouDi(const IpcMessage& msg, IpcMessage& answer) noexcept
 {
     // runtime must be thread safe

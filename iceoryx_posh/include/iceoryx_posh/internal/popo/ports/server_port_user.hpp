@@ -41,7 +41,7 @@ class ServerPortUser : public BasePort
   public:
     using MemberType_t = ServerPortData;
 
-    explicit ServerPortUser(cxx::not_null<MemberType_t* const> serverPortDataPtr) noexcept;
+    explicit ServerPortUser(MemberType_t& serverPortData) noexcept;
 
     ServerPortUser(const ServerPortUser& other) = delete;
     ServerPortUser& operator=(const ServerPortUser&) = delete;

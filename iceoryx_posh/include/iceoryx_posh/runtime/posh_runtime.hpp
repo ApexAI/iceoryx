@@ -24,8 +24,10 @@
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
 #include "iceoryx_posh/internal/popo/building_blocks/condition_variable_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/application_port.hpp"
+#include "iceoryx_posh/internal/popo/ports/client_port_user.hpp"
 #include "iceoryx_posh/internal/popo/ports/interface_port.hpp"
 #include "iceoryx_posh/internal/popo/ports/publisher_port_user.hpp"
+#include "iceoryx_posh/internal/popo/ports/server_port_user.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_user.hpp"
 #include "iceoryx_posh/internal/runtime/ipc_runtime_interface.hpp"
 #include "iceoryx_posh/internal/runtime/node_property.hpp"
@@ -135,6 +137,14 @@ class PoshRuntime
     /// @brief request the RouDi daemon to create a condition variable
     /// @return pointer to a created condition variable data
     popo::ConditionVariableData* getMiddlewareConditionVariable() noexcept;
+
+    popo::ClientPortUser::MemberType_t*
+    getMiddlewareClient(const capro::ServiceDescription& service,
+                        const PortConfigInfo& portConfigInfo = PortConfigInfo()) noexcept;
+
+    popo::ServerPortUser::MemberType_t*
+    getMiddlewareServer(const capro::ServiceDescription& service,
+                        const PortConfigInfo& portConfigInfo = PortConfigInfo()) noexcept;
 
     /// @brief request the RouDi daemon to create a node
     /// @param[in] nodeProperty class which contains all properties which the node should have

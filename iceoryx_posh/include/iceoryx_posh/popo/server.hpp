@@ -18,18 +18,21 @@
 #define IOX_POSH_POPO_SERVER_HPP
 
 #include "iceoryx_posh/capro/service_description.hpp"
+#include "iceoryx_posh/internal/popo/ports/server_port_user.hpp"
+#include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 namespace iox
 {
 namespace popo
 {
-template <typename Req, typename Res>
+template <typename Req, typename Res, typename Port = ServerPortUser>
 class Server
 {
   public:
     Server(const capro::ServiceDescription& service) noexcept;
 
   private:
+    // Port m_port;
 };
 } // namespace popo
 } // namespace iox
