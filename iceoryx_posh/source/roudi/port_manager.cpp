@@ -728,6 +728,26 @@ cxx::expected<runtime::NodeData*, PortPoolError> PortManager::acquireNodeData(co
     return m_portPool->addNodeData(runtimeName, nodeName, 0);
 }
 
+cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+PortManager::acquireClientPortData(const capro::ServiceDescription& service,
+                                   const RuntimeName_t& runtimeName,
+                                   mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
+                                   const PortConfigInfo& portConfigInfo) noexcept
+{
+    std::cout << "TODO: add client port" << std::endl;
+    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+}
+
+cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+PortManager::acquireServerPortData(const capro::ServiceDescription& service,
+                                   const RuntimeName_t& runtimeName,
+                                   mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
+                                   const PortConfigInfo& portConfigInfo) noexcept
+{
+    std::cout << "TODO: add server port" << std::endl;
+    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+}
+
 cxx::expected<popo::ConditionVariableData*, PortPoolError>
 PortManager::acquireConditionVariableData(const RuntimeName_t& runtimeName) noexcept
 {

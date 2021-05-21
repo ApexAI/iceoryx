@@ -570,13 +570,27 @@ void ProcessManager::addClientForProcess(const RuntimeName_t& name,
                 return;
             }
 
-            std::cout << "TODO: acquire client port" << std::endl;
+            m_portManager
+                .acquireClientPortData(service, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
+                .and_then([&](auto& clientPort) {
+                    // send ClientPort to app as a serialized relative pointer
+                    auto offset = rp::BaseRelativePointer::getOffset(m_mgmtSegmentId, clientPort);
 
-            runtime::IpcMessage sendBuffer;
-            sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
-            sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
-            process.sendViaIpcChannel(sendBuffer);
-            LogError() << "Could not create Client for application " << name;
+                    runtime::IpcMessage sendBuffer;
+                    sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::CREATE_CLIENT_ACK)
+                               << cxx::convert::toString(offset) << cxx::convert::toString(m_mgmtSegmentId);
+                    process.sendViaIpcChannel(sendBuffer);
+
+                    LogDebug() << "Created new ClientPort for application " << name;
+                })
+                .or_else([&](auto&) {
+                    runtime::IpcMessage sendBuffer;
+                    sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+                    sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
+                    process.sendViaIpcChannel(sendBuffer);
+
+                    LogError() << "Could not create Client for application " << name;
+                });
         },
         [&]() { LogWarn() << "Unknown application " << name << " requested a ClientPort."; });
 }
@@ -601,13 +615,27 @@ void ProcessManager::addServerForProcess(const RuntimeName_t& name,
                 return;
             }
 
-            std::cout << "TODO: acquire server port" << std::endl;
+            m_portManager
+                .acquireServerPortData(service, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
+                .and_then([&](auto& serverPort) {
+                    // send ServerPort to app as a serialized relative pointer
+                    auto offset = rp::BaseRelativePointer::getOffset(m_mgmtSegmentId, serverPort);
 
-            runtime::IpcMessage sendBuffer;
-            sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
-            sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
-            process.sendViaIpcChannel(sendBuffer);
-            LogError() << "Could not create server for application " << name;
+                    runtime::IpcMessage sendBuffer;
+                    sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::CREATE_SERVER_ACK)
+                               << cxx::convert::toString(offset) << cxx::convert::toString(m_mgmtSegmentId);
+                    process.sendViaIpcChannel(sendBuffer);
+
+                    LogDebug() << "Created new ServerPort for application " << name;
+                })
+                .or_else([&](auto&) {
+                    runtime::IpcMessage sendBuffer;
+                    sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+                    sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
+                    process.sendViaIpcChannel(sendBuffer);
+
+                    LogError() << "Could not create server for application " << name;
+                });
         },
         [&]() { LogWarn() << "Unknown application " << name << " requested a ServerPort."; });
 }
