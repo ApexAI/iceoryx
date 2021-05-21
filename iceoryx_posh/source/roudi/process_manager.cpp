@@ -550,6 +550,68 @@ void ProcessManager::addPublisherForProcess(const RuntimeName_t& name,
         [&]() { LogWarn() << "Unknown application " << name << " requested a PublisherPort."; });
 }
 
+void ProcessManager::addClientForProcess(const RuntimeName_t& name,
+                                         const capro::ServiceDescription& service,
+                                         const PortConfigInfo& portConfigInfo) noexcept
+{
+    searchForProcessAndThen(
+        name,
+        [&](Process& process) { // create a ClientPort
+            auto segmentInfo = m_segmentManager->getSegmentInformationWithWriteAccessForUser(process.getUser());
+
+            if (!segmentInfo.m_memoryManager.has_value())
+            {
+                // Tell the app no writable shared memory segment was found
+                runtime::IpcMessage sendBuffer;
+                sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+                sendBuffer << runtime::IpcMessageErrorTypeToString(
+                    runtime::IpcMessageErrorType::NO_WRITABLE_SHM_SEGMENT);
+                process.sendViaIpcChannel(sendBuffer);
+                return;
+            }
+
+            std::cout << "TODO: acquire client port" << std::endl;
+
+            runtime::IpcMessage sendBuffer;
+            sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+            sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
+            process.sendViaIpcChannel(sendBuffer);
+            LogError() << "Could not create Client for application " << name;
+        },
+        [&]() { LogWarn() << "Unknown application " << name << " requested a ClientPort."; });
+}
+
+void ProcessManager::addServerForProcess(const RuntimeName_t& name,
+                                         const capro::ServiceDescription& service,
+                                         const PortConfigInfo& portConfigInfo) noexcept
+{
+    searchForProcessAndThen(
+        name,
+        [&](Process& process) { // create a ServerPort
+            auto segmentInfo = m_segmentManager->getSegmentInformationWithWriteAccessForUser(process.getUser());
+
+            if (!segmentInfo.m_memoryManager.has_value())
+            {
+                // Tell the app no writable shared memory segment was found
+                runtime::IpcMessage sendBuffer;
+                sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+                sendBuffer << runtime::IpcMessageErrorTypeToString(
+                    runtime::IpcMessageErrorType::NO_WRITABLE_SHM_SEGMENT);
+                process.sendViaIpcChannel(sendBuffer);
+                return;
+            }
+
+            std::cout << "TODO: acquire server port" << std::endl;
+
+            runtime::IpcMessage sendBuffer;
+            sendBuffer << runtime::IpcMessageTypeToString(runtime::IpcMessageType::ERROR);
+            sendBuffer << runtime::IpcMessageErrorTypeToString(runtime::IpcMessageErrorType::OUT_OF_RESOURCES);
+            process.sendViaIpcChannel(sendBuffer);
+            LogError() << "Could not create server for application " << name;
+        },
+        [&]() { LogWarn() << "Unknown application " << name << " requested a ServerPort."; });
+}
+
 void ProcessManager::addConditionVariableForProcess(const RuntimeName_t& runtimeName) noexcept
 {
     searchForProcessAndThen(

@@ -380,6 +380,36 @@ void RouDi::processMessage(const runtime::IpcMessage& message,
         }
         break;
     }
+    case runtime::IpcMessageType::CREATE_CLIENT:
+    {
+        if (message.getNumberOfElements() != 3)
+        {
+            LogError() << "Wrong number of parameters for \"IpcMessageType::CREATE_CLIENT\" from \"" << runtimeName
+                       << "\"received!";
+        }
+        else
+        {
+            capro::ServiceDescription service{cxx::Serialization(message.getElementAtIndex(2))};
+            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(3))};
+            m_prcMgr->addClientForProcess(runtimeName, service, portConfigInfo);
+        }
+        break;
+    }
+    case runtime::IpcMessageType::CREATE_SERVER:
+    {
+        if (message.getNumberOfElements() != 3)
+        {
+            LogError() << "Wrong number of parameters for \"IpcMessageType::CREATE_SERVER\" from \"" << runtimeName
+                       << "\"received!";
+        }
+        else
+        {
+            capro::ServiceDescription service{cxx::Serialization(message.getElementAtIndex(2))};
+            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(3))};
+            m_prcMgr->addServerForProcess(runtimeName, service, portConfigInfo);
+        }
+        break;
+    }
     case runtime::IpcMessageType::FIND_SERVICE:
     {
         if (message.getNumberOfElements() != 3)

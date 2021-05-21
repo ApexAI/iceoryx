@@ -209,6 +209,12 @@ class PoshRuntime
     cxx::expected<popo::ConditionVariableData*, IpcMessageErrorType>
     requestConditionVariableFromRoudi(const IpcMessage& sendBuffer) noexcept;
 
+    cxx::expected<popo::ClientPortUser::MemberType_t*, IpcMessageErrorType>
+    requestClientFromRoudi(const IpcMessage& sendBuffer) noexcept;
+
+    cxx::expected<popo::ServerPortUser::MemberType_t*, IpcMessageErrorType>
+    requestServerFromRoudi(const IpcMessage& sendBuffer) noexcept;
+
     /// @brief checks the given application name for certain constraints like length or if is empty
     const RuntimeName_t& verifyInstanceName(cxx::optional<const RuntimeName_t*> name) noexcept;
 

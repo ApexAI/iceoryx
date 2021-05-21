@@ -126,6 +126,14 @@ class ProcessManager : public ProcessManagerInterface
                                 const popo::PublisherOptions& publisherOptions,
                                 const PortConfigInfo& portConfigInfo = PortConfigInfo()) noexcept;
 
+    void addClientForProcess(const RuntimeName_t& name,
+                             const capro::ServiceDescription& service,
+                             const PortConfigInfo& portConfigInfo) noexcept;
+
+    void addServerForProcess(const RuntimeName_t& name,
+                             const capro::ServiceDescription& service,
+                             const PortConfigInfo& portConfigInfo) noexcept;
+
     void addConditionVariableForProcess(const RuntimeName_t& runtimeName) noexcept;
 
     void initIntrospection(ProcessIntrospectionType* processIntrospection) noexcept;
