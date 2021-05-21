@@ -350,6 +350,16 @@ void PortManager::handleNodes() noexcept
     }
 }
 
+void PortManager::doDiscoveryForClientPort(popo::ClientPortRouDi& clientPort) noexcept
+{
+    std::cout << "TODO: discovery for client ports" << std::endl;
+}
+
+void PortManager::doDiscoveryForServerPort(popo::ServerPortRouDi& serverPort) noexcept
+{
+    std::cout << "TODO: discovery for server ports" << std::endl;
+}
+
 void PortManager::handleConditionVariables() noexcept
 {
     for (auto conditionVariableData : m_portPool->getConditionVariableDataList())
@@ -728,24 +738,38 @@ cxx::expected<runtime::NodeData*, PortPoolError> PortManager::acquireNodeData(co
     return m_portPool->addNodeData(runtimeName, nodeName, 0);
 }
 
-cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
 PortManager::acquireClientPortData(const capro::ServiceDescription& service,
                                    const RuntimeName_t& runtimeName,
                                    mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                                    const PortConfigInfo& portConfigInfo) noexcept
 {
-    std::cout << "TODO: add client port" << std::endl;
-    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    // we can create a new port
+    return m_portPool->addClientPort(service, payloadDataSegmentMemoryManager, runtimeName, portConfigInfo.memoryInfo)
+        .and_then([&](auto clientPortData) {
+            /// @todo iox-#27 add to port introspection
+
+            // we do discovery here for trying to connect the waiting subscribers if offer on create is desired
+            popo::ClientPortRouDi clientPort(clientPortData);
+            doDiscoveryForClientPort(clientPort);
+        });
 }
 
-cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
 PortManager::acquireServerPortData(const capro::ServiceDescription& service,
                                    const RuntimeName_t& runtimeName,
                                    mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                                    const PortConfigInfo& portConfigInfo) noexcept
 {
-    std::cout << "TODO: add server port" << std::endl;
-    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    // we can create a new port
+    return m_portPool->addServerPort(service, payloadDataSegmentMemoryManager, runtimeName, portConfigInfo.memoryInfo)
+        .and_then([&](auto serverPortData) {
+            /// @todo iox-#27 add to port introspection
+
+            // we do discovery here for trying to connect the waiting subscribers if offer on create is desired
+            popo::ServerPortRouDi serverPort(serverPortData);
+            doDiscoveryForServerPort(serverPort);
+        });
 }
 
 cxx::expected<popo::ConditionVariableData*, PortPoolError>

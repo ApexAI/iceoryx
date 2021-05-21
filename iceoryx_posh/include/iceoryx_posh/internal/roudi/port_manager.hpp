@@ -86,13 +86,13 @@ class PortManager
     cxx::expected<runtime::NodeData*, PortPoolError> acquireNodeData(const RuntimeName_t& runtimeName,
                                                                      const NodeName_t& nodeName) noexcept;
 
-    cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+    cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
     acquireClientPortData(const capro::ServiceDescription& service,
                           const RuntimeName_t& runtimeName,
                           mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                           const PortConfigInfo& portConfigInfo) noexcept;
 
-    cxx::expected<PublisherPortRouDiType::MemberType_t*, PortPoolError>
+    cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
     acquireServerPortData(const capro::ServiceDescription& service,
                           const RuntimeName_t& runtimeName,
                           mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
@@ -133,6 +133,10 @@ class PortManager
     void handleApplications() noexcept;
 
     void handleNodes() noexcept;
+
+    void doDiscoveryForClientPort(popo::ClientPortRouDi& clientPort) noexcept;
+
+    void doDiscoveryForServerPort(popo::ServerPortRouDi& serverPort) noexcept;
 
     void handleConditionVariables() noexcept;
 

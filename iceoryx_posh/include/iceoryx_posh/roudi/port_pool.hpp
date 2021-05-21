@@ -21,9 +21,11 @@
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
 #include "iceoryx_posh/internal/popo/building_blocks/condition_variable_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/application_port.hpp"
+#include "iceoryx_posh/internal/popo/ports/client_port_roudi.hpp"
 #include "iceoryx_posh/internal/popo/ports/interface_port.hpp"
 #include "iceoryx_posh/internal/popo/ports/publisher_port_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/publisher_port_roudi.hpp"
+#include "iceoryx_posh/internal/popo/ports/server_port_roudi.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_multi_producer.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_single_producer.hpp"
@@ -104,6 +106,18 @@ class PortPool
     cxx::expected<runtime::NodeData*, PortPoolError> addNodeData(const RuntimeName_t& runtimeName,
                                                                  const NodeName_t& nodeName,
                                                                  const uint64_t nodeDeviceIdentifier) noexcept;
+
+    cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
+    addClientPort(const capro::ServiceDescription& serviceDescription,
+                  mepoo::MemoryManager* const memoryManager,
+                  const RuntimeName_t& runtimeName,
+                  const mepoo::MemoryInfo& memoryInfo = mepoo::MemoryInfo()) noexcept;
+
+    cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
+    addServerPort(const capro::ServiceDescription& serviceDescription,
+                  mepoo::MemoryManager* const memoryManager,
+                  const RuntimeName_t& runtimeName,
+                  const mepoo::MemoryInfo& memoryInfo = mepoo::MemoryInfo()) noexcept;
 
     cxx::expected<popo::ConditionVariableData*, PortPoolError>
     addConditionVariableData(const RuntimeName_t& runtimeName) noexcept;
