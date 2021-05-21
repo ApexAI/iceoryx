@@ -643,8 +643,6 @@ popo::ClientPortUser::MemberType_t* PoshRuntime::getMiddlewareClient(const capro
                << static_cast<cxx::Serialization>(portConfigInfo).toString();
 
     auto maybeClient = requestClientFromRoudi(sendBuffer);
-    std::cout << "TODO: get client port" << std::endl;
-    return nullptr;
     if (maybeClient.has_error())
     {
         switch (maybeClient.get_error())
@@ -715,8 +713,6 @@ popo::ServerPortUser::MemberType_t* PoshRuntime::getMiddlewareServer(const capro
                << static_cast<cxx::Serialization>(portConfigInfo).toString();
 
     auto maybeServer = requestServerFromRoudi(sendBuffer);
-    std::cout << "TODO: get server port" << std::endl;
-    return nullptr;
     if (maybeServer.has_error())
     {
         switch (maybeServer.get_error())

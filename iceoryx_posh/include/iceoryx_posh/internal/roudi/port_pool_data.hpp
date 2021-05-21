@@ -22,8 +22,10 @@
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
 #include "iceoryx_posh/internal/popo/building_blocks/condition_variable_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/application_port.hpp"
+#include "iceoryx_posh/internal/popo/ports/client_port_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/interface_port.hpp"
 #include "iceoryx_posh/internal/popo/ports/publisher_port_data.hpp"
+#include "iceoryx_posh/internal/popo/ports/server_port_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_data.hpp"
 #include "iceoryx_posh/internal/runtime/node_data.hpp"
 
@@ -60,6 +62,9 @@ struct PortPoolData
 
     FixedPositionContainer<iox::popo::PublisherPortData, MAX_PUBLISHERS> m_publisherPortMembers;
     FixedPositionContainer<iox::popo::SubscriberPortData, MAX_SUBSCRIBERS> m_subscriberPortMembers;
+
+    FixedPositionContainer<iox::popo::ClientPortData, MAX_CLIENTS> m_clientPortMembers;
+    FixedPositionContainer<iox::popo::ServerPortData, MAX_SUBSCRIBERS> m_serverPortMembers;
 
     // required to be atomic since a service can be offered or stopOffered while reading
     // this variable in a user application

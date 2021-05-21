@@ -101,8 +101,18 @@ PortPool::addClientPort(const capro::ServiceDescription& serviceDescription,
                         const RuntimeName_t& runtimeName,
                         const mepoo::MemoryInfo& memoryInfo) noexcept
 {
-    std::cout << "TODO: add client port" << std::endl;
-    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    if (!m_portPoolData->m_clientPortMembers.hasFreeSpace())
+    {
+        errorHandler(Error::kPORT_POOL__CLIENTLIST_OVERFLOW, nullptr, ErrorLevel::MODERATE);
+        return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    }
+
+    std::cout << "TODO: add nodeName from ClientOptions" << std::endl;
+    NodeName_t nodeName{"TODO"};
+
+    auto clientPortData = m_portPoolData->m_clientPortMembers.insert(
+        serviceDescription, runtimeName, nodeName, memoryManager, memoryInfo);
+    return cxx::success<popo::ClientPortRouDi::MemberType_t*>(clientPortData);
 }
 
 cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
@@ -111,8 +121,18 @@ PortPool::addServerPort(const capro::ServiceDescription& serviceDescription,
                         const RuntimeName_t& runtimeName,
                         const mepoo::MemoryInfo& memoryInfo) noexcept
 {
-    std::cout << "TODO: add server port" << std::endl;
-    return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    if (!m_portPoolData->m_serverPortMembers.hasFreeSpace())
+    {
+        errorHandler(Error::kPORT_POOL__SERVERLIST_OVERFLOW, nullptr, ErrorLevel::MODERATE);
+        return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
+    }
+
+    std::cout << "TODO: add nodeName from ServerOptions" << std::endl;
+    NodeName_t nodeName{"TODO"};
+
+    auto serverPortData = m_portPoolData->m_serverPortMembers.insert(
+        serviceDescription, runtimeName, nodeName, memoryManager, memoryInfo);
+    return cxx::success<popo::ServerPortRouDi::MemberType_t*>(serverPortData);
 }
 
 cxx::expected<popo::ConditionVariableData*, PortPoolError>

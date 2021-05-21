@@ -32,7 +32,7 @@ class Client
     Client(const capro::ServiceDescription& service) noexcept;
 
   private:
-    // Port m_port;
+    Port m_port;
 };
 } // namespace popo
 } // namespace iox
