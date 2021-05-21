@@ -18,6 +18,7 @@
 #include "request_and_response_types.hpp"
 
 #include "iceoryx_hoofs/posix_wrapper/signal_handler.hpp"
+#include "iceoryx_posh/popo/client.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 //! [iceoryx includes]
 
@@ -47,7 +48,7 @@ int main()
     //! [initialize runtime]
 
     //! [create client]
-    std::cout << "TODO: create client" << std::endl;
+    iox::popo::Client<AddRequest, AddResponse> client({"Example", "Request-Response", "Add"});
     //! [create client]
 
     //! [send requests in a loop]
