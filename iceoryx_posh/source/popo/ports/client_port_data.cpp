@@ -21,14 +21,27 @@ namespace iox
 {
 namespace popo
 {
+/// @todo iox-#27 shouldn't this be in part of ChunkQueueData?
+///       With QueueFullPolicy as only parameter and automatic queue type deduction?
+///       This wouldn't work for client-server if OneToManyPolicy is used
+cxx::VariantQueueTypes getQueueType(ResponseQueueFullPolicy policy) noexcept
+{
+    return policy == ResponseQueueFullPolicy::DISCARD_OLDEST_DATA
+               ? cxx::VariantQueueTypes::SoFi_MultiProducerSingleConsumer
+               : cxx::VariantQueueTypes::FiFo_MultiProducerSingleConsumer;
+}
+
 ClientPortData::ClientPortData(const capro::ServiceDescription& serviceDescription,
                                const RuntimeName_t& runtimeName,
-                               const NodeName_t& nodeName,
+                               const ClientOptions& clientOptions,
                                mepoo::MemoryManager* const memoryManager,
                                const mepoo::MemoryInfo& memoryInfo) noexcept
-    : BasePortData(serviceDescription, runtimeName, nodeName)
-    , m_chunkSenderData(memoryManager, CLIENT_SUBSCRIBER_POLICY, 0, memoryInfo)
-    , m_chunkReceiverData(cxx::VariantQueueTypes::FiFo_SingleProducerSingleConsumer, CLIENT_PUBLISHER_POLICY)
+    : BasePortData(serviceDescription, runtimeName, clientOptions.nodeName)
+    , m_chunkSenderData(
+          memoryManager, static_cast<SubscriberTooSlowPolicy>(clientOptions.serverTooSlowPolicy), 0, memoryInfo)
+    , m_chunkReceiverData(getQueueType(clientOptions.responseQueueFullPolicy),
+                          static_cast<QueueFullPolicy>(clientOptions.responseQueueFullPolicy))
+    , m_connectRequested(clientOptions.connectOnCreate)
 {
 }
 

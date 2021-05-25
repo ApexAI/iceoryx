@@ -109,7 +109,7 @@ PortPool::addClientPort(const capro::ServiceDescription& serviceDescription,
     }
 
     auto clientPortData = m_portPoolData->m_clientPortMembers.insert(
-        serviceDescription, runtimeName, clientOptions.nodeName, memoryManager, memoryInfo);
+        serviceDescription, runtimeName, clientOptions, memoryManager, memoryInfo);
     return cxx::success<popo::ClientPortRouDi::MemberType_t*>(clientPortData);
 }
 
@@ -127,7 +127,7 @@ PortPool::addServerPort(const capro::ServiceDescription& serviceDescription,
     }
 
     auto serverPortData = m_portPoolData->m_serverPortMembers.insert(
-        serviceDescription, runtimeName, serverOptions.nodeName, memoryManager, memoryInfo);
+        serviceDescription, runtimeName, serverOptions, memoryManager, memoryInfo);
     return cxx::success<popo::ServerPortRouDi::MemberType_t*>(serverPortData);
 }
 
