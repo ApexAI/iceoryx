@@ -44,6 +44,8 @@ class ClientPortRouDi : public BasePort
     ClientPortRouDi& operator=(ClientPortRouDi&& rhs) = default;
     ~ClientPortRouDi() = default;
 
+    ResponseQueueFullPolicy getResponseQueueFullPolicy() const noexcept;
+
     /// @brief get an optional CaPro message that requests changes to the desired connection state of the client
     /// @return CaPro message with desired connection state, empty optional if no state change
     cxx::optional<capro::CaproMessage> tryGetCaProMessage() noexcept;

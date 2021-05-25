@@ -352,12 +352,52 @@ void PortManager::handleNodes() noexcept
 
 void PortManager::doDiscoveryForClientPort(popo::ClientPortRouDi& clientPort) noexcept
 {
-    std::cout << "TODO: discovery for client ports" << std::endl;
+    clientPort.tryGetCaProMessage().and_then([this, &clientPort](auto caproMessage) {
+        if ((capro::CaproMessageType::SUB == caproMessage.m_type)
+            || (capro::CaproMessageType::UNSUB == caproMessage.m_type))
+        {
+            /// @todo iox-#27 report to port introspection
+            if (!this->sendToAllMatchingServerPorts(caproMessage, clientPort))
+            {
+                LogDebug() << "capro::SUB/UNSUB, no matching server!!";
+                capro::CaproMessage nackMessage(capro::CaproMessageType::NACK, clientPort.getCaProServiceDescription());
+                auto returnMessage = clientPort.dispatchCaProMessageAndGetPossibleResponse(nackMessage);
+                // No response on NACK messages
+                cxx::Ensures(!returnMessage.has_value());
+            }
+        }
+        else
+        {
+            // protocol error
+            errorHandler(
+                Error::kPORT_MANAGER__HANDLE_CLIENT_PORTS_INVALID_CAPRO_MESSAGE, nullptr, iox::ErrorLevel::MODERATE);
+        }
+    });
 }
 
 void PortManager::doDiscoveryForServerPort(popo::ServerPortRouDi& serverPort) noexcept
 {
-    std::cout << "TODO: discovery for server ports" << std::endl;
+    serverPort.tryGetCaProMessage().and_then([this, &serverPort](auto caproMessage) {
+        /// @todo iox-#27 report to port instrospection
+
+        if (capro::CaproMessageType::OFFER == caproMessage.m_type)
+        {
+            /// @todo iox-#27 add to service registry?
+        }
+        else if (capro::CaproMessageType::STOP_OFFER == caproMessage.m_type)
+        {
+            /// @todo iox-#27 remove from service registry
+        }
+        else
+        {
+            // protocol error
+            errorHandler(
+                Error::kPORT_MANAGER__HANDLE_SERVER_PORTS_INVALID_CAPRO_MESSAGE, nullptr, iox::ErrorLevel::MODERATE);
+        }
+
+        this->sendToAllMatchingClientPorts(caproMessage, serverPort);
+        /// @todo iox-#27 forward to interfaces?
+    });
 }
 
 void PortManager::handleConditionVariables() noexcept
@@ -454,6 +494,72 @@ void PortManager::sendToAllMatchingInterfacePorts(const capro::CaproMessage& mes
             interfacePort.dispatchCaProMessage(message);
         }
     }
+}
+
+void PortManager::sendToAllMatchingClientPorts(const capro::CaproMessage& message,
+                                               popo::ServerPortRouDi& serverSource) noexcept
+{
+    for (auto clientPortData : m_portPool->getClientPortDataList())
+    {
+        popo::ClientPortRouDi clientPort(clientPortData);
+        if (clientPort.getCaProServiceDescription() == serverSource.getCaProServiceDescription()
+            && !(serverSource.getClientTooSlowPolicy() == popo::ClientTooSlowPolicy::DISCARD_OLDEST_DATA
+                 && clientPort.getResponseQueueFullPolicy() == popo::ResponseQueueFullPolicy::BLOCK_SERVER))
+        {
+            auto clientResponse = clientPort.dispatchCaProMessageAndGetPossibleResponse(message);
+
+            // if the clients react on the change, process it immediately on server side
+            if (clientResponse.has_value())
+            {
+                // we only expect reaction on OFFER
+                cxx::Expects(capro::CaproMessageType::OFFER == message.m_type);
+
+                /// @todo inform port introspection about client
+
+                auto serverResponse =
+                    serverSource.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
+                if (serverResponse.has_value())
+                {
+                    // sende responsee to client port
+                    auto returnMessage =
+                        clientPort.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+
+                    // ACK or NACK are sent back to the client port, no further response from this one expected
+                    cxx::Ensures(!returnMessage.has_value());
+
+                    /// @todo iox-#27 inform port introspection about server
+                }
+            }
+        }
+    }
+}
+
+bool PortManager::sendToAllMatchingServerPorts(const capro::CaproMessage& message,
+                                               popo::ClientPortRouDi& clientSource) noexcept
+{
+    bool serverFound = false;
+    for (auto serverPortData : m_portPool->getServerPortDataList())
+    {
+        popo::ServerPortRouDi serverPort(serverPortData);
+        if (clientSource.getCaProServiceDescription() == serverPort.getCaProServiceDescription()
+            && !(serverPort.getClientTooSlowPolicy() == popo::ClientTooSlowPolicy::DISCARD_OLDEST_DATA
+                 && clientSource.getResponseQueueFullPolicy() == popo::ResponseQueueFullPolicy::BLOCK_SERVER))
+        {
+            auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(message);
+            if (serverResponse.has_value())
+            {
+                // send response to client port
+                auto returnMessage = clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+
+                // ACK or NACK are sent back to the client port, no further response from this one expected
+                cxx::Ensures(!returnMessage.has_value());
+
+                /// @todo iox-#27 inform port introspection about server
+            }
+            serverFound = true;
+        }
+    }
+    return serverFound;
 }
 
 void PortManager::unblockProcessShutdown(const RuntimeName_t& runtimeName) noexcept

@@ -44,6 +44,8 @@ class ServerPortRouDi : public BasePort
     ServerPortRouDi& operator=(ServerPortRouDi&& rhs) = default;
     ~ServerPortRouDi() = default;
 
+    ClientTooSlowPolicy getClientTooSlowPolicy() const noexcept;
+
     /// @brief get an optional CaPro message that changes the offer state of the server
     /// @return CaPro message with the new offer state, empty optional if no state change
     cxx::optional<capro::CaproMessage> tryGetCaProMessage() noexcept;

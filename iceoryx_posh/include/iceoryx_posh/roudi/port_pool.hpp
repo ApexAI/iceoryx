@@ -71,6 +71,8 @@ class PortPool
     cxx::vector<popo::InterfacePortData*, MAX_INTERFACE_NUMBER> getInterfacePortDataList() noexcept;
     cxx::vector<popo::ApplicationPortData*, MAX_PROCESS_NUMBER> getApplicationPortDataList() noexcept;
     cxx::vector<runtime::NodeData*, MAX_NODE_NUMBER> getNodeDataList() noexcept;
+    cxx::vector<popo::ClientPortData*, MAX_CLIENTS> getClientPortDataList() noexcept;
+    cxx::vector<popo::ServerPortData*, MAX_SERVERS> getServerPortDataList() noexcept;
     cxx::vector<popo::ConditionVariableData*, MAX_NUMBER_OF_CONDITION_VARIABLES>
     getConditionVariableDataList() noexcept;
 

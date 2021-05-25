@@ -64,7 +64,7 @@ struct PortPoolData
     FixedPositionContainer<iox::popo::SubscriberPortData, MAX_SUBSCRIBERS> m_subscriberPortMembers;
 
     FixedPositionContainer<iox::popo::ClientPortData, MAX_CLIENTS> m_clientPortMembers;
-    FixedPositionContainer<iox::popo::ServerPortData, MAX_SUBSCRIBERS> m_serverPortMembers;
+    FixedPositionContainer<iox::popo::ServerPortData, MAX_SERVERS> m_serverPortMembers;
 
     // required to be atomic since a service can be offered or stopOffered while reading
     // this variable in a user application

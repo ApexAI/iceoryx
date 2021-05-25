@@ -150,6 +150,10 @@ class PortManager
 
     void sendToAllMatchingInterfacePorts(const capro::CaproMessage& message) noexcept;
 
+    void sendToAllMatchingClientPorts(const capro::CaproMessage& message, popo::ServerPortRouDi& serverSource) noexcept;
+
+    bool sendToAllMatchingServerPorts(const capro::CaproMessage& message, popo::ClientPortRouDi& clientSource) noexcept;
+
     void addEntryToServiceRegistry(const capro::IdString_t& service, const capro::IdString_t& instance) noexcept;
     void removeEntryFromServiceRegistry(const capro::IdString_t& service, const capro::IdString_t& instance) noexcept;
 

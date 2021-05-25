@@ -38,17 +38,80 @@ ServerPortRouDi::MemberType_t* ServerPortRouDi::getMembers() noexcept
     return reinterpret_cast<MemberType_t*>(BasePort::getMembers());
 }
 
+ClientTooSlowPolicy ServerPortRouDi::getClientTooSlowPolicy() const noexcept
+{
+    return static_cast<ClientTooSlowPolicy>(getMembers()->m_chunkSenderData.m_subscriberTooSlowPolicy);
+}
+
 cxx::optional<capro::CaproMessage> ServerPortRouDi::tryGetCaProMessage() noexcept
 {
-    // nothing to change
-    return cxx::nullopt_t();
+    // get offer state request from user side
+    const auto offeringRequested = getMembers()->m_offeringRequested.load(std::memory_order_relaxed);
+
+    const auto isOffered = getMembers()->m_offered.load(std::memory_order_relaxed);
+
+    if (offeringRequested && !isOffered)
+    {
+        getMembers()->m_offered.store(true, std::memory_order_relaxed);
+
+        capro::CaproMessage caproMessage(capro::CaproMessageType::OFFER, this->getCaProServiceDescription());
+
+        caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
+        caproMessage.m_historyCapacity = 0;
+
+        // provide additional AUTOSAR Adaptive like information
+        caproMessage.m_subType = capro::CaproMessageSubType::EVENT;
+
+        return cxx::make_optional<capro::CaproMessage>(caproMessage);
+    }
+    else if ((!offeringRequested) && isOffered)
+    {
+        getMembers()->m_offered.store(false, std::memory_order_relaxed);
+
+        // remove all the clients (represented by their chunk queues)
+        m_chunkSender.removeAllQueues();
+
+        capro::CaproMessage caproMessage(capro::CaproMessageType::STOP_OFFER, this->getCaProServiceDescription());
+        return cxx::make_optional<capro::CaproMessage>(caproMessage);
+    }
+    else
+    {
+        // nothing to change
+        return cxx::nullopt_t();
+    }
 }
 
 cxx::optional<capro::CaproMessage>
-ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMessage& /*caProMessage*/) noexcept
+ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMessage& caProMessage) noexcept
 {
     capro::CaproMessage responseMessage(
         capro::CaproMessageType::NACK, this->getCaProServiceDescription(), capro::CaproMessageSubType::NOSUBTYPE);
+
+    if (getMembers()->m_offered.load(std::memory_order_relaxed))
+    {
+        if (capro::CaproMessageType::SUB == caProMessage.m_type)
+        {
+            const auto ret = m_chunkSender.tryAddQueue(
+                static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData), caProMessage.m_historyCapacity);
+            if (!ret.has_error())
+            {
+                responseMessage.m_type = capro::CaproMessageType::ACK;
+            }
+        }
+        else if (capro::CaproMessageType::UNSUB == caProMessage.m_type)
+        {
+            const auto ret =
+                m_chunkSender.tryRemoveQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData));
+            if (!ret.has_error())
+            {
+                responseMessage.m_type = capro::CaproMessageType::ACK;
+            }
+        }
+        else
+        {
+            errorHandler(Error::kPOPO__CAPRO_PROTOCOL_ERROR, nullptr, ErrorLevel::SEVERE);
+        }
+    }
 
     return cxx::make_optional<capro::CaproMessage>(responseMessage);
 }

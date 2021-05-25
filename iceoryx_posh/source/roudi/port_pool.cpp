@@ -43,6 +43,16 @@ cxx::vector<runtime::NodeData*, MAX_NODE_NUMBER> PortPool::getNodeDataList() noe
     return m_portPoolData->m_nodeMembers.content();
 }
 
+cxx::vector<popo::ClientPortData*, MAX_CLIENTS> PortPool::getClientPortDataList() noexcept
+{
+    return m_portPoolData->m_clientPortMembers.content();
+}
+
+cxx::vector<popo::ServerPortData*, MAX_SERVERS> PortPool::getServerPortDataList() noexcept
+{
+    return m_portPoolData->m_serverPortMembers.content();
+}
+
 cxx::vector<popo::ConditionVariableData*, MAX_NUMBER_OF_CONDITION_VARIABLES>
 PortPool::getConditionVariableDataList() noexcept
 {
