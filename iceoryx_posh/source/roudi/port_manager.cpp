@@ -740,12 +740,14 @@ cxx::expected<runtime::NodeData*, PortPoolError> PortManager::acquireNodeData(co
 
 cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
 PortManager::acquireClientPortData(const capro::ServiceDescription& service,
+                                   const popo::ClientOptions& clientOptions,
                                    const RuntimeName_t& runtimeName,
                                    mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                                    const PortConfigInfo& portConfigInfo) noexcept
 {
     // we can create a new port
-    return m_portPool->addClientPort(service, payloadDataSegmentMemoryManager, runtimeName, portConfigInfo.memoryInfo)
+    return m_portPool
+        ->addClientPort(service, payloadDataSegmentMemoryManager, runtimeName, clientOptions, portConfigInfo.memoryInfo)
         .and_then([&](auto clientPortData) {
             /// @todo iox-#27 add to port introspection
 
@@ -757,12 +759,14 @@ PortManager::acquireClientPortData(const capro::ServiceDescription& service,
 
 cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
 PortManager::acquireServerPortData(const capro::ServiceDescription& service,
+                                   const popo::ServerOptions& serverOptions,
                                    const RuntimeName_t& runtimeName,
                                    mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                                    const PortConfigInfo& portConfigInfo) noexcept
 {
     // we can create a new port
-    return m_portPool->addServerPort(service, payloadDataSegmentMemoryManager, runtimeName, portConfigInfo.memoryInfo)
+    return m_portPool
+        ->addServerPort(service, payloadDataSegmentMemoryManager, runtimeName, serverOptions, portConfigInfo.memoryInfo)
         .and_then([&](auto serverPortData) {
             /// @todo iox-#27 add to port introspection
 

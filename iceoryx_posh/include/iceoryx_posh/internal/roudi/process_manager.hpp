@@ -128,10 +128,12 @@ class ProcessManager : public ProcessManagerInterface
 
     void addClientForProcess(const RuntimeName_t& name,
                              const capro::ServiceDescription& service,
+                             const popo::ClientOptions& clientOptions,
                              const PortConfigInfo& portConfigInfo) noexcept;
 
     void addServerForProcess(const RuntimeName_t& name,
                              const capro::ServiceDescription& service,
+                             const popo::ServerOptions& serverOptions,
                              const PortConfigInfo& portConfigInfo) noexcept;
 
     void addConditionVariableForProcess(const RuntimeName_t& runtimeName) noexcept;

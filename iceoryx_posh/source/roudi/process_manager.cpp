@@ -552,6 +552,7 @@ void ProcessManager::addPublisherForProcess(const RuntimeName_t& name,
 
 void ProcessManager::addClientForProcess(const RuntimeName_t& name,
                                          const capro::ServiceDescription& service,
+                                         const popo::ClientOptions& clientOptions,
                                          const PortConfigInfo& portConfigInfo) noexcept
 {
     searchForProcessAndThen(
@@ -571,7 +572,8 @@ void ProcessManager::addClientForProcess(const RuntimeName_t& name,
             }
 
             m_portManager
-                .acquireClientPortData(service, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
+                .acquireClientPortData(
+                    service, clientOptions, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
                 .and_then([&](auto& clientPort) {
                     // send ClientPort to app as a serialized relative pointer
                     auto offset = rp::BaseRelativePointer::getOffset(m_mgmtSegmentId, clientPort);
@@ -597,6 +599,7 @@ void ProcessManager::addClientForProcess(const RuntimeName_t& name,
 
 void ProcessManager::addServerForProcess(const RuntimeName_t& name,
                                          const capro::ServiceDescription& service,
+                                         const popo::ServerOptions& serverOptions,
                                          const PortConfigInfo& portConfigInfo) noexcept
 {
     searchForProcessAndThen(
@@ -616,7 +619,8 @@ void ProcessManager::addServerForProcess(const RuntimeName_t& name,
             }
 
             m_portManager
-                .acquireServerPortData(service, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
+                .acquireServerPortData(
+                    service, serverOptions, name, &segmentInfo.m_memoryManager.value().get(), portConfigInfo)
                 .and_then([&](auto& serverPort) {
                     // send ServerPort to app as a serialized relative pointer
                     auto offset = rp::BaseRelativePointer::getOffset(m_mgmtSegmentId, serverPort);

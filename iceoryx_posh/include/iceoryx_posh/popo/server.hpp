@@ -19,6 +19,7 @@
 
 #include "iceoryx_posh/capro/service_description.hpp"
 #include "iceoryx_posh/internal/popo/ports/server_port_user.hpp"
+#include "iceoryx_posh/popo/server_options.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 namespace iox
@@ -29,7 +30,7 @@ template <typename Req, typename Res, typename Port = ServerPortUser>
 class Server
 {
   public:
-    Server(const capro::ServiceDescription& service) noexcept;
+    Server(const capro::ServiceDescription& service, const ServerOptions& serverOptions = {}) noexcept;
 
   private:
     Port m_port;

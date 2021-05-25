@@ -88,12 +88,14 @@ class PortManager
 
     cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
     acquireClientPortData(const capro::ServiceDescription& service,
+                          const popo::ClientOptions& clientOptions,
                           const RuntimeName_t& runtimeName,
                           mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                           const PortConfigInfo& portConfigInfo) noexcept;
 
     cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
     acquireServerPortData(const capro::ServiceDescription& service,
+                          const popo::ServerOptions& serverOptions,
                           const RuntimeName_t& runtimeName,
                           mepoo::MemoryManager* const payloadDataSegmentMemoryManager,
                           const PortConfigInfo& portConfigInfo) noexcept;

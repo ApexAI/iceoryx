@@ -99,6 +99,7 @@ cxx::expected<popo::ClientPortRouDi::MemberType_t*, PortPoolError>
 PortPool::addClientPort(const capro::ServiceDescription& serviceDescription,
                         mepoo::MemoryManager* const memoryManager,
                         const RuntimeName_t& runtimeName,
+                        const popo::ClientOptions& clientOptions,
                         const mepoo::MemoryInfo& memoryInfo) noexcept
 {
     if (!m_portPoolData->m_clientPortMembers.hasFreeSpace())
@@ -107,11 +108,8 @@ PortPool::addClientPort(const capro::ServiceDescription& serviceDescription,
         return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
     }
 
-    std::cout << "TODO: add nodeName from ClientOptions" << std::endl;
-    NodeName_t nodeName{"TODO"};
-
     auto clientPortData = m_portPoolData->m_clientPortMembers.insert(
-        serviceDescription, runtimeName, nodeName, memoryManager, memoryInfo);
+        serviceDescription, runtimeName, clientOptions.nodeName, memoryManager, memoryInfo);
     return cxx::success<popo::ClientPortRouDi::MemberType_t*>(clientPortData);
 }
 
@@ -119,6 +117,7 @@ cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
 PortPool::addServerPort(const capro::ServiceDescription& serviceDescription,
                         mepoo::MemoryManager* const memoryManager,
                         const RuntimeName_t& runtimeName,
+                        const popo::ServerOptions& serverOptions,
                         const mepoo::MemoryInfo& memoryInfo) noexcept
 {
     if (!m_portPoolData->m_serverPortMembers.hasFreeSpace())
@@ -127,11 +126,8 @@ PortPool::addServerPort(const capro::ServiceDescription& serviceDescription,
         return cxx::error<PortPoolError>(PortPoolError::OUT_OF_RESOURCES);
     }
 
-    std::cout << "TODO: add nodeName from ServerOptions" << std::endl;
-    NodeName_t nodeName{"TODO"};
-
     auto serverPortData = m_portPoolData->m_serverPortMembers.insert(
-        serviceDescription, runtimeName, nodeName, memoryManager, memoryInfo);
+        serviceDescription, runtimeName, serverOptions.nodeName, memoryManager, memoryInfo);
     return cxx::success<popo::ServerPortRouDi::MemberType_t*>(serverPortData);
 }
 

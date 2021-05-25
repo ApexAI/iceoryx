@@ -31,7 +31,9 @@
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_single_producer.hpp"
 #include "iceoryx_posh/internal/roudi/port_pool_data.hpp"
 #include "iceoryx_posh/internal/runtime/node_data.hpp"
+#include "iceoryx_posh/popo/client_options.hpp"
 #include "iceoryx_posh/popo/publisher_options.hpp"
+#include "iceoryx_posh/popo/server_options.hpp"
 #include "iceoryx_posh/popo/subscriber_options.hpp"
 
 namespace iox
@@ -111,12 +113,14 @@ class PortPool
     addClientPort(const capro::ServiceDescription& serviceDescription,
                   mepoo::MemoryManager* const memoryManager,
                   const RuntimeName_t& runtimeName,
+                  const popo::ClientOptions& clientOptions,
                   const mepoo::MemoryInfo& memoryInfo = mepoo::MemoryInfo()) noexcept;
 
     cxx::expected<popo::ServerPortRouDi::MemberType_t*, PortPoolError>
     addServerPort(const capro::ServiceDescription& serviceDescription,
                   mepoo::MemoryManager* const memoryManager,
                   const RuntimeName_t& runtimeName,
+                  const popo::ServerOptions& serverOptions,
                   const mepoo::MemoryInfo& memoryInfo = mepoo::MemoryInfo()) noexcept;
 
     cxx::expected<popo::ConditionVariableData*, PortPoolError>

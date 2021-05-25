@@ -23,16 +23,39 @@ namespace iox
 {
 namespace popo
 {
+/// @todo iox-#27 discuss if the *TooSlowPolicy's should be combined into ParticipantTooSlowPolicy
+
 /// @brief Used by publisher
 enum class SubscriberTooSlowPolicy : uint8_t
 {
     WAIT_FOR_SUBSCRIBER,
     DISCARD_OLDEST_DATA
 };
+/// @brief Used by client
+enum class ClientTooSlowPolicy : uint8_t
+{
+    WAIT_FOR_CLIENT,
+    DISCARD_OLDEST_DATA
+};
+/// @brief Used by client
+enum class ServerTooSlowPolicy : uint8_t
+{
+    WAIT_FOR_SERVER,
+    DISCARD_OLDEST_DATA
+};
+
+/// @todo iox-#27 discuss if the *QueueFullPolicy's should be combined with a BLOCK_PUSHER enum tag
+
 /// @brief Used by subscriber
 enum class QueueFullPolicy : uint8_t
 {
     BLOCK_PUBLISHER,
+    DISCARD_OLDEST_DATA
+};
+/// @brief Used by subscriber
+enum class ResponseQueueFullPolicy : uint8_t
+{
+    BLOCK_SERVER,
     DISCARD_OLDEST_DATA
 };
 } // namespace popo

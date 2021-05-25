@@ -382,7 +382,7 @@ void RouDi::processMessage(const runtime::IpcMessage& message,
     }
     case runtime::IpcMessageType::CREATE_CLIENT:
     {
-        if (message.getNumberOfElements() != 3)
+        if (message.getNumberOfElements() != 5)
         {
             LogError() << "Wrong number of parameters for \"IpcMessageType::CREATE_CLIENT\" from \"" << runtimeName
                        << "\"received!";
@@ -390,14 +390,15 @@ void RouDi::processMessage(const runtime::IpcMessage& message,
         else
         {
             capro::ServiceDescription service{cxx::Serialization(message.getElementAtIndex(2))};
-            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(3))};
-            m_prcMgr->addClientForProcess(runtimeName, service, portConfigInfo);
+            auto clientOptions = popo::ClientOptions::deserialize(cxx::Serialization(message.getElementAtIndex(3)));
+            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(4))};
+            m_prcMgr->addClientForProcess(runtimeName, service, clientOptions, portConfigInfo);
         }
         break;
     }
     case runtime::IpcMessageType::CREATE_SERVER:
     {
-        if (message.getNumberOfElements() != 3)
+        if (message.getNumberOfElements() != 5)
         {
             LogError() << "Wrong number of parameters for \"IpcMessageType::CREATE_SERVER\" from \"" << runtimeName
                        << "\"received!";
@@ -405,8 +406,9 @@ void RouDi::processMessage(const runtime::IpcMessage& message,
         else
         {
             capro::ServiceDescription service{cxx::Serialization(message.getElementAtIndex(2))};
-            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(3))};
-            m_prcMgr->addServerForProcess(runtimeName, service, portConfigInfo);
+            auto serverOptions = popo::ServerOptions::deserialize(cxx::Serialization(message.getElementAtIndex(3)));
+            runtime::PortConfigInfo portConfigInfo{cxx::Serialization(message.getElementAtIndex(4))};
+            m_prcMgr->addServerForProcess(runtimeName, service, serverOptions, portConfigInfo);
         }
         break;
     }

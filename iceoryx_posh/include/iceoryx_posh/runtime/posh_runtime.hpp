@@ -32,6 +32,8 @@
 #include "iceoryx_posh/internal/runtime/ipc_runtime_interface.hpp"
 #include "iceoryx_posh/internal/runtime/node_property.hpp"
 #include "iceoryx_posh/internal/runtime/shared_memory_user.hpp"
+#include "iceoryx_posh/popo/client_options.hpp"
+#include "iceoryx_posh/popo/server_options.hpp"
 #include "iceoryx_posh/popo/subscriber_options.hpp"
 #include "iceoryx_posh/runtime/port_config_info.hpp"
 
@@ -140,10 +142,12 @@ class PoshRuntime
 
     popo::ClientPortUser::MemberType_t*
     getMiddlewareClient(const capro::ServiceDescription& service,
+                        const popo::ClientOptions& clientOptions = {},
                         const PortConfigInfo& portConfigInfo = PortConfigInfo()) noexcept;
 
     popo::ServerPortUser::MemberType_t*
     getMiddlewareServer(const capro::ServiceDescription& service,
+                        const popo::ServerOptions& serverOptions = {},
                         const PortConfigInfo& portConfigInfo = PortConfigInfo()) noexcept;
 
     /// @brief request the RouDi daemon to create a node

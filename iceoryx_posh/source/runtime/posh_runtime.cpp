@@ -636,10 +636,12 @@ PoshRuntime::requestClientFromRoudi(const IpcMessage& sendBuffer) noexcept
 }
 
 popo::ClientPortUser::MemberType_t* PoshRuntime::getMiddlewareClient(const capro::ServiceDescription& service,
+                                                                     const popo::ClientOptions& clientOptions,
                                                                      const PortConfigInfo& portConfigInfo) noexcept
 {
     IpcMessage sendBuffer;
     sendBuffer << IpcMessageTypeToString(IpcMessageType::CREATE_CLIENT) << m_appName
+               << static_cast<cxx::Serialization>(service).toString() << clientOptions.serialize().toString()
                << static_cast<cxx::Serialization>(portConfigInfo).toString();
 
     auto maybeClient = requestClientFromRoudi(sendBuffer);
@@ -706,10 +708,12 @@ PoshRuntime::requestServerFromRoudi(const IpcMessage& sendBuffer) noexcept
 }
 
 popo::ServerPortUser::MemberType_t* PoshRuntime::getMiddlewareServer(const capro::ServiceDescription& service,
+                                                                     const popo::ServerOptions& ServerOptions,
                                                                      const PortConfigInfo& portConfigInfo) noexcept
 {
     IpcMessage sendBuffer;
     sendBuffer << IpcMessageTypeToString(IpcMessageType::CREATE_SERVER) << m_appName
+               << static_cast<cxx::Serialization>(service).toString() << ServerOptions.serialize().toString()
                << static_cast<cxx::Serialization>(portConfigInfo).toString();
 
     auto maybeServer = requestServerFromRoudi(sendBuffer);
