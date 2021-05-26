@@ -27,6 +27,36 @@ Client<Req, Res, Port>::Client(const capro::ServiceDescription& service, const C
 {
 }
 
+template <typename Req, typename Res, typename Port>
+cxx::expected<RequestHeader*, AllocationError> Client<Req, Res, Port>::allocateRequest() noexcept
+{
+    return m_port.allocateRequest(sizeof(Req), alignof(Req));
+}
+
+template <typename Req, typename Res, typename Port>
+void Client<Req, Res, Port>::freeRequest(RequestHeader* const requestHeader) noexcept
+{
+    m_port.freeRequest(requestHeader);
+}
+
+template <typename Req, typename Res, typename Port>
+void Client<Req, Res, Port>::sendRequest(RequestHeader* const requestHeader) noexcept
+{
+    m_port.sendRequest(requestHeader);
+}
+
+template <typename Req, typename Res, typename Port>
+cxx::expected<const ResponseHeader*, ChunkReceiveResult> Client<Req, Res, Port>::getResponse() noexcept
+{
+    return m_port.getResponse();
+}
+
+template <typename Req, typename Res, typename Port>
+void Client<Req, Res, Port>::releaseResponse(const ResponseHeader* const responseHeader) noexcept
+{
+    m_port.releaseResponse(responseHeader);
+}
+
 } // namespace popo
 } // namespace iox
 

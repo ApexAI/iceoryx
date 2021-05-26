@@ -52,9 +52,11 @@ class ClientPortUser : public BasePort
     /// @brief Allocate a chunk, the ownerhip of the SharedChunk remains in the ClientPortUser for being able to
     /// cleanup if the user process disappears
     /// @param[in] userPayloadSize, size of the user-paylaod without additional headers
+    /// @param[in] userPayloadAlignment, alignment of the user-paylaod without additional headers
     /// @return on success pointer to a ChunkHeader which can be used to access the chunk-header, user-header and
     /// user-payload fields, error if not
-    cxx::expected<RequestHeader*, AllocationError> allocateRequest(const uint32_t userPayloadSize) noexcept;
+    cxx::expected<RequestHeader*, AllocationError> allocateRequest(const uint32_t userPayloadSize,
+                                                                   const uint32_t userPayloadAlignment) noexcept;
 
     /// @brief Free an allocated request without sending it
     /// @param[in] chunkHeader, pointer to the ChunkHeader to free
@@ -84,9 +86,9 @@ class ClientPortUser : public BasePort
 
     /// @brief Tries to get the next response from the queue. If there is a new one, the ChunkHeader of the oldest
     /// response in the queue is returned (FiFo queue)
-    /// @return optional that has a new chunk header or no value if there are no new responses in the underlying queue,
+    /// @return cxx::expected that has a new ResponseHeader if there are new responses in the underlying queue,
     /// ChunkReceiveResult on error
-    cxx::expected<cxx::optional<const ResponseHeader*>, ChunkReceiveResult> getResponse() noexcept;
+    cxx::expected<const ResponseHeader*, ChunkReceiveResult> getResponse() noexcept;
 
     /// @brief Release a response that was obtained with getResponseChunk
     /// @param[in] chunkHeader, pointer to the ChunkHeader to release

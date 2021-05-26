@@ -32,6 +32,13 @@ class Client
   public:
     Client(const capro::ServiceDescription& service, const ClientOptions& clientOptions = {}) noexcept;
 
+    cxx::expected<RequestHeader*, AllocationError> allocateRequest() noexcept;
+    void freeRequest(RequestHeader* const requestHeader) noexcept;
+    void sendRequest(RequestHeader* const requestHeader) noexcept;
+
+    cxx::expected<const ResponseHeader*, ChunkReceiveResult> getResponse() noexcept;
+    void releaseResponse(const ResponseHeader* const responseHeader) noexcept;
+
   private:
     Port m_port;
 };

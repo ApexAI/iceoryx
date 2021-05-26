@@ -55,11 +55,26 @@ int main()
     while (keepRunning)
     {
         //! [take request]
-        std::cout << "TODO: take request" << std::endl;
+        server.getRequest()
+            .and_then([&](auto& requestHeader) {
+                std::cout << "Got Request!" << std::endl;
+                server.releaseRequest(requestHeader);
+            })
+            .or_else([](auto& error) {
+                std::cout << "No Request! Return value = " << static_cast<uint64_t>(error) << std::endl;
+            });
         //! [take request]
 
         //! [send response]
-        std::cout << "TODO: send response" << std::endl;
+        server.allocateResponse()
+            .and_then([&](auto& responseHeader) {
+                std::cout << "Send Response!" << std::endl;
+                server.sendResponse(responseHeader);
+            })
+            .or_else([](auto& error) {
+                std::cout << "Could not allocate Response! Return value = " << static_cast<uint64_t>(error)
+                          << std::endl;
+            });
         //! [send response]
 
         constexpr std::chrono::milliseconds SLEEP_TIME{1000U};

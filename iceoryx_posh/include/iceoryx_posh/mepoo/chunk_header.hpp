@@ -100,6 +100,9 @@ struct ChunkHeader
     /// @return the const pointer to the `ChunkHeader` or a `nullptr` if `userPayload` is a `nullptr`
     static const ChunkHeader* fromUserPayload(const void* const userPayload) noexcept;
 
+    static ChunkHeader* fromUserHeader(void* const userHeader) noexcept;
+    static const ChunkHeader* fromUserHeader(const void* const userHeader) noexcept;
+
     /// @brief Calculates the used size of the chunk with the ChunkHeader, user-heander and user-payload
     /// @return the used size of the chunk
     uint32_t usedSizeOfChunk() const noexcept;

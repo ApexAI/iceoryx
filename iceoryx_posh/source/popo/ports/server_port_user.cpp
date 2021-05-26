@@ -38,15 +38,21 @@ ServerPortUser::MemberType_t* ServerPortUser::getMembers() noexcept
     return reinterpret_cast<MemberType_t*>(BasePort::getMembers());
 }
 
-
-cxx::expected<cxx::optional<const RequestHeader*>, ChunkReceiveResult> ServerPortUser::getRequest() noexcept
+cxx::expected<const RequestHeader*, ChunkReceiveResult> ServerPortUser::getRequest() noexcept
 {
-    return cxx::success<cxx::optional<const RequestHeader*>>(cxx::nullopt_t());
+    auto getChunkResult = m_chunkReceiver.tryGet();
+
+    if (getChunkResult.has_error())
+    {
+        return cxx::error<ChunkReceiveResult>(getChunkResult.get_error());
+    }
+
+    return cxx::success<const RequestHeader*>(static_cast<const RequestHeader*>(getChunkResult.value()->userHeader()));
 }
 
-void ServerPortUser::releaseRequest(const RequestHeader* const /*requestHeader*/) noexcept
+void ServerPortUser::releaseRequest(const RequestHeader* const requestHeader) noexcept
 {
-    /// @todo
+    m_chunkReceiver.release(requestHeader->getChunkHeader());
 }
 
 bool ServerPortUser::hasNewRequests() const noexcept
@@ -60,24 +66,41 @@ bool ServerPortUser::hasLostRequestsSinceLastCall() noexcept
 }
 
 cxx::expected<ResponseHeader*, AllocationError>
-ServerPortUser::allocateResponse(const uint32_t /*userPayloadSize*/) noexcept
+ServerPortUser::allocateResponse(const uint32_t userPayloadSize, const uint32_t userPayloadAlignment) noexcept
 {
-    /// @todo
-    return cxx::error<AllocationError>(AllocationError::RUNNING_OUT_OF_CHUNKS);
+    auto allocateResult = m_chunkSender.tryAllocate(
+        getUniqueID(), userPayloadSize, userPayloadAlignment, sizeof(ResponseHeader), alignof(ResponseHeader));
+
+    if (allocateResult.has_error())
+    {
+        return cxx::error<AllocationError>(allocateResult.get_error());
+    }
+
+    return cxx::success<ResponseHeader*>(static_cast<ResponseHeader*>(allocateResult.value()->userHeader()));
 }
 
-void ServerPortUser::freeResponse(ResponseHeader* const /*responseHeader*/) noexcept
+void ServerPortUser::freeResponse(ResponseHeader* const responseHeader) noexcept
 {
-    /// @todo
+    m_chunkSender.release(responseHeader->getChunkHeader());
 }
 
-void ServerPortUser::sendResponse(ResponseHeader* const /*responseHeader*/) noexcept
+void ServerPortUser::sendResponse(ResponseHeader* const responseHeader) noexcept
 {
-    /// @todo
+    const auto offerRequested = getMembers()->m_offeringRequested.load(std::memory_order_relaxed);
+
+    if (offerRequested)
+    {
+        m_chunkSender.send(responseHeader->getChunkHeader());
+    }
+    else
+    {
+        LogWarn() << "Try to send request without being connected!";
+    }
 }
 
 void ServerPortUser::offer() noexcept
 {
+    std::cout << "TODO: handleServerPorts in PortManager not implemented" << std::endl;
     if (!getMembers()->m_offeringRequested.load(std::memory_order_relaxed))
     {
         getMembers()->m_offeringRequested.store(true, std::memory_order_relaxed);
@@ -86,6 +109,7 @@ void ServerPortUser::offer() noexcept
 
 void ServerPortUser::stopOffer() noexcept
 {
+    std::cout << "TODO: handleServerPorts in PortManager not implemented" << std::endl;
     if (getMembers()->m_offeringRequested.load(std::memory_order_relaxed))
     {
         getMembers()->m_offeringRequested.store(false, std::memory_order_relaxed);

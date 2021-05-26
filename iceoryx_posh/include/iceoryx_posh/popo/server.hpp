@@ -32,6 +32,13 @@ class Server
   public:
     Server(const capro::ServiceDescription& service, const ServerOptions& serverOptions = {}) noexcept;
 
+    cxx::expected<const RequestHeader*, ChunkReceiveResult> getRequest() noexcept;
+    void releaseRequest(const RequestHeader* const requestHeader) noexcept;
+
+    cxx::expected<ResponseHeader*, AllocationError> allocateResponse() noexcept;
+    void freeResponse(ResponseHeader* const responseHeader) noexcept;
+    void sendResponse(ResponseHeader* const responseHeader) noexcept;
+
   private:
     Port m_port;
 };

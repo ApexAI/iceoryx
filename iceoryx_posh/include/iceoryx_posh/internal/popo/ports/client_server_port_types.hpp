@@ -88,6 +88,26 @@ class RPCBaseHeader
         return m_sequenceNumber;
     }
 
+    mepoo::ChunkHeader* getChunkHeader() noexcept
+    {
+        return mepoo::ChunkHeader::fromUserHeader(this);
+    }
+
+    const mepoo::ChunkHeader* getChunkHeader() const noexcept
+    {
+        return mepoo::ChunkHeader::fromUserHeader(this);
+    }
+
+    void* getUserPayload() noexcept
+    {
+        return mepoo::ChunkHeader::fromUserHeader(this)->userPayload();
+    }
+
+    const void* getUserPayload() const noexcept
+    {
+        return mepoo::ChunkHeader::fromUserHeader(this)->userPayload();
+    }
+
   protected:
     rp::RelativePointer<ClientChunkQueueData_t> m_clientQueueDataPtr;
     int64_t m_sequenceNumber{0};
@@ -117,17 +137,6 @@ class RequestHeader : public RPCBaseHeader
         m_isFireAndForget = fireAndForget;
     }
 
-    mepoo::ChunkHeader* getChunkHeader() const noexcept
-    {
-        /// todo
-        return nullptr;
-    }
-    void* getUserPayload() noexcept
-    {
-        /// todo
-        return nullptr;
-    }
-
   private:
     bool m_isFireAndForget{false};
 };
@@ -155,17 +164,6 @@ class ResponseHeader : public RPCBaseHeader
     bool hasServerError() const noexcept
     {
         return m_hasServerError;
-    }
-
-    const mepoo::ChunkHeader* getChunkHeader() const noexcept
-    {
-        /// todo
-        return nullptr;
-    }
-    const void* getUserPayload() const noexcept
-    {
-        /// todo
-        return nullptr;
     }
 
   private:
