@@ -353,7 +353,7 @@ void PortManager::handleNodes() noexcept
 void PortManager::doDiscoveryForClientPort(popo::ClientPortRouDi& clientPort) noexcept
 {
     clientPort.tryGetCaProMessage().and_then([this, &clientPort](auto caproMessage) {
-        if ((capro::CaproMessageType::SUB == caproMessage.m_type)
+        if ((capro::CaproMessageType::OFFER == caproMessage.m_type)
             || (capro::CaproMessageType::UNSUB == caproMessage.m_type))
         {
             /// @todo iox-#27 report to port introspection
@@ -516,13 +516,11 @@ void PortManager::sendToAllMatchingClientPorts(const capro::CaproMessage& messag
 
                 /// @todo inform port introspection about client
 
-                auto serverResponse =
-                    serverSource.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
+                auto serverResponse = serverSource.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
                 if (serverResponse.has_value())
                 {
                     // sende responsee to client port
-                    auto returnMessage =
-                        clientPort.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+                    auto returnMessage = clientPort.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
 
                     // ACK or NACK are sent back to the client port, no further response from this one expected
                     cxx::Ensures(!returnMessage.has_value());
@@ -545,16 +543,31 @@ bool PortManager::sendToAllMatchingServerPorts(const capro::CaproMessage& messag
             && !(serverPort.getClientTooSlowPolicy() == popo::ClientTooSlowPolicy::DISCARD_OLDEST_DATA
                  && clientSource.getResponseQueueFullPolicy() == popo::ResponseQueueFullPolicy::BLOCK_SERVER))
         {
+            // send OFFER to server
             auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(message);
+
+            // if the clients react on the change, process it immediately on server side
             if (serverResponse.has_value())
             {
-                // send response to client port
-                auto returnMessage = clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+                // send OFFER to client
+                auto clientResponse = clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
 
-                // ACK or NACK are sent back to the client port, no further response from this one expected
-                cxx::Ensures(!returnMessage.has_value());
+                // if the clients react on the change, process it immediately on server side
+                if (clientResponse.has_value())
+                {
+                    auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
+                    if (serverResponse.has_value())
+                    {
+                        // send response to client port
+                        auto returnMessage =
+                            clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
 
-                /// @todo iox-#27 inform port introspection about server
+                        // ACK or NACK are sent back to the client port, no further response from this one expected
+                        cxx::Ensures(!returnMessage.has_value());
+
+                        /// @todo iox-#27 inform port introspection about server
+                    }
+                }
             }
             serverFound = true;
         }

@@ -54,10 +54,8 @@ cxx::optional<capro::CaproMessage> ClientPortRouDi::tryGetCaProMessage() noexcep
     {
         getMembers()->m_connectionState.store(ConnectionState::CONNECTED, std::memory_order_relaxed);
 
-        /// @todo iox-#27 can we reuse CaproMessageType::SUB or should we create CaproMessageType::CON
-        capro::CaproMessage caproMessage(capro::CaproMessageType::SUB, BasePort::getMembers()->m_serviceDescription);
-        caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
-        caproMessage.m_historyCapacity = 0;
+        /// @todo iox-#27 can we reuse CaproMessageType::OFFER or should we create CaproMessageType::CON_OFFER
+        capro::CaproMessage caproMessage(capro::CaproMessageType::OFFER, BasePort::getMembers()->m_serviceDescription);
 
         return cxx::make_optional<capro::CaproMessage>(caproMessage);
     }
@@ -86,7 +84,14 @@ ClientPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
     if ((capro::CaproMessageType::OFFER == caProMessage.m_type)
         && (ConnectionState::CONNECTED == currentConnectionState))
     {
-        capro::CaproMessage caproMessage(capro::CaproMessageType::SUB, BasePort::getMembers()->m_serviceDescription);
+        const auto ret = m_chunkSender.tryAddQueue(static_cast<ServerChunkQueueData_t*>(caProMessage.m_chunkQueueData),
+                                                   caProMessage.m_historyCapacity);
+        if (ret.has_error())
+        {
+            return capro::CaproMessage(capro::CaproMessageType::NACK, this->getCaProServiceDescription());
+        }
+
+        capro::CaproMessage caproMessage(capro::CaproMessageType::SUB, this->getCaProServiceDescription());
         caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
         caproMessage.m_historyCapacity = 0;
 

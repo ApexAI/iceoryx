@@ -59,9 +59,6 @@ cxx::optional<capro::CaproMessage> ServerPortRouDi::tryGetCaProMessage() noexcep
         caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
         caproMessage.m_historyCapacity = 0;
 
-        // provide additional AUTOSAR Adaptive like information
-        caproMessage.m_subType = capro::CaproMessageSubType::EVENT;
-
         return cxx::make_optional<capro::CaproMessage>(caproMessage);
     }
     else if ((!offeringRequested) && isOffered)
@@ -89,7 +86,14 @@ ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
 
     if (getMembers()->m_offered.load(std::memory_order_relaxed))
     {
-        if (capro::CaproMessageType::SUB == caProMessage.m_type)
+        if ((capro::CaproMessageType::OFFER == caProMessage.m_type))
+        {
+            /// @todo iox-#27 is this a misuse? Extend CAPRO protocol
+            responseMessage.m_type = capro::CaproMessageType::OFFER;
+            responseMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
+            responseMessage.m_historyCapacity = 0;
+        }
+        else if (capro::CaproMessageType::SUB == caProMessage.m_type)
         {
             const auto ret = m_chunkSender.tryAddQueue(
                 static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData), caProMessage.m_historyCapacity);
@@ -104,6 +108,8 @@ ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
                 m_chunkSender.tryRemoveQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData));
             if (!ret.has_error())
             {
+                /// @todo iox-#27 instead of the detour with the capro::CaproMessageType::OFFER message,
+                ///       the queue could also be sent with this ACK message to the client
                 responseMessage.m_type = capro::CaproMessageType::ACK;
             }
         }
