@@ -84,6 +84,8 @@ class ChunkSender : public ChunkDistributor<typename ChunkSenderDataType::ChunkD
     /// @param[in] chunkHeader, pointer to the ChunkHeader to send
     void send(mepoo::ChunkHeader* const chunkHeader) noexcept;
 
+    void sendToQueue(mepoo::ChunkHeader* const chunkHeader, typename Base_t::ChunkQueueData_t& queue) noexcept;
+
     /// @brief Push an allocated chunk to the history without sending it
     /// @param[in] chunkHeader, pointer to the ChunkHeader to push to the history
     void pushToHistory(mepoo::ChunkHeader* const chunkHeader) noexcept;

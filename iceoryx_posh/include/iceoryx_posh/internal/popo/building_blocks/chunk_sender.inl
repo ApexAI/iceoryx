@@ -137,6 +137,22 @@ inline void ChunkSender<ChunkSenderDataType>::send(mepoo::ChunkHeader* const chu
 }
 
 template <typename ChunkSenderDataType>
+inline void ChunkSender<ChunkSenderDataType>::sendToQueue(mepoo::ChunkHeader* const chunkHeader,
+                                                          typename Base_t::ChunkQueueData_t& queue) noexcept
+{
+    mepoo::SharedChunk chunk(nullptr);
+    // BEGIN of critical section, chunk will be lost if process gets hard terminated in between
+    if (getChunkReadyForSend(chunkHeader, chunk))
+    {
+        this->deliverToQueue(&queue, chunk);
+
+        getMembers()->m_lastChunkUnmanaged.releaseToSharedChunk();
+        getMembers()->m_lastChunkUnmanaged = chunk;
+    }
+    // END of critical section, chunk will be lost if process gets hard terminated in between
+}
+
+template <typename ChunkSenderDataType>
 inline void ChunkSender<ChunkSenderDataType>::pushToHistory(mepoo::ChunkHeader* const chunkHeader) noexcept
 {
     mepoo::SharedChunk chunk(nullptr);

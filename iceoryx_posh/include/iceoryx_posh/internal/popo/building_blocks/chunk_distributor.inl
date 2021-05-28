@@ -204,6 +204,8 @@ template <typename ChunkDistributorDataType>
 inline bool ChunkDistributor<ChunkDistributorDataType>::deliverToQueue(cxx::not_null<ChunkQueueData_t* const> queue,
                                                                        mepoo::SharedChunk chunk) noexcept
 {
+    /// @todo iox-#27 this has lifetime issues -> make this private and rename to `deliverToQueueUnchecked` or similar
+    /// and have a lookup in getMembers()->m_queues to check if the queue is still attached
     return ChunkQueuePusher_t(queue).push(chunk);
 }
 

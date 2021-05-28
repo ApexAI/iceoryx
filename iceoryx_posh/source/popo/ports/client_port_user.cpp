@@ -49,7 +49,9 @@ ClientPortUser::allocateRequest(const uint32_t userPayloadSize, const uint32_t u
         return cxx::error<AllocationError>(allocateResult.get_error());
     }
 
-    return cxx::success<RequestHeader*>(static_cast<RequestHeader*>(allocateResult.value()->userHeader()));
+    auto requestHeader = new (allocateResult.value()->userHeader()) RequestHeader(getMembers()->m_chunkReceiverData);
+
+    return cxx::success<RequestHeader*>(requestHeader);
 }
 
 void ClientPortUser::freeRequest(RequestHeader* const requestHeader) noexcept

@@ -71,8 +71,8 @@ using ServerChunkSenderData_t = ChunkSenderData<MAX_RESPONSES_ALLOCATED_SIMULTAN
 class RPCBaseHeader
 {
   public:
-    explicit RPCBaseHeader(cxx::not_null<ClientChunkQueueData_t* const> chunkQueueDataPtr, const int64_t sequenceNumber)
-        : m_clientQueueDataPtr(chunkQueueDataPtr)
+    explicit RPCBaseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceNumber)
+        : m_clientQueueId(&chunkQueueId)
         , m_sequenceNumber(sequenceNumber)
     {
     }
@@ -108,16 +108,18 @@ class RPCBaseHeader
         return mepoo::ChunkHeader::fromUserHeader(this)->userPayload();
     }
 
+    friend class ServerPortUser;
+
   protected:
-    rp::RelativePointer<ClientChunkQueueData_t> m_clientQueueDataPtr;
+    rp::RelativePointer<ClientChunkQueueData_t> m_clientQueueId;
     int64_t m_sequenceNumber{0};
 };
 
 class RequestHeader : public RPCBaseHeader
 {
   public:
-    explicit RequestHeader(cxx::not_null<ClientChunkQueueData_t* const> chunkQueueDataPtr) noexcept
-        : RPCBaseHeader(chunkQueueDataPtr, 0)
+    explicit RequestHeader(ClientChunkQueueData_t& chunkQueueId) noexcept
+        : RPCBaseHeader(chunkQueueId, 0)
     {
     }
 
@@ -144,9 +146,8 @@ class RequestHeader : public RPCBaseHeader
 class ResponseHeader : public RPCBaseHeader
 {
   public:
-    ResponseHeader(cxx::not_null<ClientChunkQueueData_t* const> chunkQueueDataPtr,
-                   const int64_t sequenceNumber) noexcept
-        : RPCBaseHeader(chunkQueueDataPtr, sequenceNumber)
+    ResponseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceNumber) noexcept
+        : RPCBaseHeader(chunkQueueId, sequenceNumber)
     {
     }
 

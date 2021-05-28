@@ -35,7 +35,7 @@ class Server
     cxx::expected<const RequestHeader*, ChunkReceiveResult> getRequest() noexcept;
     void releaseRequest(const RequestHeader* const requestHeader) noexcept;
 
-    cxx::expected<ResponseHeader*, AllocationError> allocateResponse() noexcept;
+    cxx::expected<ResponseHeader*, AllocationError> allocateResponse(const RequestHeader* const requestHeader) noexcept;
     void freeResponse(ResponseHeader* const responseHeader) noexcept;
     void sendResponse(ResponseHeader* const responseHeader) noexcept;
 

@@ -66,7 +66,9 @@ bool ServerPortUser::hasLostRequestsSinceLastCall() noexcept
 }
 
 cxx::expected<ResponseHeader*, AllocationError>
-ServerPortUser::allocateResponse(const uint32_t userPayloadSize, const uint32_t userPayloadAlignment) noexcept
+ServerPortUser::allocateResponse(const RequestHeader* const requestHeader,
+                                 const uint32_t userPayloadSize,
+                                 const uint32_t userPayloadAlignment) noexcept
 {
     auto allocateResult = m_chunkSender.tryAllocate(
         getUniqueID(), userPayloadSize, userPayloadAlignment, sizeof(ResponseHeader), alignof(ResponseHeader));
@@ -76,7 +78,12 @@ ServerPortUser::allocateResponse(const uint32_t userPayloadSize, const uint32_t 
         return cxx::error<AllocationError>(allocateResult.get_error());
     }
 
-    return cxx::success<ResponseHeader*>(static_cast<ResponseHeader*>(allocateResult.value()->userHeader()));
+    /// @todo iox-#27 this is a bad hack and needs to be fixed by refactoring ChunkDistributor::deliverToQueue
+    auto requestHeaderHackCast = const_cast<RequestHeader*>(requestHeader);
+    auto responseHeader = new (allocateResult.value()->userHeader())
+        ResponseHeader(*requestHeaderHackCast->m_clientQueueId, requestHeaderHackCast->getSequenceNumber());
+
+    return cxx::success<ResponseHeader*>(responseHeader);
 }
 
 void ServerPortUser::freeResponse(ResponseHeader* const responseHeader) noexcept
@@ -90,7 +97,7 @@ void ServerPortUser::sendResponse(ResponseHeader* const responseHeader) noexcept
 
     if (offerRequested)
     {
-        m_chunkSender.send(responseHeader->getChunkHeader());
+        m_chunkSender.sendToQueue(responseHeader->getChunkHeader(), *responseHeader->m_clientQueueId);
     }
     else
     {

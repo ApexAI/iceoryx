@@ -60,7 +60,7 @@ int main()
             std::cout << "Got Request: " << request->augend << " + " << request->addend << std::endl;
 
             //! [send response]
-            server.allocateResponse()
+            server.allocateResponse(requestHeader)
                 .and_then([&](auto& responseHeader) {
                     auto response = static_cast<AddResponse*>(responseHeader->getUserPayload());
                     response->sum = request->augend + request->addend;

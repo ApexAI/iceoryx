@@ -40,9 +40,10 @@ void Server<Req, Res, Port>::releaseRequest(const RequestHeader* const requestHe
 }
 
 template <typename Req, typename Res, typename Port>
-cxx::expected<ResponseHeader*, AllocationError> Server<Req, Res, Port>::allocateResponse() noexcept
+cxx::expected<ResponseHeader*, AllocationError>
+Server<Req, Res, Port>::allocateResponse(const RequestHeader* const requestHeader) noexcept
 {
-    return m_port.allocateResponse(sizeof(Res), alignof(Res));
+    return m_port.allocateResponse(requestHeader, sizeof(Res), alignof(Res));
 }
 
 template <typename Req, typename Res, typename Port>
