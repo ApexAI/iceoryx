@@ -70,8 +70,7 @@ inline void Server<Req, Res, Port>::enableEvent(iox::popo::TriggerHandle&& trigg
         {
             LogWarn() << "The server is already attached with the ServerEvent::REQUEST_RECEIVED to a WaitSet/Listener. "
                          "Detaching it from previous one and attaching it to the new one with "
-                         "SubscriberEvent::REQUEST_RECEIVED. "
-                         " Best practice is to call detach first.";
+                         "SubscriberEvent::REQUEST_RECEIVED. Best practice is to call detach first.";
 
             /// @todo iox-#27 call error handler
             // errorHandler(

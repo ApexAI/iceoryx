@@ -44,6 +44,24 @@ target_compile_options(
     ${ICEORYX_SANITIZER_FLAGS}
 )
 
+## C++ typed API client with events
+add_executable(
+    iox-cpp-request-response-event-client
+    client_cxx_api_event.cpp
+)
+target_link_libraries(
+    iox-cpp-request-response-event-client
+    PRIVATE
+    iceoryx_hoofs::iceoryx_hoofs
+    iceoryx_posh::iceoryx_posh
+)
+target_compile_options(
+    iox-cpp-request-response-event-client
+    PRIVATE
+    ${ICEORYX_WARNINGS}
+    ${ICEORYX_SANITIZER_FLAGS}
+)
+
 ## C++ typed API server
 add_executable(
     iox-cpp-request-response-basic-server
@@ -84,6 +102,7 @@ target_compile_options(
 set_target_properties(
     iox-cpp-request-response-basic-client
     iox-cpp-request-response-basic-server
+    iox-cpp-request-response-event-client
     iox-cpp-request-response-event-server
     PROPERTIES
     CXX_STANDARD_REQUIRED ON
@@ -95,6 +114,7 @@ install(
     TARGETS
     iox-cpp-request-response-basic-client
     iox-cpp-request-response-basic-server
+    iox-cpp-request-response-event-client
     iox-cpp-request-response-event-server
     RUNTIME DESTINATION bin
 )

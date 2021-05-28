@@ -47,7 +47,7 @@ static void sigHandler(int sig IOX_MAYBE_UNUSED)
 void onRequestReceived(iox::popo::Server<AddRequest, AddResponse>* server)
 {
     //! [take request]
-    server->getRequest().and_then([&](auto& requestHeader) {
+    while (server->getRequest().and_then([&](auto& requestHeader) {
         auto request = static_cast<const AddRequest*>(requestHeader->getUserPayload());
         std::cout << "Got Request: " << request->augend << " + " << request->addend << std::endl;
 
@@ -66,7 +66,9 @@ void onRequestReceived(iox::popo::Server<AddRequest, AddResponse>* server)
         //! [send response]
 
         server->releaseRequest(requestHeader);
-    });
+    }))
+    {
+    }
     //! [take request]
 }
 

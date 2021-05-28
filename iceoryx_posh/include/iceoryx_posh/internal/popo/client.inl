@@ -57,6 +57,54 @@ void Client<Req, Res, Port>::releaseResponse(const ResponseHeader* const respons
     m_port.releaseResponse(responseHeader);
 }
 
+template <typename Req, typename Res, typename Port>
+inline void Client<Req, Res, Port>::enableEvent(iox::popo::TriggerHandle&& triggerHandle,
+                                                const ClientEvent clientEvent) noexcept
+{
+    switch (clientEvent)
+    {
+    case ClientEvent::RESPONSE_RECEIVED:
+        if (m_trigger)
+        {
+            LogWarn()
+                << "The server is already attached with the ClientEvent::RESPONSE_RECEIVED to a WaitSet/Listener. "
+                   "Detaching it from previous one and attaching it to the new one with "
+                   "ClientEvent::RESPONSE_RECEIVED. Best practice is to call detach first.";
+
+            /// @todo iox-#27 call error handler
+            // errorHandler(
+            //    Error::kPOPO__BASE_SUBSCRIBER_OVERRIDING_WITH_EVENT_SINCE_HAS_DATA_OR_DATA_RECEIVED_ALREADY_ATTACHED,
+            //    nullptr,
+            //    ErrorLevel::MODERATE);
+        }
+        m_trigger = std::move(triggerHandle);
+        m_port.setConditionVariable(*m_trigger.getConditionVariableData(), m_trigger.getUniqueId());
+        break;
+    }
+}
+
+template <typename Req, typename Res, typename Port>
+inline void Client<Req, Res, Port>::disableEvent(const ClientEvent clientEvent) noexcept
+{
+    switch (clientEvent)
+    {
+    case ClientEvent::RESPONSE_RECEIVED:
+        m_trigger.reset();
+        m_port.unsetConditionVariable();
+        break;
+    }
+}
+
+template <typename Req, typename Res, typename Port>
+inline void Client<Req, Res, Port>::invalidateTrigger(const uint64_t uniqueTriggerId) noexcept
+{
+    if (m_trigger.getUniqueId() == uniqueTriggerId)
+    {
+        m_port.unsetConditionVariable();
+        m_trigger.invalidate();
+    }
+}
+
 } // namespace popo
 } // namespace iox
 
