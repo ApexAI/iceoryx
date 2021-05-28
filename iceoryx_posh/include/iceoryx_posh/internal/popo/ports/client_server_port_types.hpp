@@ -71,9 +71,9 @@ using ServerChunkSenderData_t = ChunkSenderData<MAX_RESPONSES_ALLOCATED_SIMULTAN
 class RPCBaseHeader
 {
   public:
-    explicit RPCBaseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceNumber)
+    explicit RPCBaseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceId)
         : m_clientQueueId(&chunkQueueId)
-        , m_sequenceNumber(sequenceNumber)
+        , m_sequenceId(sequenceId)
     {
     }
 
@@ -83,9 +83,9 @@ class RPCBaseHeader
     RPCBaseHeader& operator=(RPCBaseHeader&& rhs) = default;
     virtual ~RPCBaseHeader() = default;
 
-    int64_t getSequenceNumber() const noexcept
+    int64_t getSequenceId() const noexcept
     {
-        return m_sequenceNumber;
+        return m_sequenceId;
     }
 
     mepoo::ChunkHeader* getChunkHeader() noexcept
@@ -112,7 +112,7 @@ class RPCBaseHeader
 
   protected:
     rp::RelativePointer<ClientChunkQueueData_t> m_clientQueueId;
-    int64_t m_sequenceNumber{0};
+    int64_t m_sequenceId{0};
 };
 
 class RequestHeader : public RPCBaseHeader
@@ -129,9 +129,9 @@ class RequestHeader : public RPCBaseHeader
     RequestHeader& operator=(RequestHeader&& rhs) = default;
     virtual ~RequestHeader() = default;
 
-    void setSequenceNumber(const int64_t sequenceNumber) noexcept
+    void setSequenceId(const int64_t sequenceId) noexcept
     {
-        this->m_sequenceNumber = sequenceNumber;
+        this->m_sequenceId = sequenceId;
     }
 
     void setFireAndForget(const bool fireAndForget) noexcept
@@ -146,8 +146,8 @@ class RequestHeader : public RPCBaseHeader
 class ResponseHeader : public RPCBaseHeader
 {
   public:
-    ResponseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceNumber) noexcept
-        : RPCBaseHeader(chunkQueueId, sequenceNumber)
+    ResponseHeader(ClientChunkQueueData_t& chunkQueueId, const int64_t sequenceId) noexcept
+        : RPCBaseHeader(chunkQueueId, sequenceId)
     {
     }
 

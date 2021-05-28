@@ -54,11 +54,16 @@ int main()
     //! [send requests in a loop]
     uint64_t fibonacciLast = 0;
     uint64_t fibonacciCurrent = 1;
+    int64_t requestSequenceId = 0;
+    int64_t expectedResponseSequenceId = requestSequenceId;
     while (keepRunning)
     {
         //! [send request]
         client.allocateRequest()
             .and_then([&](auto& requestHeader) {
+                requestHeader->setSequenceId(requestSequenceId);
+                expectedResponseSequenceId = requestSequenceId;
+                requestSequenceId += 1;
                 auto request = static_cast<AddRequest*>(requestHeader->getUserPayload());
                 request->augend = fibonacciLast;
                 request->addend = fibonacciCurrent;
@@ -70,17 +75,28 @@ int main()
             });
         //! [send request]
 
-        constexpr std::chrono::milliseconds DELAY_TIME{50U};
+        // the server polls with an interval of 100ms
+        constexpr std::chrono::milliseconds DELAY_TIME{150U};
         std::this_thread::sleep_for(DELAY_TIME);
 
         //! [take response]
-        client.getResponse().and_then([&](auto& responseHeader) {
-            auto response = static_cast<const AddResponse*>(responseHeader->getUserPayload());
-            fibonacciLast = fibonacciCurrent;
-            fibonacciCurrent = response->sum;
-            client.releaseResponse(responseHeader);
-            std::cout << "Got Response : " << fibonacciCurrent << std::endl;
-        });
+        while (client.getResponse().and_then([&](auto& responseHeader) {
+            if (responseHeader->getSequenceId() == expectedResponseSequenceId)
+            {
+                auto response = static_cast<const AddResponse*>(responseHeader->getUserPayload());
+                fibonacciLast = fibonacciCurrent;
+                fibonacciCurrent = response->sum;
+                client.releaseResponse(responseHeader);
+                std::cout << "Got Response : " << fibonacciCurrent << std::endl;
+            }
+            else
+            {
+                std::cout << "Got Response with outdated sequence ID! Expected = " << expectedResponseSequenceId
+                          << "; Actual = " << responseHeader->getSequenceId() << "! -> skip" << std::endl;
+            }
+        }))
+        {
+        };
         //! [take response]
 
         constexpr std::chrono::milliseconds SLEEP_TIME{950U};

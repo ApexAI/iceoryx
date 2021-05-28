@@ -81,7 +81,7 @@ ServerPortUser::allocateResponse(const RequestHeader* const requestHeader,
     /// @todo iox-#27 this is a bad hack and needs to be fixed by refactoring ChunkDistributor::deliverToQueue
     auto requestHeaderHackCast = const_cast<RequestHeader*>(requestHeader);
     auto responseHeader = new (allocateResult.value()->userHeader())
-        ResponseHeader(*requestHeaderHackCast->m_clientQueueId, requestHeaderHackCast->getSequenceNumber());
+        ResponseHeader(*requestHeaderHackCast->m_clientQueueId, requestHeaderHackCast->getSequenceId());
 
     return cxx::success<ResponseHeader*>(responseHeader);
 }
