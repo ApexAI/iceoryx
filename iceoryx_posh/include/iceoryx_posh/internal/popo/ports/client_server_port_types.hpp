@@ -21,6 +21,7 @@
 #include "iceoryx_posh/internal/popo/building_blocks/chunk_receiver_data.hpp"
 #include "iceoryx_posh/internal/popo/building_blocks/chunk_sender_data.hpp"
 #include "iceoryx_posh/internal/popo/building_blocks/locking_policy.hpp"
+#include "iceoryx_posh/popo/enum_trigger_type.hpp"
 
 #include <cstdint>
 
@@ -171,6 +172,15 @@ class ResponseHeader : public RPCBaseHeader
     bool m_hasServerError{false};
 };
 
+enum class ClientEvent : EventEnumIdentifier
+{
+    RESPONSE_RECEIVED
+};
+
+enum class ServerEvent : EventEnumIdentifier
+{
+    REQUEST_RECEIVED
+};
 
 } // namespace popo
 } // namespace iox

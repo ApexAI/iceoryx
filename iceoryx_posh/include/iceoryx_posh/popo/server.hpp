@@ -20,6 +20,7 @@
 #include "iceoryx_posh/capro/service_description.hpp"
 #include "iceoryx_posh/internal/popo/ports/server_port_user.hpp"
 #include "iceoryx_posh/popo/server_options.hpp"
+#include "iceoryx_posh/popo/trigger_handle.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 namespace iox
@@ -39,8 +40,16 @@ class Server
     void freeResponse(ResponseHeader* const responseHeader) noexcept;
     void sendResponse(ResponseHeader* const responseHeader) noexcept;
 
+    friend class NotificationAttorney;
+
+  private:
+    void enableEvent(iox::popo::TriggerHandle&& triggerHandle, const ServerEvent serverEvent) noexcept;
+    void disableEvent(const ServerEvent serverEvent) noexcept;
+    void invalidateTrigger(const uint64_t trigger) noexcept;
+
   private:
     Port m_port;
+    TriggerHandle m_trigger;
 };
 } // namespace popo
 } // namespace iox
