@@ -55,29 +55,29 @@ int main()
     while (keepRunning)
     {
         //! [take request]
-        server.getRequest()
-            .and_then([&](auto& requestHeader) {
-                std::cout << "Got Request!" << std::endl;
-                server.releaseRequest(requestHeader);
-            })
-            .or_else([](auto& error) {
-                std::cout << "No Request! Return value = " << static_cast<uint64_t>(error) << std::endl;
-            });
+        server.getRequest().and_then([&](auto& requestHeader) {
+            auto request = static_cast<const AddRequest*>(requestHeader->getUserPayload());
+            std::cout << "Got Request: " << request->augend << " + " << request->addend << std::endl;
+
+            //! [send response]
+            server.allocateResponse()
+                .and_then([&](auto& responseHeader) {
+                    auto response = static_cast<AddResponse*>(responseHeader->getUserPayload());
+                    response->sum = request->augend + request->addend;
+                    std::cout << "Send Response: " << response->sum << std::endl;
+                    server.sendResponse(responseHeader);
+                })
+                .or_else([](auto& error) {
+                    std::cout << "Could not allocate Response! Return value = " << static_cast<uint64_t>(error)
+                              << std::endl;
+                });
+            //! [send response]
+
+            server.releaseRequest(requestHeader);
+        });
         //! [take request]
 
-        //! [send response]
-        server.allocateResponse()
-            .and_then([&](auto& responseHeader) {
-                std::cout << "Send Response!" << std::endl;
-                server.sendResponse(responseHeader);
-            })
-            .or_else([](auto& error) {
-                std::cout << "Could not allocate Response! Return value = " << static_cast<uint64_t>(error)
-                          << std::endl;
-            });
-        //! [send response]
-
-        constexpr std::chrono::milliseconds SLEEP_TIME{1000U};
+        constexpr std::chrono::milliseconds SLEEP_TIME{100U};
         std::this_thread::sleep_for(SLEEP_TIME);
     }
     //! [process requests in a loop]

@@ -52,12 +52,17 @@ int main()
     //! [create client]
 
     //! [send requests in a loop]
+    uint64_t fibonacciLast = 0;
+    uint64_t fibonacciCurrent = 1;
     while (keepRunning)
     {
         //! [send request]
         client.allocateRequest()
             .and_then([&](auto& requestHeader) {
-                std::cout << "Send Request!" << std::endl;
+                auto request = static_cast<AddRequest*>(requestHeader->getUserPayload());
+                request->augend = fibonacciLast;
+                request->addend = fibonacciCurrent;
+                std::cout << "Send Request: " << fibonacciLast << " + " << fibonacciCurrent << std::endl;
                 client.sendRequest(requestHeader);
             })
             .or_else([](auto& error) {
@@ -65,18 +70,20 @@ int main()
             });
         //! [send request]
 
+        constexpr std::chrono::milliseconds DELAY_TIME{50U};
+        std::this_thread::sleep_for(DELAY_TIME);
+
         //! [take response]
-        client.getResponse()
-            .and_then([&](auto& responseHeader) {
-                std::cout << "Got Response!" << std::endl;
-                client.releaseResponse(responseHeader);
-            })
-            .or_else([](auto& error) {
-                std::cout << "No Response! Return value = " << static_cast<uint64_t>(error) << std::endl;
-            });
+        client.getResponse().and_then([&](auto& responseHeader) {
+            auto response = static_cast<const AddResponse*>(responseHeader->getUserPayload());
+            fibonacciLast = fibonacciCurrent;
+            fibonacciCurrent = response->sum;
+            client.releaseResponse(responseHeader);
+            std::cout << "Got Response : " << fibonacciCurrent << std::endl;
+        });
         //! [take response]
 
-        constexpr std::chrono::milliseconds SLEEP_TIME{1000U};
+        constexpr std::chrono::milliseconds SLEEP_TIME{950U};
         std::this_thread::sleep_for(SLEEP_TIME);
     }
     //! [send requests in a loop]
