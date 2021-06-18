@@ -55,6 +55,9 @@ jobs:
     runs-on: macos-10.14
     # Softwares installed in macos-latest instance
     # https://github.com/actions/virtual-environments/blob/master/images/macos/macos-10.14-Readme.md
+    env:
+      NCURSES_VERSION: "v6.2"
+      NCURSES_HOME: "$HOME/ncurses/build/install/prefix/"
 
     steps:
       - name: Checkout
@@ -64,19 +67,32 @@ jobs:
         run: |
           echo $(clang --version)
 
-      - name: Build and install dependencies
-      # tinfo library which is required by iceoryx_introspection isn't available in mac
-        run: |
-          cd $GITHUB_WORKSPACE
-          mkdir -p build
-          cd build
-          git clone https://github.com/mirror/ncurses.git
-          cd ncurses
-          git checkout v6.2
-          ./configure  --prefix=$GITHUB_WORKSPACE/build/install/prefix/ --exec-prefix=$GITHUB_WORKSPACE/build/install/prefix/ --with-termlib
-          make
-          make install
+      - name: Cache ncurses
+        uses: actions/cache@v1.2.0
+        id: cache-ncurses
+        with:
+          path: "${{env.NCURSES_HOME}}"
+          key: "${{env.NCURSES_VERSION}}"
 
+      - name: Build and install ncurses
+        env:
+          CACHE_EXISTS: "${{steps.cache-ncurses.outputs.cache-hit}}"
+          NCURSES_SOURCE: "https://github.com/mirror/ncurses.git"
+      # tinfo library which is required by iceoryx_introspection isn't available in macos
+        run: |
+          if [[ "$CACHE_EXISTS" == 'true' ]]; then
+            echo "Using Cached version of ncurses..."
+          else
+            cd $GITHUB_WORKSPACE
+            mkdir -p build
+            cd build
+            git clone "${{env.NCURSES_SOURCE}}"
+            cd ncurses
+            git checkout "${{env.NCURSES_VERSION}}"
+            ./configure  --prefix="${{env.NCURSES_HOME}}" --exec-prefix="${{env.NCURSES_HOME}}" --with-termlib
+            make
+            make install
+          fi
       - name: Build sources
         run: |
           $GITHUB_WORKSPACE/tools/iceoryx_build_test.sh build-strict build-all out-of-tree
