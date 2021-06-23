@@ -52,19 +52,26 @@ cxx::optional<capro::CaproMessage> ClientPortRouDi::tryGetCaProMessage() noexcep
 
     if (currentConnectRequest && (ConnectionState::NOT_CONNECTED == currentConnectionState))
     {
-        getMembers()->m_connectionState.store(ConnectionState::CONNECTED, std::memory_order_relaxed);
+        getMembers()->m_connectionState.store(ConnectionState::CONNECT_REQUESTED, std::memory_order_relaxed);
 
-        /// @todo iox-#27 can we reuse CaproMessageType::OFFER or should we create CaproMessageType::CON_OFFER
-        capro::CaproMessage caproMessage(capro::CaproMessageType::OFFER, BasePort::getMembers()->m_serviceDescription);
+        capro::CaproMessage caproMessage(capro::CaproMessageType::CONNECT,
+                                         BasePort::getMembers()->m_serviceDescription);
 
         return cxx::make_optional<capro::CaproMessage>(caproMessage);
     }
-    else if (!currentConnectRequest && (ConnectionState::CONNECTED == currentConnectionState))
+    else if (!currentConnectRequest && (ConnectionState::CONNECT_REQUESTED == currentConnectionState))
     {
         getMembers()->m_connectionState.store(ConnectionState::NOT_CONNECTED, std::memory_order_relaxed);
 
-        /// @todo iox-#27 can we reuse CaproMessageType::UNSUB or should we create CaproMessageType::DISCON
-        capro::CaproMessage caproMessage(capro::CaproMessageType::UNSUB, BasePort::getMembers()->m_serviceDescription);
+        // nothing to change
+        return cxx::nullopt_t();
+    }
+    else if (!currentConnectRequest && (ConnectionState::CONNECTED == currentConnectionState))
+    {
+        getMembers()->m_connectionState.store(ConnectionState::DISCONNECT_REQUESTED, std::memory_order_relaxed);
+
+        capro::CaproMessage caproMessage(capro::CaproMessageType::DISCONNECT,
+                                         BasePort::getMembers()->m_serviceDescription);
         caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
 
         return cxx::make_optional<capro::CaproMessage>(caproMessage);
@@ -81,41 +88,94 @@ ClientPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
 {
     const auto currentConnectionState = getMembers()->m_connectionState.load(std::memory_order_relaxed);
 
-    if ((capro::CaproMessageType::OFFER == caProMessage.m_type)
-        && (ConnectionState::CONNECTED == currentConnectionState))
+    switch (currentConnectionState)
     {
-        const auto ret = m_chunkSender.tryAddQueue(static_cast<ServerChunkQueueData_t*>(caProMessage.m_chunkQueueData),
-                                                   caProMessage.m_historyCapacity);
-        if (ret.has_error())
+    case ConnectionState::NOT_CONNECTED:
+        switch (caProMessage.m_type)
         {
-            return capro::CaproMessage(capro::CaproMessageType::NACK, this->getCaProServiceDescription());
+        case capro::CaproMessageType::CONNECT:
+            /// @todo iox-#27 the stuff from tryGetCaProMessage should be done here
+            break;
+        case capro::CaproMessageType::OFFER:
+            return cxx::nullopt_t();
+        default:
+            break;
         }
+        break;
+    case ConnectionState::CONNECT_REQUESTED:
+        switch (caProMessage.m_type)
+        {
+        case capro::CaproMessageType::OFFER:
+        {
+            const auto ret = m_chunkSender.tryAddQueue(
+                static_cast<ServerChunkQueueData_t*>(caProMessage.m_chunkQueueData), caProMessage.m_historyCapacity);
+            if (ret.has_error())
+            {
+                return capro::CaproMessage(capro::CaproMessageType::NACK, this->getCaProServiceDescription());
+            }
 
-        capro::CaproMessage caproMessage(capro::CaproMessageType::SUB, this->getCaProServiceDescription());
-        caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
-        caproMessage.m_historyCapacity = 0;
+            getMembers()->m_connectionState.store(ConnectionState::CONNECT_HANDSHAKE, std::memory_order_relaxed);
 
-        return cxx::make_optional<capro::CaproMessage>(caproMessage);
+            capro::CaproMessage caproMessage(capro::CaproMessageType::HANDSHAKE, this->getCaProServiceDescription());
+            caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
+            caproMessage.m_historyCapacity = 0;
+
+            return cxx::make_optional<capro::CaproMessage>(caproMessage);
+        }
+        case capro::CaproMessageType::DISCONNECT:
+            getMembers()->m_connectionState.store(ConnectionState::NOT_CONNECTED, std::memory_order_relaxed);
+            return cxx::nullopt_t();
+        case capro::CaproMessageType::NACK:
+            return cxx::nullopt_t();
+        default:
+            break;
+        }
+        break;
+    case ConnectionState::CONNECT_HANDSHAKE:
+        switch (caProMessage.m_type)
+        {
+        case capro::CaproMessageType::ACK:
+            getMembers()->m_connectionState.store(ConnectionState::CONNECTED, std::memory_order_relaxed);
+            return cxx::nullopt_t();
+        case capro::CaproMessageType::NACK:
+            getMembers()->m_connectionState.store(ConnectionState::CONNECT_REQUESTED, std::memory_order_relaxed);
+            return cxx::nullopt_t();
+        default:
+            break;
+        }
+        break;
+    case ConnectionState::CONNECTED:
+        switch (caProMessage.m_type)
+        {
+        case capro::CaproMessageType::STOP_OFFER:
+            getMembers()->m_connectionState.store(ConnectionState::CONNECT_REQUESTED, std::memory_order_relaxed);
+            return cxx::nullopt_t();
+        case capro::CaproMessageType::DISCONNECT:
+            /// @todo iox-#27 the stuff from tryGetCaProMessage should be done here
+            return cxx::nullopt_t();
+        default:
+            break;
+        }
+        break;
+    case ConnectionState::DISCONNECT_REQUESTED:
+        switch (caProMessage.m_type)
+        {
+        case capro::CaproMessageType::ACK:
+            IOX_FALLTHROUGH;
+        case capro::CaproMessageType::NACK:
+            getMembers()->m_connectionState.store(ConnectionState::NOT_CONNECTED, std::memory_order_relaxed);
+            return cxx::nullopt_t();
+        default:
+            break;
+        }
+        break;
     }
-    else if ((capro::CaproMessageType::OFFER == caProMessage.m_type)
-             && (ConnectionState::NOT_CONNECTED == currentConnectionState))
-    {
-        // No state change
-        return cxx::nullopt_t();
-    }
-    else if ((capro::CaproMessageType::ACK == caProMessage.m_type)
-             || (capro::CaproMessageType::NACK == caProMessage.m_type)
-             || (capro::CaproMessageType::STOP_OFFER == caProMessage.m_type))
-    {
-        // we ignore all these messages for multi-producer
-        return cxx::nullopt_t();
-    }
-    else
-    {
-        // but others should not be received here
-        errorHandler(Error::kPOPO__CAPRO_PROTOCOL_ERROR, nullptr, ErrorLevel::SEVERE);
-        return cxx::nullopt_t();
-    }
+
+    // this shouldn't be reached
+    LogFatal() << "CaPro Protocol Violation! ConnectionState: " << static_cast<int>(currentConnectionState)
+               << " CaproMessageType: " << capro::CaproMessageTypeString[static_cast<int>(caProMessage.m_type)];
+    errorHandler(Error::kPOPO__CAPRO_PROTOCOL_ERROR, nullptr, ErrorLevel::SEVERE);
+    return cxx::nullopt_t();
 }
 
 void ClientPortRouDi::releaseAllChunks() noexcept

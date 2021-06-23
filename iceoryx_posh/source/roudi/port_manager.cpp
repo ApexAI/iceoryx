@@ -353,13 +353,13 @@ void PortManager::handleNodes() noexcept
 void PortManager::doDiscoveryForClientPort(popo::ClientPortRouDi& clientPort) noexcept
 {
     clientPort.tryGetCaProMessage().and_then([this, &clientPort](auto caproMessage) {
-        if ((capro::CaproMessageType::OFFER == caproMessage.m_type)
-            || (capro::CaproMessageType::UNSUB == caproMessage.m_type))
+        if ((capro::CaproMessageType::CONNECT == caproMessage.m_type)
+            || (capro::CaproMessageType::DISCONNECT == caproMessage.m_type))
         {
             /// @todo iox-#27 report to port introspection
             if (!this->sendToAllMatchingServerPorts(caproMessage, clientPort))
             {
-                LogDebug() << "capro::SUB/UNSUB, no matching server!!";
+                LogDebug() << "capro::CONNECT/DISCONNECT, no matching server!!";
                 capro::CaproMessage nackMessage(capro::CaproMessageType::NACK, clientPort.getCaProServiceDescription());
                 auto returnMessage = clientPort.dispatchCaProMessageAndGetPossibleResponse(nackMessage);
                 // No response on NACK messages
@@ -506,16 +506,18 @@ void PortManager::sendToAllMatchingClientPorts(const capro::CaproMessage& messag
             && !(serverSource.getClientTooSlowPolicy() == popo::ClientTooSlowPolicy::DISCARD_OLDEST_DATA
                  && clientPort.getResponseQueueFullPolicy() == popo::ResponseQueueFullPolicy::BLOCK_SERVER))
         {
+            // send OFFER to client
             auto clientResponse = clientPort.dispatchCaProMessageAndGetPossibleResponse(message);
 
             // if the clients react on the change, process it immediately on server side
             if (clientResponse.has_value())
             {
-                // we only expect reaction on OFFER
+                // we only expect reaction on HANDSHAKE
                 cxx::Expects(capro::CaproMessageType::OFFER == message.m_type);
 
                 /// @todo inform port introspection about client
 
+                // send HANDSHAKE to server
                 auto serverResponse = serverSource.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
                 if (serverResponse.has_value())
                 {
@@ -543,7 +545,7 @@ bool PortManager::sendToAllMatchingServerPorts(const capro::CaproMessage& messag
             && !(serverPort.getClientTooSlowPolicy() == popo::ClientTooSlowPolicy::DISCARD_OLDEST_DATA
                  && clientSource.getResponseQueueFullPolicy() == popo::ResponseQueueFullPolicy::BLOCK_SERVER))
         {
-            // send OFFER to server
+            // send CONNECT to server
             auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(message);
 
             // if the clients react on the change, process it immediately on server side
@@ -555,6 +557,7 @@ bool PortManager::sendToAllMatchingServerPorts(const capro::CaproMessage& messag
                 // if the clients react on the change, process it immediately on server side
                 if (clientResponse.has_value())
                 {
+                    // send HANDSHAKE to server
                     auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
                     if (serverResponse.has_value())
                     {

@@ -32,6 +32,9 @@ enum class CaproMessageType : uint8_t
     STOP_OFFER,
     SUB,
     UNSUB,
+    CONNECT,
+    DISCONNECT,
+    HANDSHAKE,
     ACK,
     NACK,
     PUB,
@@ -42,10 +45,22 @@ enum class CaproMessageType : uint8_t
     MESSGAGE_TYPE_END
 };
 
-constexpr int32_t MAX_ENUM_STRING_SIZE = 64;
-constexpr char CaproMessageTypeString[][MAX_ENUM_STRING_SIZE] = {
-    "NOTYPE", "FIND", "OFFER", "STOP_OFFER", "SUB", "UNSUB", "ACK", "NACK", "PUB", "REQ", "RES", "PING", "PONG"};
-
+constexpr const char* CaproMessageTypeString[] = {"NOTYPE",
+                                                  "FIND",
+                                                  "OFFER",
+                                                  "STOP_OFFER",
+                                                  "SUB",
+                                                  "UNSUB",
+                                                  "CONNECT",
+                                                  "DISCONNECT",
+                                                  "HANDSHAKE",
+                                                  "ACK",
+                                                  "NACK",
+                                                  "PUB",
+                                                  "REQ",
+                                                  "RES",
+                                                  "PING",
+                                                  "PONG"};
 
 enum class CaproMessageSubType : uint8_t
 {

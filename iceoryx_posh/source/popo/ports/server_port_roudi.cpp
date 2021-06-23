@@ -84,39 +84,43 @@ ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
     capro::CaproMessage responseMessage(
         capro::CaproMessageType::NACK, this->getCaProServiceDescription(), capro::CaproMessageSubType::NOSUBTYPE);
 
-    if (getMembers()->m_offered.load(std::memory_order_relaxed))
+    if (!getMembers()->m_offered.load(std::memory_order_relaxed))
     {
-        if ((capro::CaproMessageType::OFFER == caProMessage.m_type))
+        return cxx::make_optional<capro::CaproMessage>(responseMessage);
+    }
+
+    switch (caProMessage.m_type)
+    {
+    case capro::CaproMessageType::CONNECT:
+        responseMessage.m_type = capro::CaproMessageType::OFFER;
+        responseMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
+        responseMessage.m_historyCapacity = 0;
+        break;
+    case capro::CaproMessageType::HANDSHAKE:
+    {
+        const auto ret = m_chunkSender.tryAddQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData),
+                                                   caProMessage.m_historyCapacity);
+        if (!ret.has_error())
         {
-            /// @todo iox-#27 is this a misuse? Extend CAPRO protocol
-            responseMessage.m_type = capro::CaproMessageType::OFFER;
-            responseMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
-            responseMessage.m_historyCapacity = 0;
+            responseMessage.m_type = capro::CaproMessageType::ACK;
         }
-        else if (capro::CaproMessageType::SUB == caProMessage.m_type)
+    }
+    break;
+    case capro::CaproMessageType::DISCONNECT:
+    {
+        const auto ret =
+            m_chunkSender.tryRemoveQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData));
+        if (!ret.has_error())
         {
-            const auto ret = m_chunkSender.tryAddQueue(
-                static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData), caProMessage.m_historyCapacity);
-            if (!ret.has_error())
-            {
-                responseMessage.m_type = capro::CaproMessageType::ACK;
-            }
+            responseMessage.m_type = capro::CaproMessageType::ACK;
         }
-        else if (capro::CaproMessageType::UNSUB == caProMessage.m_type)
-        {
-            const auto ret =
-                m_chunkSender.tryRemoveQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData));
-            if (!ret.has_error())
-            {
-                /// @todo iox-#27 instead of the detour with the capro::CaproMessageType::OFFER message,
-                ///       the queue could also be sent with this ACK message to the client
-                responseMessage.m_type = capro::CaproMessageType::ACK;
-            }
-        }
-        else
-        {
-            errorHandler(Error::kPOPO__CAPRO_PROTOCOL_ERROR, nullptr, ErrorLevel::SEVERE);
-        }
+    }
+    break;
+    default:
+        LogFatal() << "CaPro Protocol Violation! CaproMessageType: "
+                   << capro::CaproMessageTypeString[static_cast<int>(caProMessage.m_type)];
+        errorHandler(Error::kPOPO__CAPRO_PROTOCOL_ERROR, nullptr, ErrorLevel::SEVERE);
+        break;
     }
 
     return cxx::make_optional<capro::CaproMessage>(responseMessage);
