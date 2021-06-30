@@ -30,11 +30,11 @@ inline RelocatablePointer<T>::RelocatablePointer() noexcept
 {
 }
 
-template <typename T>
-inline RelocatablePointer<T>::RelocatablePointer(const T* ptr) noexcept
-    : BaseRelocatablePointer(ptr)
-{
-}
+// template <typename T>
+// inline RelocatablePointer<T>::RelocatablePointer(const T* ptr) noexcept
+//     : BaseRelocatablePointer(ptr)
+// {
+// }
 
 template <typename T>
 inline RelocatablePointer<T>::RelocatablePointer(const BaseRelocatablePointer& other) noexcept

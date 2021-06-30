@@ -32,9 +32,11 @@ class RelocatablePointer : public BaseRelocatablePointer
     /// @brief default constructs a logical nullptr
     RelocatablePointer() noexcept;
 
-    /// @brief creates a RelocatablePointer pointing to the same pointee as ptr
-    /// @param[in] ptr the pointer whose pointee shall be the same for this
-    RelocatablePointer(const T* ptr) noexcept;
+    // TODO: one of these leads to ambiguity and makes no sense conceptually
+    // -> rethink this and the relocatable ptr as a whole
+    // /// @brief creates a RelocatablePointer pointing to the same pointee as ptr
+    // /// @param[in] ptr the pointer whose pointee shall be the same for this
+    // RelocatablePointer(const T* ptr) noexcept;
 
     /// @brief creates a RelocatablePointer from a BaseRelocatablePointer
     /// @param[in] other is the BaseRelocatablePointer
