@@ -513,7 +513,7 @@ void PortManager::sendToAllMatchingClientPorts(const capro::CaproMessage& messag
             if (clientResponse.has_value())
             {
                 // we only expect reaction on CONNECT
-                cxx::Expects(capro::CaproMessageType::CONNECT == message.m_type);
+                cxx::Expects(capro::CaproMessageType::CONNECT == clientResponse.value().m_type);
 
                 /// @todo inform port introspection about client
 

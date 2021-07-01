@@ -138,6 +138,8 @@ ClientPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
                                              BasePort::getMembers()->m_serviceDescription);
             caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
             caproMessage.m_historyCapacity = 0;
+
+            return cxx::make_optional<capro::CaproMessage>(caproMessage);
         }
         break;
         case capro::CaproMessageType::DISCONNECT:
