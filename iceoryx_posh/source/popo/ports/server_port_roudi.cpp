@@ -56,9 +56,6 @@ cxx::optional<capro::CaproMessage> ServerPortRouDi::tryGetCaProMessage() noexcep
 
         capro::CaproMessage caproMessage(capro::CaproMessageType::OFFER, this->getCaProServiceDescription());
 
-        caproMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
-        caproMessage.m_historyCapacity = 0;
-
         return cxx::make_optional<capro::CaproMessage>(caproMessage);
     }
     else if ((!offeringRequested) && isOffered)
@@ -92,17 +89,15 @@ ServerPortRouDi::dispatchCaProMessageAndGetPossibleResponse(const capro::CaproMe
     switch (caProMessage.m_type)
     {
     case capro::CaproMessageType::CONNECT:
-        responseMessage.m_type = capro::CaproMessageType::OFFER;
-        responseMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
-        responseMessage.m_historyCapacity = 0;
-        break;
-    case capro::CaproMessageType::HANDSHAKE:
     {
+        cxx::Expects(caProMessage.m_chunkQueueData != nullptr && "Invalid response queue passed to server");
         const auto ret = m_chunkSender.tryAddQueue(static_cast<ClientChunkQueueData_t*>(caProMessage.m_chunkQueueData),
                                                    caProMessage.m_historyCapacity);
         if (!ret.has_error())
         {
             responseMessage.m_type = capro::CaproMessageType::ACK;
+            responseMessage.m_chunkQueueData = static_cast<void*>(&getMembers()->m_chunkReceiverData);
+            responseMessage.m_historyCapacity = 0;
         }
     }
     break;

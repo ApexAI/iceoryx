@@ -512,12 +512,12 @@ void PortManager::sendToAllMatchingClientPorts(const capro::CaproMessage& messag
             // if the clients react on the change, process it immediately on server side
             if (clientResponse.has_value())
             {
-                // we only expect reaction on HANDSHAKE
-                cxx::Expects(capro::CaproMessageType::OFFER == message.m_type);
+                // we only expect reaction on CONNECT
+                cxx::Expects(capro::CaproMessageType::CONNECT == message.m_type);
 
                 /// @todo inform port introspection about client
 
-                // send HANDSHAKE to server
+                // send CONNECT to server
                 auto serverResponse = serverSource.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
                 if (serverResponse.has_value())
                 {
@@ -551,26 +551,13 @@ bool PortManager::sendToAllMatchingServerPorts(const capro::CaproMessage& messag
             // if the clients react on the change, process it immediately on server side
             if (serverResponse.has_value())
             {
-                // send OFFER to client
-                auto clientResponse = clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+                // send response to client port
+                auto returnMessage = clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
 
-                // if the clients react on the change, process it immediately on server side
-                if (clientResponse.has_value())
-                {
-                    // send HANDSHAKE to server
-                    auto serverResponse = serverPort.dispatchCaProMessageAndGetPossibleResponse(clientResponse.value());
-                    if (serverResponse.has_value())
-                    {
-                        // send response to client port
-                        auto returnMessage =
-                            clientSource.dispatchCaProMessageAndGetPossibleResponse(serverResponse.value());
+                // ACK or NACK are sent back to the client port, no further response from this one expected
+                cxx::Ensures(!returnMessage.has_value());
 
-                        // ACK or NACK are sent back to the client port, no further response from this one expected
-                        cxx::Ensures(!returnMessage.has_value());
-
-                        /// @todo iox-#27 inform port introspection about server
-                    }
-                }
+                /// @todo iox-#27 inform port introspection about server
             }
             serverFound = true;
         }
