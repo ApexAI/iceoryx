@@ -64,15 +64,13 @@ constexpr uint32_t MAX_RECEIVERS_PER_SENDERPORT = build::IOX_MAX_SUBSCRIBERS_PER
 
 //--------- Communication Resources Start---------------------
 // Publisher
-constexpr uint32_t MAX_PUBLISHERS = build::IOX_MAX_PUBLISHERS;
-constexpr uint32_t MAX_SUBSCRIBERS_PER_PUBLISHER = build::IOX_MAX_SUBSCRIBERS_PER_PUBLISHER;
-constexpr uint32_t MAX_CHUNKS_ALLOCATED_PER_PUBLISHER_SIMULTANEOUSLY =
-    build::IOX_MAX_CHUNKS_ALLOCATED_PER_PUBLISHER_SIMULTANEOUSLY;
-constexpr uint64_t MAX_PUBLISHER_HISTORY = build::IOX_MAX_PUBLISHER_HISTORY;
+constexpr uint32_t MAX_PUBLISHERS = 50;
+constexpr uint32_t MAX_SUBSCRIBERS_PER_PUBLISHER = 5;
+constexpr uint32_t MAX_CHUNKS_ALLOCATED_PER_PUBLISHER_SIMULTANEOUSLY = 20;
+constexpr uint64_t MAX_PUBLISHER_HISTORY = 128;
 // Subscriber
-constexpr uint32_t MAX_SUBSCRIBERS = build::IOX_MAX_SUBSCRIBERS;
-constexpr uint32_t MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY =
-    build::IOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY;
+constexpr uint32_t MAX_SUBSCRIBERS = 50;
+constexpr uint32_t MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY = 20;
 constexpr uint32_t MAX_SUBSCRIBER_QUEUE_CAPACITY = MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY;
 // Introspection is using the following publisherPorts, which reduced the number of ports available for the user
 // 1x publisherPort mempool introspection
@@ -85,34 +83,34 @@ constexpr uint32_t PUBLISHERS_RESERVED_FOR_INTROSPECTION = 5;
 /// have a contract with the user regarding how many chunks they are allowed to hold, then the queue size needs not be
 /// bigger. We can provide this number of newest chunks, more the user would not be allowed to hold anyway
 // Gateway
-constexpr uint32_t MAX_INTERFACE_NUMBER = build::IOX_MAX_INTERFACE_NUMBER;
-constexpr uint32_t MAX_INTERFACE_CAPRO_FIFO_SIZE = MAX_PUBLISHERS;
-constexpr uint32_t MAX_CHANNEL_NUMBER = MAX_PUBLISHERS + MAX_SUBSCRIBERS;
-constexpr uint32_t MAX_GATEWAY_SERVICES = 2 * MAX_CHANNEL_NUMBER;
+constexpr uint32_t MAX_INTERFACE_NUMBER = 1;
+constexpr uint32_t MAX_INTERFACE_CAPRO_FIFO_SIZE = 1;
+constexpr uint32_t MAX_CHANNEL_NUMBER = 1;
+constexpr uint32_t MAX_GATEWAY_SERVICES = 1;
 // Client
-constexpr uint32_t MAX_CLIENTS = build::IOX_MAX_SUBSCRIBERS; /// @todo
-constexpr uint32_t MAX_REQUESTS_ALLOCATED_SIMULTANEOUSLY = 4U;
-constexpr uint32_t MAX_RESPONSES_PROCESSED_SIMULTANEOUSLY = 16U;
-constexpr uint32_t MAX_RESPONSE_QUEUE_CAPACITY = 16U;
+constexpr uint32_t MAX_CLIENTS = 1; /// @todo
+constexpr uint32_t MAX_REQUESTS_ALLOCATED_SIMULTANEOUSLY = 1;
+constexpr uint32_t MAX_RESPONSES_PROCESSED_SIMULTANEOUSLY = 1;
+constexpr uint32_t MAX_RESPONSE_QUEUE_CAPACITY = 1;
 // Server
-constexpr uint32_t MAX_SERVERS = build::IOX_MAX_PUBLISHERS; /// @todo
-constexpr uint32_t MAX_CLIENTS_PER_SERVER = 256U;
-constexpr uint32_t MAX_REQUESTS_PROCESSED_SIMULTANEOUSLY = 4U;
-constexpr uint32_t MAX_RESPONSES_ALLOCATED_SIMULTANEOUSLY = MAX_REQUESTS_PROCESSED_SIMULTANEOUSLY;
-constexpr uint32_t MAX_REQUEST_QUEUE_CAPACITY = 1024;
+constexpr uint32_t MAX_SERVERS = 1; /// @todo
+constexpr uint32_t MAX_CLIENTS_PER_SERVER = 1;
+constexpr uint32_t MAX_REQUESTS_PROCESSED_SIMULTANEOUSLY = 1;
+constexpr uint32_t MAX_RESPONSES_ALLOCATED_SIMULTANEOUSLY = 1;
+constexpr uint32_t MAX_REQUEST_QUEUE_CAPACITY = 1;
 // Waitset
 namespace popo
 {
 using WaitSetIsConditionSatisfiedCallback = cxx::ConstMethodCallback<bool>;
 }
-constexpr uint32_t MAX_NUMBER_OF_CONDITION_VARIABLES = 1024U;
-constexpr uint32_t MAX_NUMBER_OF_NOTIFIERS_PER_CONDITION_VARIABLE = 128U;
-constexpr uint32_t MAX_NUMBER_OF_ATTACHMENTS_PER_WAITSET = 128U;
+constexpr uint32_t MAX_NUMBER_OF_CONDITION_VARIABLES = 2;
+constexpr uint32_t MAX_NUMBER_OF_NOTIFIERS_PER_CONDITION_VARIABLE = 2;
+constexpr uint32_t MAX_NUMBER_OF_ATTACHMENTS_PER_WAITSET = 1;
 static_assert(MAX_NUMBER_OF_ATTACHMENTS_PER_WAITSET <= MAX_NUMBER_OF_NOTIFIERS_PER_CONDITION_VARIABLE,
               "The WaitSet capacity is restricted by the maximum amount of notifiers per condition variable.");
 // Listener
-constexpr uint8_t MAX_NUMBER_OF_EVENT_VARIABLES = 128U;
-constexpr uint8_t MAX_NUMBER_OF_EVENTS_PER_LISTENER = 128U;
+constexpr uint8_t MAX_NUMBER_OF_EVENT_VARIABLES = 1;
+constexpr uint8_t MAX_NUMBER_OF_EVENTS_PER_LISTENER = 1;
 static_assert(MAX_NUMBER_OF_EVENTS_PER_LISTENER <= MAX_NUMBER_OF_NOTIFIERS_PER_CONDITION_VARIABLE,
               "The Listener capacity is restricted by the maximum amount of notifiers per condition variable.");
 //--------- Communication Resources End---------------------
@@ -120,8 +118,8 @@ static_assert(MAX_NUMBER_OF_EVENTS_PER_LISTENER <= MAX_NUMBER_OF_NOTIFIERS_PER_C
 constexpr uint32_t MAX_APPLICATION_CAPRO_FIFO_SIZE = 128U;
 
 // Memory
-constexpr uint32_t MAX_NUMBER_OF_MEMPOOLS = 32U;
-constexpr uint32_t MAX_SHM_SEGMENTS = 100U;
+constexpr uint32_t MAX_NUMBER_OF_MEMPOOLS = 8U;
+constexpr uint32_t MAX_SHM_SEGMENTS = 4U;
 
 constexpr uint32_t MAX_NUMBER_OF_MEMORY_PROVIDER = 8U;
 constexpr uint32_t MAX_NUMBER_OF_MEMORY_BLOCKS_PER_MEMORY_PROVIDER = 64U;
@@ -138,15 +136,15 @@ constexpr uint32_t APP_MESSAGE_SIZE = 512U;
 
 
 // Processes
-constexpr uint32_t MAX_PROCESS_NUMBER = 300U;
+constexpr uint32_t MAX_PROCESS_NUMBER = 32U;
 /// Maximum number of instances of a given service, which can be found.
 /// This limitation is coming due to the fixed capacity of the cxx::vector (This doesn't limit the offered number of
 /// instances)
-constexpr uint32_t MAX_NUMBER_OF_INSTANCES = 50U;
+constexpr uint32_t MAX_NUMBER_OF_INSTANCES = 32U;
 
 // Nodes
-constexpr uint32_t MAX_NODE_NUMBER = 1000U;
-constexpr uint32_t MAX_NODE_PER_PROCESS = 50U;
+constexpr uint32_t MAX_NODE_NUMBER = 32U;
+constexpr uint32_t MAX_NODE_PER_PROCESS = 32U;
 
 constexpr uint32_t MAX_RUNTIME_NAME_LENGTH = MAX_IPC_CHANNEL_NAME_LENGTH;
 
