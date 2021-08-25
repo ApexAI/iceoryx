@@ -23,6 +23,7 @@
 
 **Refactoring:**
 
+- Add clang-tidy check for iceoryx_hoofs[\#889](https://github.com/eclipse-iceoryx/iceoryx/issues/889)
 - Move all tests into an anonymous namespace[\#563](https://github.com/eclipse-iceoryx/iceoryx/issues/563)
 - Refactor smart_c to use contract by design and expected[\#418](https://github.com/eclipse-iceoryx/iceoryx/issues/418)
 - PoshRuntime Mock[\#449](https://github.com/eclipse-iceoryx/iceoryx/issues/449)
