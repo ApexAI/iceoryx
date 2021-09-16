@@ -14,8 +14,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#pragma once
-
 #ifndef IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
 #define IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
 
@@ -26,33 +24,46 @@ namespace iox
 {
 namespace rp
 {
-// TODO: doxygen
-// relocatable_ptr is regular
+/// @brief Smart pointer type that allows objects using it to be trivially copyable.
+///        This applies only if it points to memory owned by the object itself (i.e.
+///        i.e. not to memory outside of the object).
+///        This is useful to improve copy-efficiency and allow the types build with relocatable
+///        pointers only to be stored in shared memory.
+///        It is useable like a raw pointer of the corresponding type and can be implicily
+///        converted to one.
+///
+/// @tparam T the native type wrapped by the relocatable_ptr.
+///
+/// @note It is advisable to use relocatable_ptr only for storage (e.g. member variables),
+///       not to pass them around as function arguments or as return value.
+///       There should be no need for this, since as
+///       pass-around type regular pointers do the job just fine and do not incur
+///       the slight runtime overhead of a relocatable_ptr.
+///       There should be no memory overhead on 64 bit systems.
 template <typename T>
 class relocatable_ptr
 {
-  private:
-    using offset_t = uint64_t;
-
-    static constexpr offset_t NULL_POINTER_OFFSET = 1;
-
   public:
+    /// @brief Construct from raw pointer.
     relocatable_ptr(T* ptr = nullptr)
     {
         m_offset = to_offset(ptr);
     }
 
+    /// @brief Construct from other relocatable pointer.
     relocatable_ptr(const relocatable_ptr& other)
     {
         m_offset = to_offset(other.get());
     }
 
+    /// @brief Move construct from other relocatable pointer.
     relocatable_ptr(relocatable_ptr&& other)
     {
         m_offset = to_offset(other.get());
         other.m_offset = NULL_POINTER_OFFSET;
     }
 
+    /// @brief Assign from relocatable pointer rhs.
     relocatable_ptr& operator=(const relocatable_ptr& rhs)
     {
         if (this != &rhs)
@@ -62,6 +73,7 @@ class relocatable_ptr
         return *this;
     }
 
+    /// @brief Move assign from relocatable pointer rhs.
     relocatable_ptr& operator=(relocatable_ptr&& rhs)
     {
         if (this != &rhs)
@@ -72,58 +84,80 @@ class relocatable_ptr
         return *this;
     }
 
+    /// @brief Get the corresponding raw pointer.
+    /// @return corresponding raw pointer
     T* get()
     {
         return from_offset(m_offset);
     }
 
+    /// @brief Get the corresponding raw pointer from const relocatable_ptr
+    /// @return corresponding raw pointer
     const T* get() const
     {
         return from_offset(m_offset);
     }
 
-    // for non-void type only
-    // template <typename S = T>
-    // typename std::enable_if<!std::is_same<S, void>::value, T>::type& operator*()
-    // {
-    //     return *get();
-    // }
-
+    /// @brief Dereference a relocatable_ptr.
+    /// @return reference to the pointee
+    /// @note not available for T=void
     template <typename S = T>
     S& operator*()
     {
+        // not actually evaluated in the error case (compiler fails earlier since S = void leads to void&)
         static_assert(!std::is_same<S, void>::value, "relocatable_ptr<void> does not support operator*");
         return *get();
     }
 
+    /// @brief Dereference a const relocatable_ptr.
+    /// @return reference to the pointee
+    /// @note not available for T=void
     template <typename S = T>
     const S& operator*() const
     {
+        // not actually evaluated in the error case (compiler fails earlier since S = void leads to void&)
         static_assert(!std::is_same<S, void>::value, "relocatable_ptr<void> does not support operator* const");
         return *get();
     }
 
+    /// @brief Get the corresponding raw pointer with arrow operator syntax.
+    /// @return corresponding raw pointer
     T* operator->()
     {
         return get();
     }
 
+    /// @brief Get the corresponding raw pointer with arrow operator syntax
+    ///        from a const relocatable_ptr.
+    /// @return corresponding raw pointer
     const T* operator->() const
     {
         return get();
     }
 
+    /// @brief Convert to the corresponding raw pointer.
+    /// @return corresponding raw pointer
     operator T*()
     {
         return get();
     }
 
+    /// @brief Convert to the corresponding const raw pointer.
+    /// @return corresponding const raw pointer
     operator const T*() const
     {
         return get();
     }
 
   private:
+    using offset_t = uint64_t;
+
+    // This is safe since it is equivalent to point to the relocatable pointer
+    // second byte of the relocatable pointer itself which we define to be illegal.
+    // (it is no reasonable use-case)
+    // Note that 0 is equivalent to point to the relocatable pointer itself (i.e. this).
+    static constexpr offset_t NULL_POINTER_OFFSET = 1;
+
     offset_t m_offset;
 
     offset_t self() const
