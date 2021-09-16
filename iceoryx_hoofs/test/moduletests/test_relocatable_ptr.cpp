@@ -27,20 +27,18 @@ namespace
 using namespace ::testing;
 using namespace iox::rp;
 
-template <uint32_t Size = 1024>
-class Memory
+// Needed especially for void implementation tests where we cannot
+// consctruct a corresponding object of type void to point to.
+// Note that we only compare against it and never dereference it.
+static uint8_t* NON_NULL_PTR = reinterpret_cast<uint8_t*>(12345);
+
+struct Data
 {
-  public:
-    Memory()
+    Data(uint32_t value = 0)
+        : value(value)
     {
     }
-
-    std::uint8_t* operator[](int i)
-    {
-        return &buf[i];
-    }
-
-    std::uint8_t buf[Size];
+    uint32_t value;
 };
 
 class RelocatableType
@@ -59,8 +57,33 @@ class RelocatableType
     iox::rp::relocatable_ptr<int> rp;
 };
 
-using Data = Memory<1024>;
+// Not all tests make sense to be run as typed tests
+// due to interface / behaviour deifferences for
+// e.g. dereferencing for void
 
+// Tests for all template types
+template <typename T>
+class Relocatable_ptr_typed_test : public Test
+{
+  public:
+    void SetUp() override
+    {
+        internal::CaptureStderr();
+    }
+
+    void TearDown() override
+    {
+        std::string output = internal::GetCapturedStderr();
+        if (Test::HasFailure())
+        {
+            std::cout << output << std::endl;
+        }
+    }
+
+    using DataType = T;
+};
+
+// Other tests not specific to a template type
 class Relocatable_ptr_test : public Test
 {
   public:
@@ -79,117 +102,202 @@ class Relocatable_ptr_test : public Test
     }
 };
 
-TEST_F(Relocatable_ptr_test, defaultConstructionLeadsToNullpointer)
+
+typedef ::testing::Types<int, Data, void> TestTypes;
+
+/// we require TYPED_TEST since we support gtest 1.8 for our safety targets
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+TYPED_TEST_CASE(Relocatable_ptr_typed_test, TestTypes);
+#pragma GCC diagnostic pop
+
+TYPED_TEST(Relocatable_ptr_typed_test, defaulCtorCreatesNullpointer)
 {
-    iox::rp::relocatable_ptr<int> rp;
+    using T = typename TestFixture::DataType;
+    iox::rp::relocatable_ptr<T> rp;
     EXPECT_EQ(rp.get(), nullptr);
 }
 
-TEST_F(Relocatable_ptr_test, nonNullPointerConstructionWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, copyCtorOfNullptrWorks)
 {
-    Data data;
-    iox::rp::relocatable_ptr<Data> rp(&data);
-    EXPECT_EQ(&data, rp.get());
-}
-
-TEST_F(Relocatable_ptr_test, copyCtorOfNullptrWorks)
-{
-    iox::rp::relocatable_ptr<Data> rp1;
-    iox::rp::relocatable_ptr<Data> rp2(rp1);
+    using T = typename TestFixture::DataType;
+    iox::rp::relocatable_ptr<T> rp1;
+    iox::rp::relocatable_ptr<T> rp2(rp1);
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), nullptr);
 }
 
-TEST_F(Relocatable_ptr_test, moveCtorOfNullptrWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, moveCtorOfNullptrWorks)
 {
-    iox::rp::relocatable_ptr<Data> rp1;
-    iox::rp::relocatable_ptr<Data> rp2(std::move(rp1));
+    using T = typename TestFixture::DataType;
+    iox::rp::relocatable_ptr<T> rp1;
+    iox::rp::relocatable_ptr<T> rp2(std::move(rp1));
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), nullptr);
 }
 
-TEST_F(Relocatable_ptr_test, copyAssignmentOfNullptrWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, copyAssignmentOfNullptrWorks)
 {
-    iox::rp::relocatable_ptr<Data> rp1;
-    iox::rp::relocatable_ptr<Data> rp2;
+    using T = typename TestFixture::DataType;
+    // we cannot construct an actual object if T = void
+    // and it is not necessary fro most tests, we just need some non-nullptr
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1;
+    iox::rp::relocatable_ptr<T> rp2(p);
     rp2 = rp1;
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), nullptr);
 }
 
-TEST_F(Relocatable_ptr_test, moveAssignmentOfNullptrWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, moveAssignmentOfNullptrWorks)
 {
-    iox::rp::relocatable_ptr<Data> rp1;
-    iox::rp::relocatable_ptr<Data> rp2;
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1;
+    iox::rp::relocatable_ptr<T> rp2(p);
     rp2 = std::move(rp1);
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), nullptr);
 }
 
-TEST_F(Relocatable_ptr_test, copyCtorWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, nonNullPointerConstructionWorks)
 {
-    Data data;
-    auto p = &data;
-    iox::rp::relocatable_ptr<Data> rp1(p);
-    iox::rp::relocatable_ptr<Data> rp2(rp1);
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp(p);
+    EXPECT_EQ(rp.get(), p);
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, copyCtorWorks)
+{
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2(rp1);
     EXPECT_EQ(rp1.get(), p);
     EXPECT_EQ(rp2.get(), p);
 }
 
-TEST_F(Relocatable_ptr_test, moveCtorWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, moveCtorWorks)
 {
-    Data data;
-    auto p = &data;
-    iox::rp::relocatable_ptr<Data> rp1(p);
-    iox::rp::relocatable_ptr<Data> rp2(std::move(rp1));
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2(std::move(rp1));
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), p);
 }
 
-TEST_F(Relocatable_ptr_test, copyAssignmentWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, copyAssignmentWorks)
 {
-    Data data;
-    auto p = &data;
-    iox::rp::relocatable_ptr<Data> rp1(p);
-    iox::rp::relocatable_ptr<Data> rp2;
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2;
     rp2 = rp1;
     EXPECT_EQ(rp1.get(), p);
     EXPECT_EQ(rp2.get(), p);
 }
 
-TEST_F(Relocatable_ptr_test, moveAssignmentWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, moveAssignmentWorks)
 {
-    Data data;
-    auto p = &data;
-    iox::rp::relocatable_ptr<Data> rp1(p);
-    iox::rp::relocatable_ptr<Data> rp2;
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2;
     rp2 = std::move(rp1);
     EXPECT_EQ(rp1.get(), nullptr);
     EXPECT_EQ(rp2.get(), p);
 }
 
 // regular get is tested with the ctor
-TEST_F(Relocatable_ptr_test, constGetWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, constGetWorks)
 {
-    Data data;
-    const iox::rp::relocatable_ptr<Data> rp(&data);
-    EXPECT_EQ(&data, rp.get());
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    const iox::rp::relocatable_ptr<T> rp(p);
+    EXPECT_EQ(rp.get(), p);
 }
 
-TEST_F(Relocatable_ptr_test, conversionToRawPointerWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, conversionToRawPointerWorks)
 {
-    Data data;
-    iox::rp::relocatable_ptr<Data> rp(&data);
-    Data* p = rp;
-    EXPECT_EQ(&data, p);
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp(p);
+    T* q = rp;
+    EXPECT_EQ(q, p);
 }
 
-TEST_F(Relocatable_ptr_test, conversionToConstRawPointerWorks)
+TYPED_TEST(Relocatable_ptr_typed_test, conversionToConstRawPointerWorks)
 {
-    Data data;
-    const iox::rp::relocatable_ptr<Data> rp(&data);
-    const Data* p = rp;
-    EXPECT_EQ(&data, p);
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    const iox::rp::relocatable_ptr<T> rp(p);
+    const T* q = rp;
+    EXPECT_EQ(q, p);
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, arrowOperatorWorks)
+{
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp(p);
+    EXPECT_EQ(rp.operator->(), p);
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, arrowOperatorConstWorks)
+{
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    const iox::rp::relocatable_ptr<T> rp(p);
+    EXPECT_EQ(rp.operator->(), p);
+}
+
+
+TYPED_TEST(Relocatable_ptr_typed_test, nullptrIsEqualToNullptr)
+{
+    using T = typename TestFixture::DataType;
+    iox::rp::relocatable_ptr<T> rp1;
+    iox::rp::relocatable_ptr<T> rp2;
+
+    EXPECT_TRUE(operator==(rp1, rp2));
+    EXPECT_FALSE(operator!=(rp1, rp2));
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, nullptrIsNotEqualToNonNullptr)
+{
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2;
+
+    EXPECT_FALSE(operator==(rp1, rp2));
+    EXPECT_FALSE(operator==(rp2, rp1));
+    EXPECT_TRUE(operator!=(rp1, rp2));
+    EXPECT_TRUE(operator!=(rp2, rp1));
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, equalNonNullptrComparisonWorks)
+{
+    using T = typename TestFixture::DataType;
+    T* p = reinterpret_cast<T*>(NON_NULL_PTR);
+    iox::rp::relocatable_ptr<T> rp1(p);
+    iox::rp::relocatable_ptr<T> rp2(p);
+
+    EXPECT_TRUE(operator==(rp1, rp2));
+    EXPECT_FALSE(operator!=(rp1, rp2));
+}
+
+TYPED_TEST(Relocatable_ptr_typed_test, nonEqualNonNullptrComparisonWorks)
+{
+    using T = typename TestFixture::DataType;
+    T* p1 = reinterpret_cast<T*>(NON_NULL_PTR);
+    T* p2 = reinterpret_cast<T*>(NON_NULL_PTR + 1);
+    iox::rp::relocatable_ptr<T> rp1(p1);
+    iox::rp::relocatable_ptr<T> rp2(p2);
+
+    EXPECT_FALSE(operator==(rp1, rp2));
+    EXPECT_TRUE(operator!=(rp1, rp2));
 }
 
 TEST_F(Relocatable_ptr_test, dereferencingWorks)
@@ -206,62 +314,27 @@ TEST_F(Relocatable_ptr_test, dereferencingConstWorks)
     EXPECT_EQ(*rp, x);
 }
 
-TEST_F(Relocatable_ptr_test, arrowOperatorWorks)
+TEST_F(Relocatable_ptr_test, dereferencingComplexTypeWorks)
 {
-    Data data;
-    iox::rp::relocatable_ptr<Data> rp(&data);
-    EXPECT_EQ(&data, rp.operator->());
+    Data x(37);
+    iox::rp::relocatable_ptr<Data> rp(&x);
+    EXPECT_EQ((*rp).value, x.value);
+    EXPECT_EQ(rp->value, x.value);
 }
 
-TEST_F(Relocatable_ptr_test, arrowOperatorConstWorks)
+TEST_F(Relocatable_ptr_test, dereferencingConstComplexTypeWorks)
 {
-    Data data;
-    const iox::rp::relocatable_ptr<Data> rp(&data);
-    EXPECT_EQ(&data, rp.operator->());
+    Data x(37);
+    const iox::rp::relocatable_ptr<Data> rp(&x);
+    EXPECT_EQ((*rp).value, x.value);
+    EXPECT_EQ(rp->value, x.value);
 }
 
-TEST_F(Relocatable_ptr_test, nullptrIsEqualToNullptr)
-{
-    iox::rp::relocatable_ptr<Data> rp1;
-    iox::rp::relocatable_ptr<Data> rp2;
-
-    EXPECT_TRUE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator!=(rp1, rp2));
-}
-
-TEST_F(Relocatable_ptr_test, nullptrIsNotEqualToNonNullptr)
-{
-    Data data;
-    iox::rp::relocatable_ptr<Data> rp1(&data);
-    iox::rp::relocatable_ptr<Data> rp2;
-
-    EXPECT_FALSE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator==(rp2, rp1));
-    EXPECT_TRUE(operator!=(rp1, rp2));
-    EXPECT_TRUE(operator!=(rp2, rp1));
-}
-
-TEST_F(Relocatable_ptr_test, equalNonNullptrComparisonWorks)
-{
-    Data data;
-    iox::rp::relocatable_ptr<Data> rp1(&data);
-    iox::rp::relocatable_ptr<Data> rp2(&data);
-
-    EXPECT_TRUE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator!=(rp1, rp2));
-}
-
-TEST_F(Relocatable_ptr_test, nonEqualNonNullptrComparisonWorks)
-{
-    Data data1;
-    Data data2;
-    iox::rp::relocatable_ptr<Data> rp1(&data1);
-    iox::rp::relocatable_ptr<Data> rp2(&data2);
-
-    EXPECT_FALSE(operator==(rp1, rp2));
-    EXPECT_TRUE(operator!=(rp1, rp2));
-}
-
+// Checks whether copying a structure ontaining a relocatable_ptr
+// to internal data works as expected.
+// This means that the structure is properly copied by memcpy
+// and the copy works at the destination and does not depend on the source.
+// To verify this, we set the source to 0 after the copy.
 TEST_F(Relocatable_ptr_test, relocationWorks)
 {
     using T = RelocatableType;
@@ -276,12 +349,12 @@ TEST_F(Relocatable_ptr_test, relocationWorks)
     EXPECT_EQ(source->data, 37);
     EXPECT_EQ(*source->rp, 37);
 
-    // sturcture is relocated by memcopy
+    // structure is relocated by memcopy
     std::memcpy(destPtr, sourcePtr, sizeof(T));
-    // memory original source is set to 0
+    // memory of original source is set to 0
     std::memset(sourcePtr, 0, sizeof(T));
 
-    // reading this is leagl since it is a primitive type
+    // reading source->data is legal since it is a primitive type
     EXPECT_EQ(source->data, 0);
     EXPECT_EQ(dest->data, 37);
 
@@ -293,5 +366,4 @@ TEST_F(Relocatable_ptr_test, relocationWorks)
     EXPECT_EQ(*dest->rp, 73);
 }
 
-// TODO: typed test with void version - not possible for most operations (use own file)
 } // namespace

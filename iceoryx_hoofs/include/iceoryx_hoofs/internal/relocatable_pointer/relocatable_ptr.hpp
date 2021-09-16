@@ -16,6 +16,9 @@
 
 #pragma once
 
+#ifndef IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
+#define IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
+
 #include <cstdint>
 #include <type_traits>
 
@@ -160,7 +163,7 @@ bool operator!=(const relocatable_ptr<T>& rhs, const relocatable_ptr<T>& lhs)
     return !operator==(lhs, rhs);
 }
 
-// TODO: const T specialization
-
 } // namespace rp
 } // namespace iox
+
+#endif // IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
