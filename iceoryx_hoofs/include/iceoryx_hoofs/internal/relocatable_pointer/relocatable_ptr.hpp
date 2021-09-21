@@ -185,14 +185,51 @@ class relocatable_ptr
     }
 };
 
+/// @brief Compare relocatable_ptr with respect to logical equality.
+/// @return true if rhs and lhs point to the same location, false otherwise
 template <typename T>
-bool operator==(const relocatable_ptr<T>& rhs, const relocatable_ptr<T>& lhs)
+bool operator==(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs)
 {
     return lhs.get() == rhs.get();
 }
 
+/// @brief Compare relocatable_ptr to a raw pointer with respect to logical equality.
+/// @return true if rhs and lhs point to the same location, false otherwise
 template <typename T>
-bool operator!=(const relocatable_ptr<T>& rhs, const relocatable_ptr<T>& lhs)
+bool operator==(const T* lhs, const relocatable_ptr<T>& rhs)
+{
+    return lhs == rhs.get();
+}
+
+/// @brief Compare relocatable_ptr to a raw pointer with respect to logical equality.
+/// @return true if rhs and lhs point to the same location, false otherwise
+template <typename T>
+bool operator==(const relocatable_ptr<T>& lhs, const T* rhs)
+{
+    return lhs.get() == rhs;
+}
+
+
+/// @brief Compare relocatable_ptr with respect to logical inequality.
+/// @return true if rhs and lhs point to a different location, false otherwise
+template <typename T>
+bool operator!=(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs)
+{
+    return !operator==(lhs, rhs);
+}
+
+/// @brief Compare relocatable_ptr to a raw pointer with respect to logical inequality.
+/// @return true if rhs and lhs point to a different location, false otherwise
+template <typename T>
+bool operator!=(const T* lhs, const relocatable_ptr<T>& rhs)
+{
+    return !operator==(lhs, rhs);
+}
+
+/// @brief Compare relocatable_ptr to a raw pointer with respect to logical inequality.
+/// @return true if rhs and lhs point to a different location, false otherwise
+template <typename T>
+bool operator!=(const relocatable_ptr<T>& lhs, const T* rhs)
 {
     return !operator==(lhs, rhs);
 }

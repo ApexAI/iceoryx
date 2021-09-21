@@ -103,7 +103,7 @@ class Relocatable_ptr_test : public Test
 };
 
 
-typedef ::testing::Types<int, Data, void> TestTypes;
+typedef ::testing::Types<int, Data, void, char*, const Data, const void> TestTypes;
 
 /// we require TYPED_TEST since we support gtest 1.8 for our safety targets
 #pragma GCC diagnostic push
@@ -258,10 +258,15 @@ TYPED_TEST(Relocatable_ptr_typed_test, nullptrIsEqualToNullptr)
 {
     using T = typename TestFixture::DataType;
     iox::rp::relocatable_ptr<T> rp1;
-    iox::rp::relocatable_ptr<T> rp2;
+    iox::rp::relocatable_ptr<T> rp2;    
 
-    EXPECT_TRUE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator!=(rp1, rp2));
+    EXPECT_TRUE(rp1 == rp2);
+    EXPECT_TRUE(rp1 == nullptr);
+    EXPECT_TRUE(nullptr == rp2);
+
+    EXPECT_FALSE(rp1 != rp2);
+    EXPECT_FALSE(rp1 != nullptr);
+    EXPECT_FALSE(nullptr != rp2);    
 }
 
 TYPED_TEST(Relocatable_ptr_typed_test, nullptrIsNotEqualToNonNullptr)
@@ -271,10 +276,15 @@ TYPED_TEST(Relocatable_ptr_typed_test, nullptrIsNotEqualToNonNullptr)
     iox::rp::relocatable_ptr<T> rp1(p);
     iox::rp::relocatable_ptr<T> rp2;
 
-    EXPECT_FALSE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator==(rp2, rp1));
-    EXPECT_TRUE(operator!=(rp1, rp2));
-    EXPECT_TRUE(operator!=(rp2, rp1));
+    EXPECT_FALSE(rp1 == rp2);
+    EXPECT_FALSE(rp1 == nullptr);
+    EXPECT_FALSE(nullptr == rp1);
+    EXPECT_FALSE(rp2 == rp1);
+
+    EXPECT_TRUE(rp1 != rp2);
+    EXPECT_TRUE(rp1 != nullptr);
+    EXPECT_TRUE(nullptr != rp1);
+    EXPECT_TRUE(rp2 != rp1);
 }
 
 TYPED_TEST(Relocatable_ptr_typed_test, equalNonNullptrComparisonWorks)
@@ -284,8 +294,13 @@ TYPED_TEST(Relocatable_ptr_typed_test, equalNonNullptrComparisonWorks)
     iox::rp::relocatable_ptr<T> rp1(p);
     iox::rp::relocatable_ptr<T> rp2(p);
 
-    EXPECT_TRUE(operator==(rp1, rp2));
-    EXPECT_FALSE(operator!=(rp1, rp2));
+    EXPECT_TRUE(rp1 == rp2);
+    EXPECT_TRUE(rp1 == p);
+    EXPECT_TRUE(p == rp2);
+
+    EXPECT_FALSE(rp1 != rp2);
+    EXPECT_FALSE(p != rp2);
+    EXPECT_FALSE(rp1 != p);
 }
 
 TYPED_TEST(Relocatable_ptr_typed_test, nonEqualNonNullptrComparisonWorks)
@@ -296,8 +311,13 @@ TYPED_TEST(Relocatable_ptr_typed_test, nonEqualNonNullptrComparisonWorks)
     iox::rp::relocatable_ptr<T> rp1(p1);
     iox::rp::relocatable_ptr<T> rp2(p2);
 
-    EXPECT_FALSE(operator==(rp1, rp2));
-    EXPECT_TRUE(operator!=(rp1, rp2));
+    EXPECT_FALSE(rp1 == rp2);
+    EXPECT_FALSE(p1 == rp2);
+    EXPECT_FALSE(rp1 == p2);
+
+    EXPECT_TRUE(rp1 != rp2);
+    EXPECT_TRUE(p1 != rp2);
+    EXPECT_TRUE(rp1 != p2);
 }
 
 TEST_F(Relocatable_ptr_test, dereferencingWorks)
