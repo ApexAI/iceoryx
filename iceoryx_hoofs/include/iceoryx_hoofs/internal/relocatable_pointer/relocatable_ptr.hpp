@@ -32,12 +32,13 @@ namespace rp
 ///        It is useable like a raw pointer of the corresponding type and can be implicily
 ///        converted to one.
 ///
-/// @tparam T the native type wrapped by the relocatable_ptr.
+/// @tparam T the native type wrapped by the relocatable_ptr, i.e. relocatable_ptr<T>
+///         has native type T and corresponds to a raw pointer of type T*.
 ///
 /// @note It is advisable to use relocatable_ptr only for storage (e.g. member variables),
 ///       not to pass them around as function arguments or as return value.
-///       There should be no need for this, since as
-///       pass-around type regular pointers do the job just fine and do not incur
+///       There should be no need for this, since as pass-around type
+///       regular pointers do the job just fine and do not incur
 ///       the slight runtime overhead of a relocatable_ptr.
 ///       There should be no memory overhead on 64 bit systems.
 template <typename T>
@@ -45,109 +46,59 @@ class relocatable_ptr
 {
   public:
     /// @brief Construct from raw pointer.
-    relocatable_ptr(T* ptr = nullptr)
-    {
-        m_offset = to_offset(ptr);
-    }
+    relocatable_ptr(T* ptr = nullptr);
+    // {
+    //     m_offset = to_offset(ptr);
+    // }
 
     /// @brief Construct from other relocatable pointer.
-    relocatable_ptr(const relocatable_ptr& other)
-    {
-        m_offset = to_offset(other.get());
-    }
+    relocatable_ptr(const relocatable_ptr& other);
 
     /// @brief Move construct from other relocatable pointer.
-    relocatable_ptr(relocatable_ptr&& other)
-    {
-        m_offset = to_offset(other.get());
-        other.m_offset = NULL_POINTER_OFFSET;
-    }
+    relocatable_ptr(relocatable_ptr&& other);
 
     /// @brief Assign from relocatable pointer rhs.
-    relocatable_ptr& operator=(const relocatable_ptr& rhs)
-    {
-        if (this != &rhs)
-        {
-            m_offset = to_offset(rhs.get());
-        }
-        return *this;
-    }
+    relocatable_ptr& operator=(const relocatable_ptr& rhs);
 
     /// @brief Move assign from relocatable pointer rhs.
-    relocatable_ptr& operator=(relocatable_ptr&& rhs)
-    {
-        if (this != &rhs)
-        {
-            m_offset = to_offset(rhs.get());
-            rhs.m_offset = NULL_POINTER_OFFSET;
-        }
-        return *this;
-    }
+    relocatable_ptr& operator=(relocatable_ptr&& rhs);
 
     /// @brief Get the corresponding raw pointer.
     /// @return corresponding raw pointer
-    T* get()
-    {
-        return from_offset(m_offset);
-    }
+    T* get();
 
     /// @brief Get the corresponding raw pointer from const relocatable_ptr
     /// @return corresponding raw pointer
-    const T* get() const
-    {
-        return from_offset(m_offset);
-    }
+    const T* get() const;
 
     /// @brief Dereference a relocatable_ptr.
     /// @return reference to the pointee
     /// @note not available for T=void
     template <typename S = T>
-    S& operator*()
-    {
-        // not actually evaluated in the error case (compiler fails earlier since S = void leads to void&)
-        static_assert(!std::is_same<S, void>::value, "relocatable_ptr<void> does not support operator*");
-        return *get();
-    }
+    S& operator*();
 
     /// @brief Dereference a const relocatable_ptr.
     /// @return reference to the pointee
     /// @note not available for T=void
     template <typename S = T>
-    const S& operator*() const
-    {
-        // not actually evaluated in the error case (compiler fails earlier since S = void leads to void&)
-        static_assert(!std::is_same<S, void>::value, "relocatable_ptr<void> does not support operator* const");
-        return *get();
-    }
+    const S& operator*() const;
 
     /// @brief Get the corresponding raw pointer with arrow operator syntax.
     /// @return corresponding raw pointer
-    T* operator->()
-    {
-        return get();
-    }
+    T* operator->();
 
     /// @brief Get the corresponding raw pointer with arrow operator syntax
     ///        from a const relocatable_ptr.
     /// @return corresponding raw pointer
-    const T* operator->() const
-    {
-        return get();
-    }
+    const T* operator->() const;
 
     /// @brief Convert to the corresponding raw pointer.
     /// @return corresponding raw pointer
-    operator T*()
-    {
-        return get();
-    }
+    operator T*();
 
     /// @brief Convert to the corresponding const raw pointer.
     /// @return corresponding const raw pointer
-    operator const T*() const
-    {
-        return get();
-    }
+    operator const T*() const;
 
   private:
     using offset_t = uint64_t;
@@ -160,81 +111,26 @@ class relocatable_ptr
 
     offset_t m_offset;
 
-    offset_t self() const
-    {
-        return reinterpret_cast<offset_t>(this);
-    }
+    offset_t self() const;
 
-    offset_t to_offset(const void* ptr) const
-    {
-        if (ptr == nullptr)
-        {
-            return NULL_POINTER_OFFSET;
-        }
-        auto p = reinterpret_cast<offset_t>(ptr);
-        return p - self();
-    }
+    offset_t to_offset(const void* ptr) const;
 
-    T* from_offset(offset_t offset) const
-    {
-        if (offset == NULL_POINTER_OFFSET)
-        {
-            return nullptr;
-        }
-        return reinterpret_cast<T*>(offset + self());
-    }
+    T* from_offset(offset_t offset) const;
 };
 
 /// @brief Compare relocatable_ptr with respect to logical equality.
 /// @return true if rhs and lhs point to the same location, false otherwise
 template <typename T>
-bool operator==(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs)
-{
-    return lhs.get() == rhs.get();
-}
-
-/// @brief Compare relocatable_ptr to a raw pointer with respect to logical equality.
-/// @return true if rhs and lhs point to the same location, false otherwise
-template <typename T>
-bool operator==(const T* lhs, const relocatable_ptr<T>& rhs)
-{
-    return lhs == rhs.get();
-}
-
-/// @brief Compare relocatable_ptr to a raw pointer with respect to logical equality.
-/// @return true if rhs and lhs point to the same location, false otherwise
-template <typename T>
-bool operator==(const relocatable_ptr<T>& lhs, const T* rhs)
-{
-    return lhs.get() == rhs;
-}
-
+bool operator==(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs);
 
 /// @brief Compare relocatable_ptr with respect to logical inequality.
 /// @return true if rhs and lhs point to a different location, false otherwise
 template <typename T>
-bool operator!=(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs)
-{
-    return !operator==(lhs, rhs);
-}
-
-/// @brief Compare relocatable_ptr to a raw pointer with respect to logical inequality.
-/// @return true if rhs and lhs point to a different location, false otherwise
-template <typename T>
-bool operator!=(const T* lhs, const relocatable_ptr<T>& rhs)
-{
-    return !operator==(lhs, rhs);
-}
-
-/// @brief Compare relocatable_ptr to a raw pointer with respect to logical inequality.
-/// @return true if rhs and lhs point to a different location, false otherwise
-template <typename T>
-bool operator!=(const relocatable_ptr<T>& lhs, const T* rhs)
-{
-    return !operator==(lhs, rhs);
-}
+bool operator!=(const relocatable_ptr<T>& lhs, const relocatable_ptr<T>& rhs);
 
 } // namespace rp
 } // namespace iox
+
+#include "iceoryx_hoofs/internal/relocatable_pointer/relocatable_ptr.inl"
 
 #endif // IOX_HOOFS_RELOCATABLE_POINTER_RELOCATABLE_PTR_HPP
