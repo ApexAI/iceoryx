@@ -24,11 +24,13 @@ import time
 
 
 def main():
+    commit_sha = os.environ['GITHUB_SHA']
+    pr_id = os.environ['PR_NUMBER']
     data = {
         'token': os.environ['AXIVION_TRIGGER_TOKEN'],
         'ref': os.environ.get('AXIVION_REF_NAME', 'master'),
+        'variables': {"PR_ID": pr_id}
     }
-    commit_sha = os.environ['GITHUB_SHA']
     r = requests.post(
         f'https://gitlab.com/api/v4/projects/24081973/trigger/pipeline?variables[ICEORYX_SHA]={commit_sha}',
         json=data)

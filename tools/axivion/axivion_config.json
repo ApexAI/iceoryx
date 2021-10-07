@@ -1728,6 +1728,10 @@
             "ci_mode": {
                 "directory": "$(AXIVION_DATABASES_DIR=/opt/axivion_iceoryx/databases)"
             },
+            "local_mode": {
+                "directory": "$(AXIVION_DATABASES_DIR)/localbuilds",
+                "filename": "$(env:AXIVION_LOCAL_PROJECTNAME=foobar).db"
+            },
             "import_suppressed_issues": true
         }
     },

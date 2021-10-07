@@ -3,11 +3,15 @@ name: Axivion
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master, release* ]
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
   axivion:
-    runs-on: ubuntu-18.04
-
+    runs-on: ubuntu-latest
     steps:
       - name : Checkout
         uses: actions/checkout@v2
