@@ -62,6 +62,7 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 add_compile_options("-D_QNX_SOURCE=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # QNX 7 ships with QCC 5.4.0 (based on GCC). Cmake cannot detect the compiler features,
 # so they're added manually. The correct detection can be done if you set as cross-compiler
