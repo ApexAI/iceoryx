@@ -89,22 +89,22 @@ class PoshRuntimeMock : public iox::runtime::PoshRuntime
         return runtime;
     }
 
-    iox::cxx::expected<iox::runtime::ServiceContainer, iox::runtime::FindServiceError>
-    findService(const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t> service,
-                const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t> instance) noexcept override
-    {
-        return findServiceMock(service, instance);
-    }
+    // iox::cxx::expected<iox::runtime::ServiceContainer, iox::runtime::FindServiceError>
+    // findService(const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t> service,
+    //             const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t> instance) noexcept override
+    // {
+    //     return findServiceMock(service, instance);
+    // }
 
-    bool offerService(const iox::capro::ServiceDescription& serviceDescription) noexcept override
-    {
-        return offerServiceMock(serviceDescription);
-    }
+    // bool offerService(const iox::capro::ServiceDescription& serviceDescription) noexcept override
+    // {
+    //     return offerServiceMock(serviceDescription);
+    // }
 
-    bool stopOfferService(const iox::capro::ServiceDescription& serviceDescription) noexcept override
-    {
-        return stopOfferServiceMock(serviceDescription);
-    }
+    // bool stopOfferService(const iox::capro::ServiceDescription& serviceDescription) noexcept override
+    // {
+    //     return stopOfferServiceMock(serviceDescription);
+    // }
 
     iox::PublisherPortUserType::MemberType_t*
     getMiddlewarePublisher(const iox::capro::ServiceDescription& service,
@@ -141,11 +141,6 @@ class PoshRuntimeMock : public iox::runtime::PoshRuntime
     iox::runtime::NodeData* createNode(const iox::runtime::NodeProperty& nodeProperty) noexcept override
     {
         return createNodeMock(nodeProperty);
-    }
-
-    const std::atomic<uint64_t>* getServiceRegistryChangeCounter() noexcept override
-    {
-        return getServiceRegistryChangeCounterMock();
     }
 
     bool sendRequestToRouDi(const iox::runtime::IpcMessage& msg, iox::runtime::IpcMessage& answer) noexcept override

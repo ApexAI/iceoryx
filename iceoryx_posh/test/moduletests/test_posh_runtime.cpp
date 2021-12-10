@@ -617,22 +617,6 @@ TEST_F(PoshRuntime_test, GetMiddlewareConditionVariableListOverflow)
     EXPECT_TRUE(conditionVariableListOverflowDetected);
 }
 
-TIMING_TEST_F(PoshRuntime_test, GetServiceRegistryChangeCounterOfferStopOfferService, Repeat(5), [&] {
-    auto serviceCounter = m_runtime->getServiceRegistryChangeCounter();
-    auto initialCout = serviceCounter->load();
-
-    m_runtime->offerService({"service1", "instance1", "event1"});
-    this->InterOpWait();
-
-    TIMING_TEST_EXPECT_TRUE(initialCout + 1 == serviceCounter->load());
-
-    m_runtime->stopOfferService({"service1", "instance1", "event1"});
-    this->InterOpWait();
-
-    TIMING_TEST_EXPECT_TRUE(initialCout + 2 == serviceCounter->load());
-});
-
-
 TEST_F(PoshRuntime_test, CreateNodeReturnValue)
 {
     const uint32_t nodeDeviceIdentifier = 1U;
@@ -663,31 +647,6 @@ TEST_F(PoshRuntime_test, CreatingNodeWithInvalidNameLeadsToTermination)
 
     ASSERT_THAT(detectedError.has_value(), Eq(true));
     EXPECT_THAT(detectedError.value(), Eq(iox::Error::kPOSH__RUNTIME_ROUDI_CREATE_NODE_WRONG_IPC_MESSAGE_RESPONSE));
-}
-
-TEST_F(PoshRuntime_test, OfferEmptyServiceIsInvalid)
-{
-    auto isServiceOffered = m_runtime->offerService(iox::capro::ServiceDescription());
-
-    EXPECT_FALSE(isServiceOffered);
-}
-
-TEST_F(PoshRuntime_test, FindServiceWithWildcardsReturnsOnlyIntrospectionServices)
-{
-    PoshRuntime* m_receiverRuntime{&iox::runtime::PoshRuntime::initRuntime("subscriber")};
-
-    EXPECT_FALSE(m_runtime->offerService(iox::capro::ServiceDescription()));
-    this->InterOpWait();
-
-    auto serviceContainer = m_receiverRuntime->findService(iox::runtime::Wildcard_t(), iox::runtime::Wildcard_t());
-    ASSERT_FALSE(serviceContainer.has_error());
-
-    auto searchResult = serviceContainer.value();
-
-    for (auto& service : searchResult)
-    {
-        EXPECT_THAT(service.getServiceIDString().c_str(), StrEq("Introspection"));
-    }
 }
 
 TEST_F(PoshRuntime_test, ShutdownUnblocksBlockingPublisher)
