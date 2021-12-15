@@ -176,7 +176,7 @@ capro::ServiceDescription::deserialize(serialisedObj)
     });
 ```
 
-The service-related methods have been moved from `PoshRuntime` to a separate class (TBD):
+The service-related methods have been moved from `PoshRuntime` to `PoshDiscovery`:
 
 ```cpp
 // before
@@ -185,9 +185,9 @@ poshRuntime.stopOfferService(myServiceDescription);
 poshRuntime.findService({"ServiceA", iox::capro::AnyInstanceString});
 
 // after
-discoveryInfo.offerService(myServiceDescription);
-discoveryInfo.stopOfferService(myServiceDescription);
-discoveryInfo.findService("ServiceA", Wildcard);
+poshDiscovery.offerService(myServiceDescription);
+poshDiscovery.stopOfferService(myServiceDescription);
+poshDiscovery.findService("ServiceA", Wildcard);
 ```
 
 ## [v1.0.1](https://github.com/eclipse-iceoryx/iceoryx/tree/v1.0.0) (2021-06-15)

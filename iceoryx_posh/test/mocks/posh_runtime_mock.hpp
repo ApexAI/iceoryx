@@ -46,12 +46,6 @@ class PoshRuntimeMock : public iox::runtime::PoshRuntime
     }
 
     /// @todo iox-#841 simplify this when we switch to gmock v1.10
-    MOCK_METHOD2(findServiceMock,
-                 iox::cxx::expected<iox::runtime::ServiceContainer, iox::runtime::FindServiceError>(
-                     const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t>,
-                     const iox::cxx::variant<iox::runtime::Wildcard_t, iox::capro::IdString_t>));
-    MOCK_METHOD1(offerServiceMock, bool(const iox::capro::ServiceDescription&));
-    MOCK_METHOD1(stopOfferServiceMock, bool(const iox::capro::ServiceDescription&));
     MOCK_METHOD3(getMiddlewarePublisherMock,
                  iox::PublisherPortUserType::MemberType_t*(const iox::capro::ServiceDescription&,
                                                            const iox::popo::PublisherOptions&,
