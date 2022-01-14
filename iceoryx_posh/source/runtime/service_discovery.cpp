@@ -140,5 +140,24 @@ const std::atomic<uint64_t>* ServiceDiscovery::getServiceRegistryChangeCounter()
         return nullptr;
     }
 }
+
+// no real way for a listener to attach a member or a capturing lambda (stateful functor)...
+void wake_up(iox::popo::UserTrigger*)
+{
+}
+
+// todo: maybe use waitset (or interprocess condition variable)
+
+void ServiceDiscovery::wait()
+{
+    if (false /*we do not have to wait*/)
+    {
+        return;
+    }
+    m_listener.attachEvent(m_trigger, iox::popo::createNotificationCallback(wake_up)).or_else([](auto) {
+        std::cerr << "unable to attach event" << std::endl;
+    });
+}
+
 } // namespace runtime
 } // namespace iox

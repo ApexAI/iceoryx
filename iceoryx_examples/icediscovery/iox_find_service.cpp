@@ -78,8 +78,24 @@ int main()
                 std::cerr << "findService() call failed with: " << static_cast<uint64_t>(error) << std::endl;
             });
         std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
 
+
+        auto si = serviceDiscovery.getStateIndicator();
+
+        while (true)
+        {
+            auto result = serviceDiscovery.findService(iox::capro::IdString_t{"Radar"}, iox::runtime::Wildcard_t{});
+            if (false)
+            {
+                break; // actually check the existence of some service here
+            }
+            while (si == serviceDiscovery.update())
+            {
+            }
+
+            si = serviceDiscovery.getStateIndicator();
+        }
+    }
 
     return (EXIT_SUCCESS);
 }

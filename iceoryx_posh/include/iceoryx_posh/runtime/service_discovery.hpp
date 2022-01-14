@@ -20,10 +20,30 @@
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
+#include "iceoryx_posh/popo/listener.hpp"
+#include "iceoryx_posh/popo/user_trigger.hpp"
+
 namespace iox
 {
 namespace runtime
 {
+// public/private can be sorted out later
+class DiscoveryStateIndicator
+{
+  public:
+    uint64_t serviceChangeCounter{0};
+
+    bool operator==(const DiscoveryStateIndicator& other)
+    {
+        return other.serviceChangeCounter == serviceChangeCounter;
+    }
+
+    bool operator!=(const DiscoveryStateIndicator& other)
+    {
+        return !(*this == other);
+    }
+};
+
 class ServiceDiscovery
 {
   public:
@@ -58,8 +78,39 @@ class ServiceDiscovery
     /// @return pointer to the serviceRegistryChangeCounter
     virtual const std::atomic<uint64_t>* getServiceRegistryChangeCounter() noexcept;
 
+    DiscoveryStateIndicator getStateIndicator()
+    {
+        return m_stateIndicator;
+    }
+
+    const DiscoveryStateIndicator& update()
+    {
+        m_stateIndicator.serviceChangeCounter = getServiceRegistryChangeCounter()->load();
+        return m_stateIndicator;
+    }
+
+    // DiscoveryStateIndicator waitForService(Servicedescription, DiscoveryStateIndicator){
+
+    // };
+
+    // DiscoveryStateIndicator waitForService(Servicedescription){
+
+    // };
+
+    // DiscoveryStateIndicator waitForAnyServiceChange(){
+
+    // };
+
+    void wait();
+
   private:
     popo::ApplicationPort m_applicationPort{PoshRuntime::getInstance().getMiddlewareApplication()};
+
+    DiscoveryStateIndicator m_stateIndicator;
+
+    iox::popo::Listener m_listener;
+
+    iox::popo::UserTrigger m_trigger; // needs to live in Roudi
 };
 
 
