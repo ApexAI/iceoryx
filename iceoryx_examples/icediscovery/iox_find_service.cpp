@@ -85,6 +85,7 @@ int main()
         while (true)
         {
             auto result = serviceDiscovery.findService(iox::capro::IdString_t{"Radar"}, iox::runtime::Wildcard_t{});
+            (void)result;
             if (false)
             {
                 break; // actually check the existence of some service here

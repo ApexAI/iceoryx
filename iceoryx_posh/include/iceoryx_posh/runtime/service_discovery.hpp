@@ -107,10 +107,107 @@ class ServiceDiscovery
     popo::ApplicationPort m_applicationPort{PoshRuntime::getInstance().getMiddlewareApplication()};
 
     DiscoveryStateIndicator m_stateIndicator;
+};
 
+// working title
+class CallbackServiceDiscovery
+{
+  public:
+    struct Context
+    {
+        uint64_t knownCounter{0}; // atomic?
+    };
+
+    // not inuitive to have this static (required for listener...)
+    // is there a way to deal with more general callbacks?
+    static void wake_up(CallbackServiceDiscovery* const self)
+    {
+        (void)self;
+    }
+
+    static void wake_up(CallbackServiceDiscovery* const self, Context* const)
+    {
+        (void)self;
+    }
+
+    static void wake_up_callback(iox::popo::UserTrigger* trigger, Context* const context)
+    {
+        (void)trigger;
+        context->knownCounter = getCounterFromRoudi();
+    }
+
+    // there is only one roudi so a static method is OK
+    static uint64_t getCounterFromRoudi()
+    {
+        return 0; // stub, needs to get the updated counter
+    }
+
+    // generalize for any condition
+    bool conditionOfInterest()
+    {
+        return true;
+    }
+
+    void blockingWaitUntilCounterChanges(uint64_t oldCounter)
+    {
+        // TODO: block
+    }
+
+
+    void waitForChange(uint64_t oldCounter)
+    {
+        m_knownCounter = getCounterFromRoudi();
+
+        if (m_knownCounter != oldCounter)
+        {
+            return; // change happened already
+        }
+
+        // no change, register callback to be woken up on change
+
+        // auto callback1 = iox::popo::createNotificationCallback(wake_up);
+        // auto callback2 = iox::popo::createNotificationCallback(wake_up, m_context);
+        auto callback3 = iox::popo::createNotificationCallback(wake_up_callback, m_context);
+
+        // we want to register some code to be executed on wakeup or to wake_up
+        // the wake-up notification ghas to come from the port or Roudi
+
+        m_listener.attachEvent(m_trigger, callback3).or_else([](auto) {
+            std::cerr << "unable to attach event" << std::endl;
+        });
+
+        // callback is registered
+
+        // we cannot be sure we do not miss the wake-up otherwise
+        m_knownCounter = getCounterFromRoudi();
+        if (m_knownCounter != oldCounter)
+        {
+            m_listener.detachEvent(m_trigger);
+            return; // change happened during notification
+        }
+
+        // TODO: need the waitset
+        blockingWaitUntilCounterChanges(oldCounter);
+
+        m_listener.detachEvent(m_trigger);
+
+        // TODO: looks way to heavy
+        // 1) notification has to come from roudi (or a port)
+        // 2) code executed is a callback in general but in a specific case just something that unblocks us
+        // 3) need a local blocking mechanism
+        // 4) how many waiters do we need to support?
+        // 5) listener vs. waitset here? (we need the waitset if we want to block and the listener if we want to
+        //    call async callbacks)
+    }
+
+    Context m_context;
     iox::popo::Listener m_listener;
 
-    iox::popo::UserTrigger m_trigger; // needs to live in Roudi
+    // needs to live in Roudi to be activated on change of the registry
+    // (alternatively we can use the built-in trigger of a port)
+    iox::popo::UserTrigger m_trigger;
+
+    uint64_t m_knownCounter{0};
 };
 
 
