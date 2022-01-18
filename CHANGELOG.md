@@ -186,7 +186,8 @@ capro::ServiceDescription::deserialize(serialisedObj)
     });
 ```
 
-The service-related methods have been moved from `PoshRuntime` to `ServiceDiscovery`:
+The service-related methods have been moved from `PoshRuntime` to `ServiceDiscovery`. Additionally, the
+`offerService` and `stopOfferService` methods have been removed:
 
 ```cpp
 // before
@@ -195,8 +196,6 @@ poshRuntime.stopOfferService(myServiceDescription);
 poshRuntime.findService({"ServiceA", iox::capro::AnyInstanceString});
 
 // after
-serviceDiscovery.offerService(myServiceDescription);
-serviceDiscovery.stopOfferService(myServiceDescription);
 serviceDiscovery.findService("ServiceA", Wildcard);
 ```
 
