@@ -136,8 +136,8 @@ TEST_F(PortPool_test, AddNodeDataWhenNodeListIsFullReturnsError)
 
     auto errorHandlerCalled{false};
     Error errorHandlerType;
-    auto errorHandlerGuard =
-        ErrorHandler::setTemporaryErrorHandler([&](const Error error, const std::function<void()>, const ErrorLevel) {
+    auto errorHandlerGuard = ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+        [&](const Error error, const std::function<void()>, const ErrorLevel) {
             errorHandlerType = error;
             errorHandlerCalled = true;
         });
@@ -258,8 +258,8 @@ TEST_F(PortPool_test, AddPublisherPortWhenPublisherListOverflowsReturnsError)
 
     auto errorHandlerCalled{false};
     Error errorHandlerType;
-    auto errorHandlerGuard =
-        ErrorHandler::setTemporaryErrorHandler([&](const Error error, const std::function<void()>, const ErrorLevel) {
+    auto errorHandlerGuard = ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+        [&](const Error error, const std::function<void()>, const ErrorLevel) {
             errorHandlerType = error;
             errorHandlerCalled = true;
         });
@@ -392,8 +392,8 @@ TEST_F(PortPool_test, AddSubscriberPortWhenSubscriberListOverflowsReturnsError)
 
     auto errorHandlerCalled{false};
     Error errorHandlerType;
-    auto errorHandlerGuard =
-        ErrorHandler::setTemporaryErrorHandler([&](const Error error, const std::function<void()>, const ErrorLevel) {
+    auto errorHandlerGuard = ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+        [&](const Error error, const std::function<void()>, const ErrorLevel) {
             errorHandlerType = error;
             errorHandlerCalled = true;
         });
@@ -704,8 +704,8 @@ TEST_F(PortPool_test, AddInterfacePortWhenInterfaceListOverflowsReturnsError)
 
     auto errorHandlerCalled{false};
     Error errorHandlerType;
-    auto errorHandlerGuard =
-        ErrorHandler::setTemporaryErrorHandler([&](const Error error, const std::function<void()>, const ErrorLevel) {
+    auto errorHandlerGuard = ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+        [&](const Error error, const std::function<void()>, const ErrorLevel) {
             errorHandlerType = error;
             errorHandlerCalled = true;
         });
@@ -792,8 +792,8 @@ TEST_F(PortPool_test, AddConditionVariableDataWhenContainerIsFullReturnsError)
 
     auto errorHandlerCalled{false};
     Error errorHandlerType;
-    auto errorHandlerGuard =
-        ErrorHandler::setTemporaryErrorHandler([&](const Error error, const std::function<void()>, const ErrorLevel) {
+    auto errorHandlerGuard = ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+        [&](const Error error, const std::function<void()>, const ErrorLevel) {
             errorHandlerType = error;
             errorHandlerCalled = true;
         });
