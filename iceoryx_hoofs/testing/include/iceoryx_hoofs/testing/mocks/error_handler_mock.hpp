@@ -52,8 +52,8 @@ inline void errorHandlerForTest(const uint32_t error, const char* errorName, con
     {
         // We undo the type erasure
         auto typedError = static_cast<ErrorEnumType>(error);
-        typedHandler<iox::Error>.and_then(
-            [&](TypedHandlerFunction<Error> storedHandler) { storedHandler(typedError, level); });
+        typedHandler<ErrorEnumType>.and_then(
+            [&](TypedHandlerFunction<ErrorEnumType> storedHandler) { storedHandler(typedError, level); });
     }
     else
     {
@@ -69,12 +69,12 @@ ErrorHandlerMock::setTemporaryErrorHandler(const TypedHandlerFunction<Error>& ne
     return cxx::GenericRAII(
         [&newHandler] {
             std::lock_guard<std::mutex> lock(handler_mutex);
-            typedHandler<iox::Error>.emplace(newHandler);
+            typedHandler<Error>.emplace(newHandler);
             handler = errorHandlerForTest<Error>;
         },
         [] {
             std::lock_guard<std::mutex> lock(handler_mutex);
-            typedHandler<iox::Error>.reset();
+            typedHandler<Error>.reset();
             handler = defaultHandler;
         });
 }

@@ -298,16 +298,16 @@ TYPED_TEST(SmartChunkTest, SendingSmartChunkMultipleTimesFails)
 
     this->send(this->producer.sut);
 
-    iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::Error>(
-        [&detectedError](const iox::Error error, const auto errorLevel) {
+    iox::cxx::optional<iox::PoshError> detectedError;
+    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::PoshError>(
+        [&detectedError](const iox::PoshError error, const auto errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::MODERATE));
         });
     this->send(this->producer.sut);
 
     ASSERT_TRUE(detectedError.has_value());
-    ASSERT_THAT(detectedError.value(), Eq(iox::Error::kPOSH__PUBLISHING_EMPTY_SAMPLE));
+    ASSERT_THAT(detectedError.value(), Eq(iox::PoshError::kPOSH__PUBLISHING_EMPTY_SAMPLE));
 }
 
 TYPED_TEST(SmartChunkTest, SendingMovedSmartChunkFails)
@@ -317,16 +317,16 @@ TYPED_TEST(SmartChunkTest, SendingMovedSmartChunkFails)
 
     destination.sut = std::move(this->producer.sut);
 
-    iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::Error>(
-        [&detectedError](const iox::Error error, const auto errorLevel) {
+    iox::cxx::optional<iox::PoshError> detectedError;
+    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::PoshError>(
+        [&detectedError](const iox::PoshError error, const auto errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::MODERATE));
         });
     this->send(this->producer.sut);
 
     ASSERT_TRUE(detectedError.has_value());
-    ASSERT_THAT(detectedError.value(), Eq(iox::Error::kPOSH__PUBLISHING_EMPTY_SAMPLE));
+    ASSERT_THAT(detectedError.value(), Eq(iox::PoshError::kPOSH__PUBLISHING_EMPTY_SAMPLE));
 }
 
 TYPED_TEST(SmartChunkTest, SendingDestinationOfValidMoveOriginSucceeds)
