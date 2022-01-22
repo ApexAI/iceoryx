@@ -18,6 +18,7 @@
 #define IOX_HOOFS_POSIX_WRAPPER_CONDITION_VARIABLE_HPP
 
 #include "iceoryx_hoofs/cxx/function.hpp"
+#include "iceoryx_hoofs/internal/concurrent/smart_lock.hpp"
 #include "iceoryx_hoofs/internal/posix_wrapper/mutex.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
 
@@ -60,20 +61,23 @@ template <typename T>
 class ConditionVariable
 {
   public:
+    using Proxy = typename concurrent::smart_lock<T, posix::mutex>::Proxy;
+
     using predicate_t = cxx::function<bool(T&)>;
     template <typename... Targs>
     explicit ConditionVariable(const ConditionScope scope, const predicate_t& predicate, Targs&&... args) noexcept;
-    ~ConditionVariable() noexcept;
+    ~ConditionVariable() noexcept = default;
 
     ConditionVariable(const ConditionVariable&) = delete;
     ConditionVariable(ConditionVariable&&) = delete;
     ConditionVariable& operator=(const ConditionVariable&) = delete;
     ConditionVariable& operator=(ConditionVariable&&) = delete;
 
-    T* operator->() noexcept;
-    const T* operator->() const noexcept;
-    T& operator*() noexcept;
-    const T& operator*() const noexcept;
+    Proxy operator->() noexcept;
+    const Proxy operator->() const noexcept;
+
+    Proxy getScopeGuard() noexcept;
+    const Proxy getScopeGuard() const noexcept;
 
     void waitFor(const units::Duration& timeout) noexcept;
     void wait() noexcept;
@@ -82,11 +86,13 @@ class ConditionVariable
     void notifyAll() noexcept;
 
   private:
-    T m_base;
     Condition m_condition;
     predicate_t m_predicate;
+    T m_base;
 };
 } // namespace posix
 } // namespace iox
+
+#include "iceoryx_hoofs/internal/posix_wrapper/condition_variable.inl"
 
 #endif

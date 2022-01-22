@@ -156,6 +156,5 @@ void Condition::wait() noexcept
     }
     cxx::Ensures(!result.has_error() && "Error during wait in condition occurred.");
 }
-
 } // namespace posix
 } // namespace iox
