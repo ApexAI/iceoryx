@@ -31,6 +31,10 @@ using ThreadName_t = cxx::string<MAX_THREAD_NAME_LENGTH>;
 void setThreadName(pthread_t thread, const ThreadName_t& name) noexcept;
 ThreadName_t getThreadName(pthread_t thread) noexcept;
 
+namespace this_thread
+{
+void yield() noexcept;
+}
 } // namespace posix
 } // namespace iox
 

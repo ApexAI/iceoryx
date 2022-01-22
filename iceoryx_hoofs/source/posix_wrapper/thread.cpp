@@ -49,5 +49,12 @@ ThreadName_t getThreadName(pthread_t thread) noexcept
     return ThreadName_t(cxx::TruncateToCapacity, tempName);
 }
 
+namespace this_thread
+{
+void yield() noexcept
+{
+    posixCall(pthread_yield)().returnValueMatchesErrno().evaluate();
+}
+} // namespace this_thread
 } // namespace posix
 } // namespace iox
