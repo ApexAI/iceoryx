@@ -154,7 +154,7 @@ add_library(iceoryx_hoofs
     source/log/logmanager.cpp
     source/log/logstream.cpp
     source/posix_wrapper/access_control.cpp
-    source/posix_wrapper/condition_variable.cpp
+    source/posix_wrapper/condition.cpp
     source/posix_wrapper/mutex.cpp
     source/posix_wrapper/file_lock.cpp
     source/posix_wrapper/semaphore.cpp

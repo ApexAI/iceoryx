@@ -19,48 +19,13 @@
 
 #include "iceoryx_hoofs/cxx/function.hpp"
 #include "iceoryx_hoofs/internal/concurrent/smart_lock.hpp"
-#include "iceoryx_hoofs/internal/posix_wrapper/mutex.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
+#include "iceoryx_hoofs/posix_wrapper/condition.hpp"
 
 namespace iox
 {
 namespace posix
 {
-enum class ConditionScope
-{
-    SINGLE_PROCESS,
-    INTER_PROCESS
-};
-
-class Condition
-{
-  public:
-    explicit Condition(const ConditionScope scope) noexcept;
-    ~Condition() noexcept;
-
-    Condition(const Condition&) = delete;
-    Condition(Condition&&) = delete;
-    Condition& operator=(const Condition&) = delete;
-    Condition& operator=(Condition&&) = delete;
-
-    bool waitFor(const units::Duration& timeout) noexcept;
-    void wait() noexcept;
-
-    void notifyOne() noexcept;
-    void notifyAll() noexcept;
-
-    template <typename>
-    friend class ConditionVariable;
-
-  private:
-    pthread_cond_t m_conditionVariable;
-    mutable mutex m_mutex{false};
-
-  private:
-    bool waitForWithoutLock(struct timespec& timeout) noexcept;
-    void waitWithoutLock() noexcept;
-};
-
 template <typename T>
 class ConditionVariable
 {
