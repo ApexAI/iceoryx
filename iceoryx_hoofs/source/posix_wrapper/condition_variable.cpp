@@ -120,13 +120,25 @@ void Condition::notifyAll() noexcept
 
 bool Condition::waitFor(const units::Duration& timeout) noexcept
 {
-    timespec t = timeout.timespec();
-
     cxx::Ensures(m_mutex.lock() && "Underlying mutex of Condition is corrupted!");
-    auto result = posixCall(pthread_cond_timedwait)(&m_conditionVariable, &m_mutex.m_handle, &t)
+    timespec t = timeout.timespec();
+    auto hasTimeOut = waitForWithoutLock(t);
+    cxx::Ensures(m_mutex.unlock() && "Underlying mutex of Condition is corrupted!");
+    return hasTimeOut;
+}
+
+void Condition::wait() noexcept
+{
+    cxx::Ensures(m_mutex.lock() && "Underlying mutex of Condition is corrupted!");
+    waitWithoutLock();
+    cxx::Ensures(m_mutex.unlock() && "Underlying mutex of Condition is corrupted!");
+}
+
+bool Condition::waitForWithoutLock(struct timespec& timeout) noexcept
+{
+    auto result = posixCall(pthread_cond_timedwait)(&m_conditionVariable, &m_mutex.m_handle, &timeout)
                       .returnValueMatchesErrno()
                       .evaluate();
-    cxx::Ensures(m_mutex.unlock() && "Underlying mutex of Condition is corrupted!");
 
     if (result.has_error())
     {
@@ -143,12 +155,10 @@ bool Condition::waitFor(const units::Duration& timeout) noexcept
     return true;
 }
 
-void Condition::wait() noexcept
+void Condition::waitWithoutLock() noexcept
 {
-    cxx::Ensures(m_mutex.lock() && "Underlying mutex of Condition is corrupted!");
     auto result =
         posixCall(pthread_cond_wait)(&m_conditionVariable, &m_mutex.m_handle).returnValueMatchesErrno().evaluate();
-    cxx::Ensures(m_mutex.unlock() && "Underlying mutex of Condition is corrupted!");
 
     if (result.has_error())
     {
@@ -156,5 +166,6 @@ void Condition::wait() noexcept
     }
     cxx::Ensures(!result.has_error() && "Error during wait in condition occurred.");
 }
+
 } // namespace posix
 } // namespace iox

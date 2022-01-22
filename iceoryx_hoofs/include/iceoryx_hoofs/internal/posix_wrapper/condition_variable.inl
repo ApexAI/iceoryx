@@ -57,21 +57,32 @@ inline const typename ConditionVariable<T>::Proxy ConditionVariable<T>::getScope
 }
 
 template <typename T>
-inline void ConditionVariable<T>::waitFor(const units::Duration& timeout) noexcept
+inline bool ConditionVariable<T>::waitFor(const units::Duration& timeout) noexcept
 {
-    m_condition.waitFor(timeout);
-    // add waitForWithNoLock
+    timespec t = timeout.timespec();
+    cxx::Ensures(m_condition.m_mutex.lock() && "Underlying mutex of ConditionVariable is corrupted!");
+    while (!m_predicate(m_base))
+    {
+        // in every iteration pthread_cond_timedwait (waitForWithoutLock) substracts the amount of time waited
+        // when waitForWithoutLock returns false caused by ETIMEDOUT the absolute waiting time has passed
+        if (!m_condition.waitForWithoutLock(t))
+        {
+            return false;
+        }
+    }
+    cxx::Ensures(m_condition.m_mutex.unlock() && "Underlying mutex of ConditionVariable is corrupted!");
+    return true;
 }
 
 template <typename T>
 inline void ConditionVariable<T>::wait() noexcept
 {
-    m_condition.wait();
-    // add waitNoLock
-    // mutex.lock();
-    // while( !m_predicate(m_base) )
-    //   m_condition.waitNoLock();
-    // mutex.unlock();
+    cxx::Ensures(m_condition.m_mutex.lock() && "Underlying mutex of ConditionVariable is corrupted!");
+    while (!m_predicate(m_base))
+    {
+        m_condition.waitWithoutLock();
+    }
+    cxx::Ensures(m_condition.m_mutex.unlock() && "Underlying mutex of ConditionVariable is corrupted!");
 }
 
 template <typename T>
@@ -85,6 +96,39 @@ inline void ConditionVariable<T>::notifyAll() noexcept
 {
     m_condition.notifyAll();
 }
+
+template <typename T>
+inline T ConditionVariable<T>::read() const noexcept
+{
+    cxx::Ensures(m_condition.m_mutex.lock() && "Underlying mutex of ConditionVariable is corrupted!");
+    T returnValue = m_base;
+    cxx::Ensures(m_condition.m_mutex.unlock() && "Underlying mutex of ConditionVariable is corrupted!");
+    return returnValue;
+}
+
+template <typename T>
+inline void ConditionVariable<T>::write(const T& t) noexcept
+{
+    cxx::Ensures(m_condition.m_mutex.lock() && "Underlying mutex of ConditionVariable is corrupted!");
+    m_base = t;
+    cxx::Ensures(m_condition.m_mutex.unlock() && "Underlying mutex of ConditionVariable is corrupted!");
+}
+
+template <typename T>
+inline void ConditionVariable<T>::writeAndNotifyOne(const T& t) noexcept
+{
+    write(t);
+    notifyOne();
+}
+
+template <typename T>
+inline void ConditionVariable<T>::writeAndNotifyAll(const T& t) noexcept
+{
+    write(t);
+    notifyAll();
+}
+
+
 } // namespace posix
 } // namespace iox
 

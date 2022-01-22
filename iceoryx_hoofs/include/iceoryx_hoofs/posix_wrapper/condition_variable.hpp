@@ -54,7 +54,11 @@ class Condition
 
   private:
     pthread_cond_t m_conditionVariable;
-    mutex m_mutex{false};
+    mutable mutex m_mutex{false};
+
+  private:
+    bool waitForWithoutLock(struct timespec& timeout) noexcept;
+    void waitWithoutLock() noexcept;
 };
 
 template <typename T>
@@ -79,7 +83,12 @@ class ConditionVariable
     Proxy getScopeGuard() noexcept;
     const Proxy getScopeGuard() const noexcept;
 
-    void waitFor(const units::Duration& timeout) noexcept;
+    T read() const noexcept;
+    void write(const T& t) noexcept;
+    void writeAndNotifyOne(const T& t) noexcept;
+    void writeAndNotifyAll(const T& t) noexcept;
+
+    bool waitFor(const units::Duration& timeout) noexcept;
     void wait() noexcept;
 
     void notifyOne() noexcept;
