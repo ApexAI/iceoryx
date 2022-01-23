@@ -14,8 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_hoofs/posix_wrapper/condition_variable.hpp"
 #include "iceoryx_hoofs/cxx/generic_raii.hpp"
+#include "iceoryx_hoofs/posix_wrapper/condition_variable.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
 #include "iceoryx_hoofs/posix_wrapper/thread.hpp"
 
@@ -121,7 +121,7 @@ void Condition::notifyAll() noexcept
 bool Condition::waitFor(const units::Duration& timeout) noexcept
 {
     cxx::Ensures(m_mutex.lock() && "Underlying mutex of Condition is corrupted!");
-    timespec t = timeout.timespec();
+    timespec t = timeout.timespec(units::TimeSpecReference::Epoch);
     auto hasTimeOut = waitForWithoutLock(t);
     cxx::Ensures(m_mutex.unlock() && "Underlying mutex of Condition is corrupted!");
     return hasTimeOut;
@@ -138,21 +138,16 @@ bool Condition::waitForWithoutLock(struct timespec& timeout) noexcept
 {
     auto result = posixCall(pthread_cond_timedwait)(&m_conditionVariable, &m_mutex.m_handle, &timeout)
                       .returnValueMatchesErrno()
+                      .ignoreErrnos(ETIMEDOUT)
                       .evaluate();
 
     if (result.has_error())
     {
-        switch (result.get_error().errnum)
-        {
-        case ETIMEDOUT:
-            return false;
-        default:
-            printLogicWarning();
-        }
+        printLogicWarning();
     }
     cxx::Ensures(!result.has_error() && "Error during waitFor in condition occurred.");
 
-    return true;
+    return (result.value().value != ETIMEDOUT);
 }
 
 void Condition::waitWithoutLock() noexcept
