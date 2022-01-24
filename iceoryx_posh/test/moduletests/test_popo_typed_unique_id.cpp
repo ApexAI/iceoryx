@@ -40,9 +40,9 @@ TEST(TypedUniqueId_RouDiId, SettingTheRouDiIdTwiceFails)
     ::testing::Test::RecordProperty("TEST_ID", "fe468314-cd38-4363-bbf9-f106bf9ec1f4");
     uint16_t someId = 1243u;
     bool errorHandlerCalled = false;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
         [&errorHandlerCalled](const iox::Error error IOX_MAYBE_UNUSED,
-                              const std::function<void()>,
+                              
                               const iox::ErrorLevel) { errorHandlerCalled = true; });
 
     iox::popo::internal::setUniqueRouDiId(someId);
@@ -56,9 +56,9 @@ TEST(TypedUniqueId_RouDiId, GettingTheRouDiIdWithoutSettingFails)
 {
     ::testing::Test::RecordProperty("TEST_ID", "68de213f-7009-4573-8791-9f09f8ba413c");
     bool errorHandlerCalled = false;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
         [&errorHandlerCalled](const iox::Error error IOX_MAYBE_UNUSED,
-                              const std::function<void()>,
+                              
                               const iox::ErrorLevel) { errorHandlerCalled = true; });
 
     iox::popo::internal::getUniqueRouDiId();

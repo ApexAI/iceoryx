@@ -22,14 +22,40 @@ namespace iox
 {
 const char* ERROR_NAMES[] = {ICEORYX_ERRORS(CREATE_ICEORYX_ERROR_STRING)};
 
-const char* toString(const Error error) noexcept
+std::mutex ErrorHandler::handler_mutex;
+
+const char* toString(const uint32_t error) noexcept
 {
-    return ERROR_NAMES[static_cast<uint32_t>(error)];
+    return ERROR_NAMES[error];
 }
 
-std::ostream& operator<<(std::ostream& stream, Error value) noexcept
+void ErrorHandler::defaultHandler(const uint32_t error,
+                                  const ErrorLevel level) noexcept
 {
-    stream << toString(value);
-    return stream;
+    std::stringstream ss;
+    ss << "ICEORYX error! " << toString(error);
+
+    reactOnErrorLevel(level, ss.str().c_str());
 }
+
+void ErrorHandler::reactOnErrorLevel(const ErrorLevel level, const char* errorText) noexcept
+{
+    static auto& logger = createLogger("", "", log::LogManager::GetLogManager().DefaultLogLevel());
+    switch (level)
+    {
+    case ErrorLevel::FATAL:
+        logger.LogError() << errorText;
+        assert(false);
+        std::terminate();
+        break;
+    case ErrorLevel::SEVERE:
+        logger.LogWarn() << errorText;
+        assert(false);
+        break;
+    case ErrorLevel::MODERATE:
+        logger.LogWarn() << errorText;
+        break;
+    }
+}
+
 } // namespace iox
