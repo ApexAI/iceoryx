@@ -22,6 +22,7 @@
 - Add templated `from`/`into` free functions to formalize conversions from enums and other types [#992](https://github.com/eclipse-iceoryx/iceoryx/issues/992)
 - UniqueId class for unique IDs within a process [#1010](https://github.com/eclipse-iceoryx/iceoryx/issues/1010)
 - Add PrefixTree and TypedAllocator to iceoryx hoofs [\#859](https://github.com/eclipse-iceoryx/iceoryx/issues/859)
+- Add requirePublisherHistorySupport option at subscriber side (if set to true requires historyRequest <= historyCapacity to be eligible for connection)
 
 **Bugfixes:**
 
@@ -66,6 +67,7 @@
 Dependency for building the iceoryx_dds gateway changed from `openjdk` (Java) to `bison`
 
 Replace Creation pattern from `MemoryMap` with `MemoryMapBuilder`.
+
 ```cpp
 // before 
 auto memoryMapResult = posix::MemoryMap::create(baseAddress, length, fileDescriptor, accessMode, flags, offset);
