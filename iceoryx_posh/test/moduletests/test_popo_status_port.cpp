@@ -27,7 +27,6 @@ using namespace iox::popo;
 class StatusPort_test : public Test
 {
   public:
-
   protected:
     StatusPort_test()
     {
@@ -45,16 +44,41 @@ class StatusPort_test : public Test
     {
     }
 
+    using TestDataType = uint32_t;
+
     /// @todo move to integration tests?
-    StatusPortReader<uint32_t, uint32_t> sut;
-    StatusPortWriter<uint32_t, uint32_t> sut2;
+    // Transaction<TestDataType> ackTransactions[1];
+
+    StatusPortData<TestDataType> acknowledgedTransactions;
+    StatusPortReader<TestDataType> sut1{&acknowledgedTransactions};
+    StatusPortWriter<TestDataType> sut2{&acknowledgedTransactions};
 };
 
 
 TEST_F(StatusPort_test, InitialStateIsEmpty)
 {
-
 }
 
+TEST_F(StatusPort_test, SendOneChunkSequentiallyIsSucessfully)
+{
+    constexpr uint32_t VALUE{42};
+    sut2.storeChunk([](auto& valueToStore) { valueToStore = VALUE; });
+
+    uint32_t receivedValue{0};
+    sut1.takeChunk([&receivedValue](auto& valueToTake) { receivedValue = valueToTake; });
+
+    EXPECT_THAT(VALUE, Eq(receivedValue));
+}
+
+// TEST_F(StatusPort_test, SendOneChunkConcurrentlyIsSucessfully)
+// {
+//     constexpr uint32_t VALUE{42};
+//     sut2.storeChunk([](auto& valueToStore) { valueToStore = VALUE; });
+
+//     uint32_t receivedValue{0};
+//     sut1.takeChunk([&receivedValue](auto& valueToTake) { receivedValue = valueToTake; });
+
+//     EXPECT_THAT(VALUE, Eq(receivedValue));
+// }
 
 } // namespace
