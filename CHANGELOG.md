@@ -24,6 +24,7 @@
 - Add PrefixTree and TypedAllocator to iceoryx hoofs [\#859](https://github.com/eclipse-iceoryx/iceoryx/issues/859)
 - Add requirePublisherHistorySupport option at subscriber side (if set to true requires historyRequest <= historyCapacity to be eligible for connection)
 - Add requirePublisherHistorySupport option at subscriber side (if set to true requires historyRequest <= historyCapacity to be eligible for connection) [#1029](https://github.com/eclipse-iceoryx/iceoryx/issues/1029)
+- Add `/tools/scripts/ice_env.sh` shell script to provide simple access to docker containers for CI debugging [#1049](https://github.com/eclipse-iceoryx/iceoryx/issues/1049)
 
 **Bugfixes:**
 
