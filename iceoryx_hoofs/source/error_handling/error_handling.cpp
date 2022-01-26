@@ -24,16 +24,17 @@ const char* ERROR_NAMES[] = {ICEORYX_ERRORS(CREATE_ICEORYX_ERROR_STRING)};
 
 std::mutex ErrorHandler::handler_mutex;
 
+
+/// @todo templatize this
 const char* toString(const uint32_t error) noexcept
 {
     return ERROR_NAMES[error];
 }
 
-void ErrorHandler::defaultHandler(const uint32_t error,
-                                  const ErrorLevel level) noexcept
+void ErrorHandler::defaultHandler(const uint32_t error, const char* errorName, const ErrorLevel level) noexcept
 {
     std::stringstream ss;
-    ss << "ICEORYX error! " << toString(error);
+    ss << "ICEORYX error! " << errorName;
 
     reactOnErrorLevel(level, ss.str().c_str());
 }

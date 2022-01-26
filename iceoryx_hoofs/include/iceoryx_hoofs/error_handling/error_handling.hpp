@@ -246,7 +246,9 @@ void errorHandler(const Error error,
                   const ErrorLevel level = ErrorLevel::FATAL) noexcept;
 
 template <typename Error>
-using HandlerFunction = std::function<void(const Error, const ErrorLevel)>;
+using TypedHandlerFunction = std::function<void(const Error, const ErrorLevel)>;
+
+using HandlerFunction = std::function<void(const uint32_t, const char*, const ErrorLevel)>;
 
 /// @brief This handler is needed for unit testing, special debugging cases and
 ///         other corner cases where we'd like to explicitly suppress the
@@ -259,16 +261,16 @@ class ErrorHandler
 
   public:
     template <typename Error>
-    static cxx::GenericRAII setTemporaryErrorHandler(const HandlerFunction<Error>& newHandler) noexcept;
+    static cxx::GenericRAII setTemporaryErrorHandler(const TypedHandlerFunction<Error>& newHandler) noexcept;
 
   protected:
     static void reactOnErrorLevel(const ErrorLevel level, const char* errorText) noexcept;
 
   private:
-    static void defaultHandler(const uint32_t error, const ErrorLevel level = ErrorLevel::FATAL) noexcept;
+    static void
+    defaultHandler(const uint32_t error, const char* errorName, const ErrorLevel level = ErrorLevel::FATAL) noexcept;
 
-    template <typename Error>
-    static cxx::optional<iox::HandlerFunction<Error>> handler;
+    static iox::HandlerFunction handler;
     /// Needed, if you want to exchange the handler. Remember the old one and call it if it is not your error. The error
     /// mock needs to be the last one exchanging the handler in tests.
     static std::mutex handler_mutex;
@@ -277,32 +279,57 @@ class ErrorHandler
 /// @todo #590 move the implementation below to .inl
 
 // NOLINTNEXTLINE(cert-err58-cpp) ErrorHander only used in tests
-template <typename Error>
-cxx::optional<iox::HandlerFunction<Error>> ErrorHandler::handler = {};
+iox::HandlerFunction ErrorHandler::handler = {ErrorHandler::defaultHandler};
 
 template <typename Error>
 inline void errorHandler(const Error error,
                          const std::function<void()>& errorCallBack IOX_MAYBE_UNUSED,
                          const ErrorLevel level) noexcept
 {
-    ErrorHandler::handler<Error>.and_then([&](HandlerFunction<Error> storedHandler) { storedHandler(error, level); }).or_else([&]() {
-        ErrorHandler::defaultHandler(static_cast<typename std::underlying_type<Error>::type>(error), level);
-    });
+    ErrorHandler::handler(error, toString(error), level);
+}
+
+
+/// @todo move this to hoofs testing
+template <typename Error>
+cxx::optional<iox::TypedHandlerFunction<Error>> typedHandler;
+
+template <typename ErrorEnumType>
+void errorHandlerForTest(const uint32_t error, const char* errorName, const ErrorLevel level) noexcept
+{
+    uint32_t errorEnumType = error >> 16;
+    uint32_t expectedErrorEnumType = ErrorEnumType::NO_ERROR >> 16;
+
+    if (errorEnumType == expectedErrorEnumType)
+    {
+        // We re-do the type erasure
+        auto typedError = static_cast<ErrorEnumType>(error);
+        typedHandler.and_then([&](TypedHandlerFunction<Error> storedHandler) { storedHandler(typedError, level); });
+    }
+    else
+    {
+        // FAIL() << errorName;
+    }
 }
 
 template <typename Error>
-inline cxx::GenericRAII ErrorHandler::setTemporaryErrorHandler(const HandlerFunction<Error>& newHandler) noexcept
+inline cxx::GenericRAII ErrorHandler::setTemporaryErrorHandler(const TypedHandlerFunction<Error>& newHandler) noexcept
 {
     return cxx::GenericRAII(
         [&newHandler] {
             std::lock_guard<std::mutex> lock(handler_mutex);
-            handler<Error>.emplace(newHandler);
+            typedHandler.emplace(newHandler);
+            handler.emplace(errorHandlerForTest<Error>);
         },
         [] {
             std::lock_guard<std::mutex> lock(handler_mutex);
-            handler<Error>.reset();
+            typedHandler.reset()
+            handler = defaultHandler;
         });
 }
+
+
+
 
 } // namespace iox
 
