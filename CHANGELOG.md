@@ -23,6 +23,7 @@
 - UniqueId class for unique IDs within a process [#1010](https://github.com/eclipse-iceoryx/iceoryx/issues/1010)
 - Add PrefixTree and TypedAllocator to iceoryx hoofs [\#859](https://github.com/eclipse-iceoryx/iceoryx/issues/859)
 - Add requirePublisherHistorySupport option at subscriber side (if set to true requires historyRequest <= historyCapacity to be eligible for connection)
+- Add requirePublisherHistorySupport option at subscriber side (if set to true requires historyRequest <= historyCapacity to be eligible for connection) [#1029](https://github.com/eclipse-iceoryx/iceoryx/issues/1029)
 
 **Bugfixes:**
 
