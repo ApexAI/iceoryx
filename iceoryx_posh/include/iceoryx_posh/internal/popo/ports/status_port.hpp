@@ -42,9 +42,12 @@ struct StatusPortData
 
     const uint64_t INVALID{0};
     const uint64_t UPDATING{1};
-    // std::atomic<uint64_t> abaCounter{0U};
+    // habe ich überhaupt ein ABA problem? Ja, wenn writer einen langsamen reader überholt
+    // std::atomic<uint64_t> transactionCounter{0U};
     std::atomic<uint64_t> readPosition{0U};
     std::atomic<uint64_t> writePosition{1U};
+    // ich könnte auch den chunk pointer atomic machen
+    // std::atomic<T*> activeChunk{nullptr};
 };
 
 // template <typename T>
@@ -67,19 +70,26 @@ class StatusPortReader
 
     void takeChunk(cxx::function_ref<void(const T&)> callable) const
     {
-        // Get current world view
-        auto currentReadPosition = m_statusPortDataPtr->readPosition.load(std::memory_order_relaxed);
-
-        if (!m_statusPortDataPtr->acknowledgedTransactions[currentReadPosition].data.has_value())
-        {
-            return;
-        }
-
+        uint64_t currentReadPosition{0};
         do
         {
+            // Get current world view
+            currentReadPosition = m_statusPortDataPtr->readPosition.load(std::memory_order_relaxed);
+
+            // wie kann ich hier die Ownership mitteilen "Das ist mein Chunk!" ohne etwas zu schreiben?
+            // Das brauch ich nicht, ich muss lediglich erkennen können, ob sich die Welt weitergedreht hat
+            // und mein lesen fehlerhaft war, dann lese ich nochmal
+
+            if (!m_statusPortDataPtr->acknowledgedTransactions[currentReadPosition].data.has_value())
+            {
+                return;
+            }
+
             callable(m_statusPortDataPtr->acknowledgedTransactions[currentReadPosition].data.value());
             // Re-call the callable if the world changed in the meantime
-        } while (currentReadPosition != m_statusPortDataPtr->readPosition.load(std::memory_order_acq_rel)); //memory_order_acquire is enough?
+        } while (
+            currentReadPosition
+            != m_statusPortDataPtr->readPosition.load(std::memory_order_acq_rel)); // memory_order_acquire is enough?
     }
 
   private:
@@ -104,7 +114,8 @@ class StatusPortWriter
 
     void storeChunk(cxx::function_ref<void(T&)> callable)
     {
-        // wogegen muss ich mich bei schreiben schützen? gegen nichts ich bin der Boss und niemand anderes ändert die writePosition
+        // wogegen muss ich mich bei schreiben schützen? gegen nichts ich bin der Boss und niemand anderes ändert die
+        // writePosition
 
         // Get current world view
         auto currentWritePosition = m_statusPortDataPtr->writePosition.load(std::memory_order_relaxed);
@@ -112,12 +123,20 @@ class StatusPortWriter
 
         T valueToStore;
         callable(valueToStore);
+        // wie können wir hier sicherstellen, dass niemand mehr auf dieser speicherzelle liest zB ein gaaanz langsamer
+        // Leser? brauche ich einen referenceCounter? nein, der leser checkt ob sich die welt weitergedreht hat
         // Try to update our new view on the world, if it fails try again
-        while (m_statusPortDataPtr->readPosition.compare_exchange_strong( // first write the data then update the readPosition, is exchange() enough?
-            currentReadPosition, currentWritePosition, std::memory_order_acq_rel, std::memory_order_relaxed))
+        // This is not needed as we have only 1 writer!
+        while (m_statusPortDataPtr->readPosition
+                   .compare_exchange_strong( // first write the data then update the readPosition, is exchange() enough?
+                       currentReadPosition,
+                       currentWritePosition,
+                       std::memory_order_acq_rel,
+                       std::memory_order_relaxed))
         {
             m_statusPortDataPtr->acknowledgedTransactions[currentWritePosition].data.emplace(valueToStore);
         }
+        // das darf ich nur tun, wenn es keine Leser mehr gibt!
         m_statusPortDataPtr->writePosition.fetch_xor(1, std::memory_order_relaxed);
     }
 

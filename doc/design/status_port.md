@@ -35,10 +35,19 @@
     * If no data was sent yet, `callable` is not called
 * Not part of the user API, only used internally
 * Reader only needs write access to the data structure and no read access
-    * Same in TACO? TACO is only one shared data structure
-* Writer owns the memory
-* Writing and Reading will be tried indefinietly till possible,
+    * Same in TACO? TACO is only one shared data structure; in TACO both reader
+    and write data
+    * Is this actually possible? How can the reader communicate that he's still
+    reading the data?
+* ~~Writer owns the memory~~
+* Writing and Reading will be tried indefinitely till possible,
   hence starvation is possible
+* `StatusPortData` is created in the shared memory segment if either a `StatusPortWriter`
+  or `StatusPortReader` is created
+    * Two chunks in the shared memory payload segment are bound to the lifetime
+      of the `StatusPortData`
+* Users can only acquire `StatusPortReader`
+* Only RouDi is allowed to acquire `StatusPortWriter`
 
 ### Considerations
 
