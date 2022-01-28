@@ -65,7 +65,7 @@ TEST_F(StatusPort_test, SendOneChunkSequentiallyIsSucessfully)
     sut2.storeChunk([](auto& valueToStore) { valueToStore = VALUE; });
 
     uint32_t receivedValue{0};
-    sut1.takeChunk([&receivedValue](auto& valueToTake) { receivedValue = valueToTake; });
+    sut1.takeChunk([&receivedValue](const auto& valueToTake) { receivedValue = valueToTake; });
 
     EXPECT_THAT(VALUE, Eq(receivedValue));
 }
