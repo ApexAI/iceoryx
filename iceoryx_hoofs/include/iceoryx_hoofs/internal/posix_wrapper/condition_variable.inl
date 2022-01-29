@@ -26,14 +26,14 @@ template <typename... Targs>
 inline cxx::expected<ConditionVariableError>
 ConditionVariableBuilder<T>::create(cxx::optional<ConditionVariable<T>>& storage, Targs&&... args) noexcept
 {
-    if (m_predicate)
+    if (!m_predicate)
     {
         std::cerr << "A valid predicate is required to create a ConditionVariable" << std::endl;
         return cxx::error<ConditionVariableError>(ConditionVariableError::PREDICATE_IS_NOT_SET);
     }
 
     storage.emplace();
-    auto result = ConditionBuilder().scope(m_scope).create(storage.m_condition);
+    auto result = ConditionBuilder().scope(m_scope).create(storage->m_condition);
     if (result.has_error())
     {
         std::cerr << "Failed to initialize underlying Condition in ConditionVariable" << std::endl;

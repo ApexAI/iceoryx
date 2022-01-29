@@ -56,7 +56,7 @@ constexpr ForwardArgsToCTor_t ForwardArgsToCTor{};
 template <typename T, typename MutexType = ::std::mutex>
 class smart_lock
 {
-  private:
+  public:
     class Proxy
     {
       public:
