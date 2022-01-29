@@ -18,6 +18,7 @@
 #define IOX_HOOFS_POSIX_WRAPPER_CONDITION_VARIABLE_HPP
 
 #include "iceoryx_hoofs/cxx/function.hpp"
+#include "iceoryx_hoofs/cxx/helplets.hpp"
 #include "iceoryx_hoofs/internal/concurrent/smart_lock.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
 #include "iceoryx_hoofs/posix_wrapper/condition.hpp"
@@ -27,14 +28,39 @@ namespace iox
 namespace posix
 {
 template <typename T>
+using conditionPredicate_t = cxx::function<bool(T&)>;
+
+enum class ConditionVariableError
+{
+    INSUFFICIENT_MEMORY,
+    MEMORY_CORRUPTED,
+    INTERNAL_LOGIC_ERROR,
+    PREDICATE_IS_NOT_SET
+};
+
+ConditionVariableError convertTo(const ConditionError conditionError) noexcept;
+
+template <typename T>
+class ConditionVariable;
+
+template <typename T>
+class ConditionVariableBuilder
+{
+    IOX_BUILDER_PARAMETER(ConditionScope, scope, ConditionScope::INTER_PROCESS)
+    IOX_BUILDER_PARAMETER(conditionPredicate_t<T>, predicate, conditionPredicate_t<T>())
+
+  public:
+    template <typename... Targs>
+    cxx::expected<ConditionVariableError> create(cxx::optional<ConditionVariable<T>>& storage,
+                                                 Targs&&... args) noexcept;
+};
+
+template <typename T>
 class ConditionVariable
 {
   public:
     using Proxy = typename concurrent::smart_lock<T, posix::mutex>::Proxy;
 
-    using predicate_t = cxx::function<bool(T&)>;
-    template <typename... Targs>
-    explicit ConditionVariable(const ConditionScope scope, const predicate_t& predicate, Targs&&... args) noexcept;
     ~ConditionVariable() noexcept = default;
 
     ConditionVariable(const ConditionVariable&) = delete;
@@ -60,9 +86,14 @@ class ConditionVariable
     void notifyAll() noexcept;
 
   private:
-    Condition m_condition;
-    predicate_t m_predicate;
-    T m_base;
+    friend class cxx::optional<ConditionVariable<T>>;
+    friend class ConditionVariableBuilder<T>;
+    ConditionVariable() noexcept = default;
+
+  private:
+    cxx::optional<Condition> m_condition;
+    conditionPredicate_t<T> m_predicate;
+    cxx::optional<T> m_base;
 };
 } // namespace posix
 } // namespace iox

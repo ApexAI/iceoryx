@@ -14,6 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include "iceoryx_hoofs/cxx/generic_raii.hpp"
 #include "iceoryx_hoofs/posix_wrapper/condition_variable.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
 #include "iceoryx_hoofs/posix_wrapper/thread.hpp"
@@ -32,6 +33,14 @@ static void printLogicWarning() noexcept
 cxx::expected<ConditionError> ConditionBuilder::create(cxx::optional<Condition>& storage) noexcept
 {
     storage.emplace();
+
+    bool creationFailed = true;
+    cxx::GenericRAII resetStorageWhenNotSuccessful{[&] {
+        if (creationFailed)
+        {
+            storage.reset();
+        }
+    }};
 
     pthread_condattr_t attributes;
 
@@ -90,6 +99,7 @@ cxx::expected<ConditionError> ConditionBuilder::create(cxx::optional<Condition>&
         return cxx::error<ConditionError>(ConditionError::INTERNAL_LOGIC_ERROR);
     }
 
+    creationFailed = false;
     return cxx::success<void>();
 }
 
