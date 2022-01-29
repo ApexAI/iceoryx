@@ -51,14 +51,16 @@ void waitBlocks(Condition_test& test,
                 const sutAction_t& waitCall,
                 const sutAction_t& notifyCall)
 {
-    Condition sut(scope);
+    iox::cxx::optional<Condition> sutStorage;
+
+    ASSERT_FALSE(ConditionBuilder().scope(scope).create(sutStorage).has_error());
 
     std::atomic_bool hasFinished{false};
     std::atomic_bool isThreadRunning{false};
 
     std::thread t{[&] {
         isThreadRunning = true;
-        waitCall(sut);
+        waitCall(*sutStorage);
         hasFinished = true;
     }};
 
@@ -70,7 +72,7 @@ void waitBlocks(Condition_test& test,
     std::this_thread::sleep_for(test.m_waitingTime);
     EXPECT_FALSE(hasFinished);
 
-    notifyCall(sut);
+    notifyCall(*sutStorage);
     t.join();
 }
 
@@ -117,7 +119,9 @@ void notifyOneNotifiesCorrectly(Condition_test& test,
                                 const sutAction_t& waitCall,
                                 const uint64_t numberOfNotifies)
 {
-    Condition sut(scope);
+    iox::cxx::optional<Condition> sutStorage;
+
+    ASSERT_FALSE(ConditionBuilder().scope(scope).create(sutStorage).has_error());
 
     std::atomic_uint64_t numberOfFinishedThreads{0U};
     std::atomic_uint64_t numberOfRunningThreads{0U};
@@ -127,7 +131,7 @@ void notifyOneNotifiesCorrectly(Condition_test& test,
     for (uint64_t i = 0U; i < Condition_test::NUMBER_OF_CONCURRENT_WAITS; ++i)
         threads.emplace_back([&] {
             ++numberOfRunningThreads;
-            waitCall(sut);
+            waitCall(*sutStorage);
             ++numberOfFinishedThreads;
         });
 
@@ -140,12 +144,12 @@ void notifyOneNotifiesCorrectly(Condition_test& test,
     EXPECT_THAT(numberOfFinishedThreads.load(), Eq(0U));
     for (uint64_t i = 0U; i < numberOfNotifies; ++i)
     {
-        sut.notifyOne();
+        sutStorage->notifyOne();
     }
 
     std::this_thread::sleep_for(test.m_waitingTime);
     EXPECT_THAT(numberOfFinishedThreads.load(), Eq(numberOfNotifies));
-    sut.notifyAll();
+    sutStorage->notifyAll();
 
     for (auto& t : threads)
     {
@@ -163,14 +167,16 @@ void notifyOneNotifiesCorrectlyForEveryScopeValue(Condition_test& test,
 
 TEST_F(Condition_test, singleNotifyOneNotifiesOneWait)
 {
+    constexpr uint64_t NUMBER_OF_NOTIFY_ONE_CALLS = 1;
     notifyOneNotifiesCorrectlyForEveryScopeValue(
-        *this, [](auto& sut) { sut.wait(); }, 1);
+        *this, [](auto& sut) { sut.wait(); }, NUMBER_OF_NOTIFY_ONE_CALLS);
 }
 
 TEST_F(Condition_test, multipleNotifyOneNotifiesMultipleWait)
 {
+    constexpr uint64_t NUMBER_OF_NOTIFY_ONE_CALLS = 3;
     notifyOneNotifiesCorrectlyForEveryScopeValue(
-        *this, [](auto& sut) { sut.wait(); }, 3);
+        *this, [](auto& sut) { sut.wait(); }, NUMBER_OF_NOTIFY_ONE_CALLS);
 }
 
 TEST_F(Condition_test, singleNotifyOneNotifiesOneWaitFor)

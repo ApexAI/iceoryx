@@ -14,7 +14,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_hoofs/cxx/generic_raii.hpp"
 #include "iceoryx_hoofs/posix_wrapper/condition_variable.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
 #include "iceoryx_hoofs/posix_wrapper/thread.hpp"
@@ -25,67 +24,73 @@ namespace posix
 {
 static void printLogicWarning() noexcept
 {
-    std::cerr << "This should never happen. Internal logic error, maybe your system is not POSIX compliant?"
+    std::cerr << "This should never happen. Internal logic error, maybe your system is not POSIX compliant or the "
+                 "memory of the condition variable was corrupted?"
               << std::endl;
 }
 
-Condition::Condition(const ConditionScope scope) noexcept
+cxx::expected<ConditionError> ConditionBuilder::create(cxx::optional<Condition>& storage) noexcept
 {
+    storage.emplace();
+
     pthread_condattr_t attributes;
 
     auto result = posixCall(pthread_condattr_init)(&attributes).returnValueMatchesErrno().evaluate();
     if (result.has_error())
     {
+        std::cerr << "Failed to create condition variable attribute." << std::endl;
         switch (result.get_error().errnum)
         {
         case ENOMEM:
             std::cerr << "Insufficient memory to initialize required condition variable attribute" << std::endl;
-            break;
+            return cxx::error<ConditionError>(ConditionError::INSUFFICIENT_MEMORY);
         default:
             printLogicWarning();
-            break;
+            return cxx::error<ConditionError>(ConditionError::INTERNAL_LOGIC_ERROR);
         }
     }
-    cxx::Ensures(!result.has_error() && "Unable to create condition variable attribute");
-
-    cxx::GenericRAII destroyAttributes([&] {
-        auto result = posixCall(pthread_condattr_destroy)(&attributes).returnValueMatchesErrno().evaluate();
-        if (result.has_error())
-        {
-            printLogicWarning();
-        }
-        cxx::Ensures(!result.has_error() && "Unable to remove condition variable attribute.");
-    });
 
     result =
-        posixCall(pthread_condattr_setpshared)(&attributes, static_cast<int>(scope == ConditionScope::INTER_PROCESS))
+        posixCall(pthread_condattr_setpshared)(&attributes, static_cast<int>(m_scope == ConditionScope::INTER_PROCESS))
             .returnValueMatchesErrno()
             .evaluate();
     if (result.has_error())
     {
+        std::cerr << "Failed to set condition variable scope in condition variable attribute." << std::endl;
         printLogicWarning();
+        return cxx::error<ConditionError>(ConditionError::INTERNAL_LOGIC_ERROR);
     }
-    cxx::Ensures(!result.has_error() && "Unable to set condition variable attributes.");
 
-    result = posixCall(pthread_cond_init)(&m_conditionVariable, &attributes).returnValueMatchesErrno().evaluate();
+    result =
+        posixCall(pthread_cond_init)(&storage->m_conditionVariable, &attributes).returnValueMatchesErrno().evaluate();
     if (result.has_error())
     {
+        std::cerr << "Failed to create condition variable." << std::endl;
         switch (result.get_error().errnum)
         {
         case ENOMEM:
             std::cerr << "Insufficient memory to initialize condition variable" << std::endl;
-            break;
+            return cxx::error<ConditionError>(ConditionError::INSUFFICIENT_MEMORY);
         case EBUSY:
             std::cerr << "It seems that the memory of the condition variable is already initialized with a condition "
                          "variable. This can be a sign of a internal logic error or corrupted memory."
                       << std::endl;
-            break;
+            return cxx::error<ConditionError>(ConditionError::MEMORY_CORRUPTED);
         default:
             printLogicWarning();
-            break;
+            return cxx::error<ConditionError>(ConditionError::INTERNAL_LOGIC_ERROR);
         }
     }
-    cxx::Ensures(!result.has_error() && "Unable to initialize condition variable.");
+
+    result = posixCall(pthread_condattr_destroy)(&attributes).returnValueMatchesErrno().evaluate();
+    if (result.has_error())
+    {
+        std::cerr << "Failed to remove condition variable attribute." << std::endl;
+        printLogicWarning();
+        return cxx::error<ConditionError>(ConditionError::INTERNAL_LOGIC_ERROR);
+    }
+
+    return cxx::success<void>();
 }
 
 Condition::~Condition() noexcept

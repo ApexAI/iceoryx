@@ -21,16 +21,16 @@ namespace iox
 {
 namespace posix
 {
-template <typename T>
-template <typename... Targs>
-inline ConditionVariable<T>::ConditionVariable(const ConditionScope scope,
-                                               const predicate_t& predicate,
-                                               Targs&&... args) noexcept
-    : m_condition{scope}
-    , m_predicate{predicate}
-    , m_base{std::forward<Targs>(args)...}
-{
-}
+// template <typename T>
+// template <typename... Targs>
+// inline ConditionVariable<T>::ConditionVariable(const ConditionScope scope,
+//                                                const predicate_t& predicate,
+//                                                Targs&&... args) noexcept
+//     : m_condition{scope}
+//     , m_predicate{predicate}
+//     , m_base{std::forward<Targs>(args)...}
+//{
+// }
 
 template <typename T>
 inline typename ConditionVariable<T>::Proxy ConditionVariable<T>::operator->() noexcept

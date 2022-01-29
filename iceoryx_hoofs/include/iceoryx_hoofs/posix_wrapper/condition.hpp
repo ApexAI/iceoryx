@@ -17,6 +17,9 @@
 #ifndef IOX_HOOFS_POSIX_WRAPPER_CONDITION_HPP
 #define IOX_HOOFS_POSIX_WRAPPER_CONDITION_HPP
 
+#include "iceoryx_hoofs/cxx/expected.hpp"
+#include "iceoryx_hoofs/cxx/helplets.hpp"
+#include "iceoryx_hoofs/cxx/optional.hpp"
 #include "iceoryx_hoofs/internal/posix_wrapper/mutex.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
 
@@ -30,10 +33,25 @@ enum class ConditionScope
     INTER_PROCESS
 };
 
+enum class ConditionError
+{
+    INSUFFICIENT_MEMORY,
+    MEMORY_CORRUPTED,
+    INTERNAL_LOGIC_ERROR
+};
+
+class Condition;
+class ConditionBuilder
+{
+    IOX_BUILDER_PARAMETER(ConditionScope, scope, ConditionScope::INTER_PROCESS)
+
+  public:
+    cxx::expected<ConditionError> create(cxx::optional<Condition>& storage) noexcept;
+};
+
 class Condition
 {
   public:
-    explicit Condition(const ConditionScope scope) noexcept;
     ~Condition() noexcept;
 
     Condition(const Condition&) = delete;
@@ -47,14 +65,18 @@ class Condition
     void notifyOne() noexcept;
     void notifyAll() noexcept;
 
+  private:
     template <typename>
     friend class ConditionVariable;
+    friend class ConditionBuilder;
+    friend class cxx::optional<Condition>;
 
-  private:
     pthread_cond_t m_conditionVariable;
     mutable mutex m_mutex{false};
 
   private:
+    Condition() noexcept = default;
+
     bool waitForWithoutLock(struct timespec& timeout) noexcept;
     void waitWithoutLock() noexcept;
 };
