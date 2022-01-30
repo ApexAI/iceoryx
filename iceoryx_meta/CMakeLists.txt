@@ -56,6 +56,10 @@ if(DDS_GATEWAY)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../iceoryx_dds ${CMAKE_BINARY_DIR}/iceoryx_dds)
 endif()
 
+if(BUILD_TOOLS)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../iceoryx_tools ${CMAKE_BINARY_DIR}/iceoryx_tools)
+endif()
+
 # ===== Language binding for C
 if(BINDING_C)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../iceoryx_binding_c ${CMAKE_BINARY_DIR}/iceoryx_binding_c)

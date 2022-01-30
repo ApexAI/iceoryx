@@ -1,0 +1,236 @@
+// Copyright (c) 2022 by Apex.AI Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#include "iceoryx_hoofs/cxx/convert.hpp"
+#include "iceoryx_hoofs/cxx/expected.hpp"
+#include "iceoryx_hoofs/cxx/string.hpp"
+#include "iceoryx_hoofs/cxx/vector.hpp"
+#include "iceoryx_posh/popo/untyped_subscriber.hpp"
+#include "iceoryx_posh/runtime/posh_runtime.hpp"
+
+#include <cstring>
+#include <iostream>
+
+using namespace iox;
+
+enum class ArgumentType
+{
+    VALUE,
+    SWITCH
+};
+
+class CommandLineOptions
+{
+  public:
+    static constexpr uint64_t MAX_NUMBER_OF_ARGUMENTS = 16;
+    static constexpr uint64_t MAX_OPTION_NAME_LENGTH = 32;
+    static constexpr uint64_t MAX_OPTION_VALUE_LENGTH = 128;
+    static constexpr uint64_t MAX_BINARY_NAME_LENGTH = 1024;
+
+    using name_t = cxx::string<MAX_OPTION_NAME_LENGTH>;
+    using value_t = cxx::string<MAX_OPTION_VALUE_LENGTH>;
+    using binaryName_t = cxx::string<MAX_BINARY_NAME_LENGTH>;
+
+    enum class Result
+    {
+        NO_SUCH_VALUE,
+        UNABLE_TO_CONVERT_VALUE
+    };
+
+    template <typename T>
+    cxx::expected<T, Result> acquire(const name_t& optionName) const noexcept;
+    const binaryName_t& binaryName() const noexcept;
+
+    friend class CommandLineParser;
+
+  private:
+    struct argument_t
+    {
+        name_t id;
+        value_t value;
+    };
+
+    binaryName_t m_binaryName;
+    cxx::vector<argument_t, MAX_NUMBER_OF_ARGUMENTS> m_arguments;
+};
+
+
+class CommandLineParser
+{
+  public:
+    static constexpr uint64_t MAX_DESCRIPTION_LENGTH = 1024;
+    static constexpr char NO_SHORT_OPTION = '\0';
+
+    using description_t = cxx::string<MAX_DESCRIPTION_LENGTH>;
+
+    struct entry_t
+    {
+        char shortOption = NO_SHORT_OPTION;
+        CommandLineOptions::name_t longOption;
+        description_t description;
+        ArgumentType type = ArgumentType::SWITCH;
+    };
+
+    CommandLineParser&& addOption(const entry_t& option) && noexcept;
+    CommandLineOptions parse(int argc, char* argv[]) && noexcept;
+
+  private:
+    static void
+    printHelp(const char* binaryName,
+              const cxx::vector<entry_t, CommandLineOptions::MAX_NUMBER_OF_ARGUMENTS>& registeredArguments) noexcept;
+
+  private:
+    cxx::vector<entry_t, CommandLineOptions::MAX_NUMBER_OF_ARGUMENTS> m_availableOptions;
+};
+
+
+CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
+{
+    CommandLineOptions options;
+    for (uint64_t i = 0U; i < static_cast<uint64_t>(argc); ++i)
+    {
+        if (i == 0)
+        {
+            if (strnlen(argv[i], CommandLineOptions::MAX_BINARY_NAME_LENGTH + 1)
+                > CommandLineOptions::MAX_BINARY_NAME_LENGTH)
+            {
+                std::cerr << "The \"" << argv[i] << "\" binary path is too long" << std::endl;
+                printHelp(argv[0], m_availableOptions);
+            }
+            options.m_binaryName.unsafe_assign(argv[i]);
+        }
+        else
+        {
+            if (argv[i][0] != '-')
+            {
+                std::cerr << "Every option has to start with \"-\" but \"" << argv[i] << "\" does not." << std::endl;
+                printHelp(argv[0], m_availableOptions);
+            }
+
+            uint64_t argIdentifierLength = strnlen(argv[i], CommandLineOptions::MAX_OPTION_NAME_LENGTH + 1);
+
+            if (argIdentifierLength == 1 || (argIdentifierLength == 2 && argv[i][1] == '-'))
+            {
+                std::cerr << "Empty option names are forbidden" << std::endl;
+                printHelp(argv[0], m_availableOptions);
+            }
+            else if (argIdentifierLength > CommandLineOptions::MAX_OPTION_NAME_LENGTH)
+            {
+                std::cerr << "\"" << argv[i] << "\" is longer then the maximum supported size of "
+                          << CommandLineOptions::MAX_OPTION_NAME_LENGTH << " for option names." << std::endl;
+                printHelp(argv[0], m_availableOptions);
+            }
+
+            uint64_t optionNameStart = (argv[i][1] == '-') ? 2 : 1;
+
+            options.m_arguments.emplace_back();
+            options.m_arguments.back().id.unsafe_assign(
+                argv[i] + optionNameStart); // +optionNameStart to get rid of the preceeding -
+
+            // parse value of the option name
+            if (i + 1 < static_cast<uint64_t>(argc) && argv[i + 1][0] != '-')
+            {
+                if (strnlen(argv[i + 1], CommandLineOptions::MAX_OPTION_VALUE_LENGTH + 1)
+                    > CommandLineOptions::MAX_OPTION_VALUE_LENGTH)
+                {
+                    std::cerr << "\"" << argv[i + 1] << "\" is longer then the maximum supported size of "
+                              << CommandLineOptions::MAX_OPTION_VALUE_LENGTH << " for option values." << std::endl;
+                    printHelp(argv[0], m_availableOptions);
+                }
+                options.m_arguments.back().value.unsafe_assign(argv[i + 1]);
+                ++i;
+            }
+        }
+    }
+    return options;
+}
+
+const CommandLineOptions::binaryName_t& CommandLineOptions::binaryName() const noexcept
+{
+    return m_binaryName;
+}
+
+template <typename T>
+cxx::expected<T, CommandLineOptions::Result> CommandLineOptions::acquire(const name_t& optionName) const noexcept
+{
+    for (auto& a : m_arguments)
+    {
+        if (a.id == optionName)
+        {
+            T value;
+            if (!cxx::convert::fromString(a.value.c_str(), value))
+            {
+                std::cerr << "\"" << a.value.c_str() << "\" could not be converted to the requested type" << std::endl;
+                return cxx::error<Result>(Result::UNABLE_TO_CONVERT_VALUE);
+            }
+            return cxx::success<T>(value);
+        }
+    }
+
+    return cxx::error<Result>(Result::NO_SUCH_VALUE);
+}
+
+void CommandLineParser::printHelp(
+    const char* binaryName,
+    const cxx::vector<entry_t, CommandLineOptions::MAX_NUMBER_OF_ARGUMENTS>& registeredArguments) noexcept
+{
+    std::cout << "\nUsage: " << binaryName << " [OPTIONS]\n" << std::endl;
+    std::cout << "  Options:" << std::endl;
+    for (const auto& a : registeredArguments)
+    {
+        std::cout << "    ";
+        if (a.shortOption != NO_SHORT_OPTION)
+        {
+            std::cout << "-" << a.shortOption;
+        }
+
+        if (a.shortOption != NO_SHORT_OPTION && !a.longOption.empty())
+        {
+            std::cout << ", ";
+        }
+
+        if (!a.longOption.empty())
+        {
+            std::cout << "--" << a.longOption.c_str();
+        }
+
+        if (a.type == ArgumentType::VALUE)
+        {
+            std::cout << " VALUE";
+        }
+
+        std::cout << a.description << std::endl;
+
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    exit(-1);
+}
+
+CommandLineParser&& CommandLineParser::addOption(const entry_t& option) && noexcept
+{
+    m_availableOptions.emplace_back(option);
+    return std::move(*this);
+}
+
+int main(int argc, char* argv[])
+{
+    auto options =
+        CommandLineParser().addOption({'h', "help", "Display help.", ArgumentType::SWITCH}).parse(argc, argv);
+    //    CommandLineParser cmd({{'h', "help", "Display help.", ArgumentType::SWITCH}}, argc, argv);
+
+    std::cout << "hello world" << std::endl;
+}
