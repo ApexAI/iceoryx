@@ -18,8 +18,10 @@
 #define IOX_POSH_POPO_STATUS_PORT_HPP
 
 #include "iceoryx_hoofs/cxx/function_ref.hpp"
+#include "iceoryx_hoofs/cxx/helplets.hpp"
 #include "iceoryx_hoofs/cxx/optional.hpp"
 #include "iceoryx_hoofs/cxx/type_traits.hpp"
+#include "iceoryx_posh/capro/service_description.hpp"
 #include "iceoryx_posh/popo/sample.hpp"
 
 #include <atomic>
@@ -29,6 +31,7 @@ namespace iox
 {
 namespace popo
 {
+/// @todo #982 Create common .hpp for UsedChunk and Transaction
 enum class UsedChunk : uint32_t
 {
     FIRST = 0,
@@ -38,6 +41,8 @@ enum class UsedChunk : uint32_t
 struct Transaction
 {
     UsedChunk usedChunk{UsedChunk::FIRST};
+    // We need a world-view counter to detect if StatusPortWriter::store operation overtook a
+    // StatusPortReader::take operation
     uint32_t abaCounter{0U};
 
     bool operator==(const Transaction& rhs) const
@@ -51,30 +56,37 @@ struct Transaction
     }
 };
 
-
-/// @todo move to status_port_writer_data.hpp?
+/// @todo #982 Remove
 template <typename T>
 struct ChunkInSharedMemory
 {
     cxx::optional<T> data{cxx::nullopt_t()};
 };
 
+/// @todo #982 StatusPortData is untyped in shared memory payload segment
 template <typename T>
 struct StatusPortData
 {
-    StatusPortData()
+    static_assert(std::is_trivially_copyable<T>::value);
+    StatusPortData() noexcept
     {
-        // chunks[0] = m_memoryMgr>getChunk(sizeof(T));
-        // chunks[1] = m_memoryMgr>getChunk(sizeof(T));
+        // Lifetime of two chunks are bound to the lifetime of a StatusPortData object
+        // chunks[0] = m_memoryMgr->getChunk(sizeOfDataType);
+        // chunks[1] = m_memoryMgr->getChunk(sizeOfDataType);
         // The SharedChunk d'tor will free memory via RAII & a reference counter
         // once a StatusPortData object is destroyed
     }
+    ~StatusPortData() noexcept = default;
+    StatusPortData(StatusPortData&& rhs) = delete;
+    StatusPortData& operator=(StatusPortData&& rhs) = delete;
+    StatusPortData(const StatusPortData&) = delete;
+    StatusPortData& operator=(const StatusPortData&) = delete;
+
     // This data needs to live in payload segement acquired via memory manager
     ChunkInSharedMemory<T> chunks[2];
-    // habe ich überhaupt ein ABA problem? Ja, wenn writer einen langsamen reader überholt
+
     std::atomic<Transaction> latestTransaction;
-    // ich könnte auch den chunk pointer atomic machen -> Kein gute Idee, verbraucht komplett 64-bit
-    // std::atomic<T*> activeChunk{nullptr};
+    capro::ServiceDescription serviceDescription;
 };
 
 // template <typename T>
@@ -86,16 +98,18 @@ class StatusPortReader
   public:
     StatusPortReader(cxx::not_null<StatusPortData<T>* const> statusPortDataPtr) noexcept
         : m_statusPortDataPtr(statusPortDataPtr)
+    /// @todo #982 Replace once the RouDi infrastructure is ready
+    // m_statusPortDataPtr(iox::runtime::PoshRuntime::getInstance().getMiddlewareStatusPort(sizeof(T)))
     {
+        cxx::Expects(m_statusPortDataPtr->latestTransaction.is_lock_free());
     }
 
     StatusPortReader(StatusPortReader&& rhs) = delete;
     StatusPortReader& operator=(StatusPortReader&& rhs) = delete;
-
     StatusPortReader(const StatusPortReader&) = delete;
     StatusPortReader& operator=(const StatusPortReader&) = delete;
 
-    void takeChunk(cxx::function_ref<void(const T&)> callable) const
+    void take(cxx::function_ref<void(const T&)> callable) const noexcept
     {
         Transaction currentTransaction;
 
@@ -105,16 +119,17 @@ class StatusPortReader
             currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_relaxed);
             auto currentReadPosition = static_cast<std::underlying_type<UsedChunk>::type>(currentTransaction.usedChunk);
 
-            // wie kann ich hier die Ownership mitteilen "Das ist mein Chunk!" ohne etwas zu schreiben?
-            // Das brauch ich nicht, ich muss lediglich erkennen können, ob sich die Welt weitergedreht hat
-            // und mein lesen fehlerhaft war, dann lese ich nochmal
-
             if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())
             {
                 return;
             }
 
-            // muss hier eine kopie machen, ansonsten crasht das Lambda, memcpy kann nie crashen bei torn-reads
+            // Do we have to tell the StatusPortWriter that we took ownership of the chunk?
+            // Nope, we just need to detect if the StatusPortWriter has stored something in the meantime aka the world a
+            // turned one step further. In such a case, we'll just copy the data again and re-call the callable
+
+            // To prevent crashes due to Frankenstein objects (half-written data), we copy the data to our class
+            // beforehand. memcpy can never crash when copying Frankenstein objects
             std::memcpy(reinterpret_cast<void*>(const_cast<T*>(&m_copyOfUserData)),
                         &m_statusPortDataPtr->chunks[currentReadPosition].data.value(),
                         sizeof(T));
@@ -136,19 +151,20 @@ class StatusPortWriter
   public:
     StatusPortWriter(cxx::not_null<StatusPortData<T>*> statusPortDataPtr) noexcept
         : m_statusPortDataPtr(statusPortDataPtr)
+    /// @todo #982 Replace once the RouDi infrastructure is ready
+    // m_statusPortDataPtr(iox::runtime::PoshRuntime::getInstance().getMiddlewareStatusPort(sizeof(T)))
     {
     }
 
     StatusPortWriter(StatusPortWriter&& rhs) = delete;
     StatusPortWriter& operator=(StatusPortWriter&& rhs) = delete;
-
     StatusPortWriter(const StatusPortWriter&) = delete;
     StatusPortWriter& operator=(const StatusPortWriter&) = delete;
 
-    void storeChunk(cxx::function_ref<void(T&)> callable)
+    void store(cxx::function_ref<void(T&)> callable) noexcept
     {
-        // wogegen muss ich mich bei schreiben schützen? gegen nichts ich bin der Boss und niemand anderes ändert die
-        // writePosition, readPosition oder abaCounter
+        // Against what do we have to protect us in store?
+        // Against nothing we are the boss and the single entitiy changing latestTransaction, hence no CAS is needed
 
         // Get current world view
         auto currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_relaxed);
@@ -156,20 +172,17 @@ class StatusPortWriter
         auto currentWritePosition =
             1 xor static_cast<std::underlying_type<UsedChunk>::type>(currentTransaction.usedChunk);
 
-        T valueToStore;
-        // We could also safely pass the memory directly to the lambda, then we save a copy
+        /// @todo #982 Is it possible to pass an empty optional to the callable?
         // callable(*(m_statusPortDataPtr->chunks[currentWritePosition].data));
+
+        // Update our new world view, it can't fail because we're the only writer
+        T valueToStore;
         callable(valueToStore);
-
-        // wie können wir hier sicherstellen, dass niemand mehr auf dieser speicherzelle liest zB ein gaaanz langsamer
-        // Leser? brauche ich einen referenceCounter? nein, der leser checkt ob sich die welt weitergedreht hat
-
-        // Update our new view on the world, it can't fail because we're the only writer
         m_statusPortDataPtr->chunks[currentWritePosition].data.emplace(valueToStore);
 
         Transaction newTransaction{static_cast<UsedChunk>(currentWritePosition), ++currentTransaction.abaCounter};
         m_statusPortDataPtr->latestTransaction.store(newTransaction, std::memory_order_release);
-        // Store operation is now observable for all readers
+        // Store operation aka world view is now observable for all readers
     }
 
   private:
