@@ -18,7 +18,9 @@
 #include "iceoryx_hoofs/cxx/expected.hpp"
 #include "iceoryx_hoofs/cxx/string.hpp"
 #include "iceoryx_hoofs/cxx/vector.hpp"
+#include "iceoryx_hoofs/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_subscriber.hpp"
+#include "iceoryx_posh/popo/wait_set.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 #include <cstring>
@@ -137,6 +139,18 @@ CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
             if (argIdentifierLength == 1 || (argIdentifierLength == 2 && argv[i][1] == '-'))
             {
                 std::cerr << "Empty option names are forbidden" << std::endl;
+                printHelpAndExit(argv[0]);
+            }
+            else if (argIdentifierLength > 2 && argv[i][1] != '-')
+            {
+                std::cerr << "Only one letter allowed when using a short option name. This \"" << argv[i]
+                          << "\" is not valid." << std::endl;
+                printHelpAndExit(argv[0]);
+            }
+            else if (argIdentifierLength > 2 && argv[i][2] == '-')
+            {
+                std::cerr << "A long option name should start after \"--\". This \"" << argv[i] << "\" is not valid."
+                          << std::endl;
                 printHelpAndExit(argv[0]);
             }
             else if (argIdentifierLength > CommandLineOptions::MAX_OPTION_NAME_LENGTH)
@@ -273,7 +287,7 @@ cxx::expected<T, CommandLineOptions::Result> CommandLineOptions::get(const name_
 {
     for (const auto& a : m_arguments)
     {
-        if (a.id == optionName)
+        if (a.id == optionName || (optionName.size() == 1 && a.shortId == optionName.c_str()[0]))
         {
             if (a.value.empty())
             {
@@ -339,7 +353,7 @@ void CommandLineParser::printHelpAndExit(const char* binaryName) const noexcept
         std::cout << a.description << std::endl;
     }
     std::cout << std::endl;
-    exit(-1);
+    std::exit(EXIT_FAILURE);
 }
 
 CommandLineParser&& CommandLineParser::addOption(const entry_t& option) && noexcept
@@ -372,4 +386,34 @@ int main(int argc, char* argv[])
             .addOption({'e', "event", "Mame of the event to subscribe to.", ArgumentType::REQUIRED_VALUE})
             .addOption({'r', "runtime", "Name used to register at RouDi.", ArgumentType::OPTIONAL_VALUE})
             .parse(argc, argv);
+
+    capro::IdString_t service(cxx::TruncateToCapacity, options.get<capro::IdString_t>("service").value());
+    capro::IdString_t instance(cxx::TruncateToCapacity, options.get<capro::IdString_t>("instance").value());
+    capro::IdString_t event(cxx::TruncateToCapacity, options.get<capro::IdString_t>("event").value());
+
+    auto maybeRuntime = options.get<RuntimeName_t>("runtime");
+    RuntimeName_t runtime(cxx::TruncateToCapacity, (maybeRuntime) ? maybeRuntime.value() : "GenericReceiver");
+
+    std::cout << "\n  application  :  " << runtime << std::endl;
+    std::cout << "  service      :  " << service << ", " << instance << ", " << event << "\n" << std::endl;
+
+    iox::runtime::PoshRuntime::initRuntime(runtime);
+    iox::popo::UntypedSubscriber subscriber({service, instance, event});
+    iox::popo::WaitSet<> waitset;
+    waitset.attachEvent(subscriber, popo::SubscriberEvent::DATA_RECEIVED).or_else([](auto&) {
+        std::cerr << "unable to attach subscriber to waitset" << std::endl;
+        std::exit(EXIT_FAILURE);
+    });
+
+    while (!iox::posix::hasTerminationRequested())
+    {
+        waitset.wait();
+        while (subscriber.hasData())
+        {
+            subscriber.take().and_then([](const void* payload) {
+                uint64_t payloadSize = 8U;
+                print(payload, payloadSize);
+            });
+        }
+    }
 }
