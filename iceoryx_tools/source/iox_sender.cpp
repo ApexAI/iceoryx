@@ -16,8 +16,7 @@
 
 #include "iceoryx_hoofs/cxx/command_line_parser.hpp"
 #include "iceoryx_hoofs/posix_wrapper/signal_watcher.hpp"
-#include "iceoryx_posh/popo/untyped_subscriber.hpp"
-#include "iceoryx_posh/popo/wait_set.hpp"
+#include "iceoryx_posh/popo/untyped_publisher.hpp"
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
 #include <chrono>
@@ -25,11 +24,10 @@
 #include <iostream>
 
 using namespace iox;
-
 void print(const void* const memory, const uint64_t length, const uint64_t counter) noexcept
 {
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    std::cout << std::put_time(std::localtime(&now), "%F %T :") << " [ receive ]{" << counter << "} ";
+    std::cout << std::put_time(std::localtime(&now), "%F %T : ") << "[ send ]{" << counter << "} ";
 
     for (uint64_t i = 0; i < length; ++i)
     {
@@ -45,10 +43,11 @@ int main(int argc, char* argv[])
 
     auto options =
         cxx::CommandLineParser()
-            .addOption({'s', "service", "Name of the service to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
-            .addOption({'i', "instance", "Name of the instance to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
-            .addOption({'e', "event", "Mame of the event to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
+            .addOption({'s', "service", "Name of the service to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
+            .addOption({'i', "instance", "Name of the instance to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
+            .addOption({'e', "event", "Mame of the event to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
             .addOption({'r', "runtime", "Name used to register at RouDi.", cxx::ArgumentType::OPTIONAL_VALUE})
+            .addOption({'p', "pipe", "Read VALUE bytes from stdin and send it.", cxx::ArgumentType::OPTIONAL_VALUE})
             .parse(argc, argv);
 
     capro::IdString_t service(cxx::TruncateToCapacity, options.get<capro::IdString_t>("service").value());
@@ -58,28 +57,42 @@ int main(int argc, char* argv[])
     auto maybeRuntime = options.get<RuntimeName_t>("runtime");
     RuntimeName_t runtime(cxx::TruncateToCapacity, (maybeRuntime) ? maybeRuntime.value() : "GenericReceiver");
 
+    auto maybePipe = options.get<uint64_t>("pipe");
+
     std::cout << "\n  application  :  " << runtime << std::endl;
     std::cout << "  service      :  " << service << ", " << instance << ", " << event << "\n" << std::endl;
 
     iox::runtime::PoshRuntime::initRuntime(runtime);
-    iox::popo::UntypedSubscriber subscriber({service, instance, event});
-    iox::popo::WaitSet<> waitset;
-    waitset.attachEvent(subscriber, popo::SubscriberEvent::DATA_RECEIVED).or_else([](auto&) {
-        std::cerr << "unable to attach subscriber to waitset" << std::endl;
-        std::exit(EXIT_FAILURE);
-    });
+    iox::popo::UntypedPublisher publisher({service, instance, event});
 
     uint64_t counter = 0;
+    bool stopPublish = false;
     while (!iox::posix::hasTerminationRequested())
     {
-        waitset.timedWait(units::Duration::fromMilliseconds(250));
-        while (subscriber.hasData())
+        if (maybePipe)
         {
-            subscriber.take().and_then([&](const void* payload) {
-                uint64_t payloadSize = 8U;
-                print(payload, payloadSize, counter++);
-                subscriber.release(payload);
+            publisher.loan(*maybePipe).and_then([&](auto& sample) {
+                char* data = static_cast<char*>(sample);
+                for (uint64_t i = 0; i < *maybePipe && std::cin.good(); ++i)
+                {
+                    data[i] = static_cast<char>(std::cin.get());
+                    if (data[i] == EOF)
+                    {
+                        for (uint64_t k = i + 1; k < *maybePipe; ++k)
+                        {
+                            data[i] = '\0';
+                        }
+                        stopPublish = true;
+                    }
+                }
+                print(data, *maybePipe, counter++);
+                publisher.publish(sample);
             });
+        }
+
+        if (stopPublish)
+        {
+            break;
         }
     }
 }

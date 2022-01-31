@@ -42,7 +42,17 @@ target_link_libraries(iox-receiver
 
 target_compile_options(iox-receiver PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
 
-set_target_properties(iox-receiver
+add_executable(iox-sender
+    source/iox_sender.cpp
+)
+target_link_libraries(iox-sender
+    iceoryx_posh::iceoryx_posh
+)
+
+target_compile_options(iox-sender PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+
+
+set_target_properties(iox-receiver iox-sender
   PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_STANDARD ${ICEORYX_CXX_STANDARD}
