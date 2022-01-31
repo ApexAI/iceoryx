@@ -53,7 +53,8 @@ class CommandLineOptions
     };
 
     template <typename T>
-    cxx::expected<T, Result> acquire(const name_t& optionName) const noexcept;
+    cxx::expected<T, Result> get(const name_t& optionName) const noexcept;
+    bool has(const name_t& switchName) const noexcept;
     const binaryName_t& binaryName() const noexcept;
 
     friend class CommandLineParser;
@@ -61,6 +62,7 @@ class CommandLineOptions
   private:
     struct argument_t
     {
+        char shortId;
         name_t id;
         value_t value;
     };
@@ -87,19 +89,25 @@ class CommandLineParser
         ArgumentType type = ArgumentType::SWITCH;
     };
 
+    CommandLineParser() noexcept;
+
     CommandLineParser&& addOption(const entry_t& option) && noexcept;
     CommandLineOptions parse(int argc, char* argv[]) && noexcept;
-    void printHelpAndExit(const char* binaryName) const noexcept;
 
   private:
-    bool doesContainOptionName(const CommandLineOptions::name_t& name) const noexcept;
-    bool doesContainValue(const CommandLineOptions::name_t& name) const noexcept;
+    cxx::optional<entry_t> getOption(const CommandLineOptions::name_t& name) const noexcept;
     bool areAllRequiredValuesPresent(const CommandLineOptions& options) const noexcept;
+    void printHelpAndExit(const char* binaryName) const noexcept;
 
   private:
     cxx::vector<entry_t, CommandLineOptions::MAX_NUMBER_OF_ARGUMENTS> m_availableOptions;
 };
 
+
+CommandLineParser::CommandLineParser() noexcept
+{
+    std::move(*this).addOption({'h', "help", "Display help.", ArgumentType::SWITCH});
+}
 
 CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
 {
@@ -139,21 +147,23 @@ CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
             }
 
             uint64_t optionNameStart = (argv[i][1] == '-') ? 2 : 1;
+            auto optionEntry =
+                getOption(CommandLineOptions::name_t(cxx::TruncateToCapacity, argv[i] + optionNameStart));
 
-            if (!doesContainOptionName(CommandLineOptions::name_t(cxx::TruncateToCapacity, argv[i] + optionNameStart)))
+            if (!optionEntry)
             {
                 std::cerr << "Unknown option \"" << argv[i] << "\"" << std::endl;
                 printHelpAndExit(argv[0]);
             }
 
             options.m_arguments.emplace_back();
-            options.m_arguments.back().id.unsafe_assign(
-                argv[i] + optionNameStart); // +optionNameStart to get rid of the preceeding -
+            options.m_arguments.back().id.unsafe_assign(optionEntry->longOption);
+            options.m_arguments.back().shortId = optionEntry->shortOption;
 
             // parse value of the option name
             if (i + 1 < static_cast<uint64_t>(argc) && argv[i + 1][0] != '-')
             {
-                if (!doesContainValue(CommandLineOptions::name_t(cxx::TruncateToCapacity, argv[i])))
+                if (optionEntry->type == ArgumentType::SWITCH)
                 {
                     std::cerr << "The parameter \"" << argv[i] << "\" is a switch. You cannot set a value here."
                               << std::endl;
@@ -175,6 +185,10 @@ CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
 
     if (areAllRequiredValuesPresent(options))
     {
+        if (options.has("help"))
+        {
+            printHelpAndExit(argv[0]);
+        }
         return options;
     }
 
@@ -182,38 +196,18 @@ CommandLineOptions CommandLineParser::parse(int argc, char* argv[]) && noexcept
     return options;
 }
 
-bool CommandLineParser::doesContainOptionName(const CommandLineOptions::name_t& name) const noexcept
+cxx::optional<CommandLineParser::entry_t>
+CommandLineParser::getOption(const CommandLineOptions::name_t& name) const noexcept
 {
     const auto nameSize = name.size();
     for (const auto& r : m_availableOptions)
     {
-        if (nameSize == 1 && name.c_str()[0] == r.shortOption)
+        if (name == r.longOption || (nameSize == 1 && name.c_str()[0] == r.shortOption))
         {
-            return true;
-        }
-        else if (name == r.longOption)
-        {
-            return true;
+            return r;
         }
     }
-    return false;
-}
-
-bool CommandLineParser::doesContainValue(const CommandLineOptions::name_t& name) const noexcept
-{
-    const auto nameSize = name.size();
-    for (const auto& r : m_availableOptions)
-    {
-        if (nameSize == 1 && name.c_str()[0] == r.shortOption)
-        {
-            return r.type != ArgumentType::SWITCH;
-        }
-        else if (name == r.longOption)
-        {
-            return r.type != ArgumentType::SWITCH;
-        }
-    }
-    return false;
+    return cxx::nullopt;
 }
 
 bool CommandLineParser::areAllRequiredValuesPresent(const CommandLineOptions& options) const noexcept
@@ -262,13 +256,30 @@ const CommandLineOptions::binaryName_t& CommandLineOptions::binaryName() const n
     return m_binaryName;
 }
 
+bool CommandLineOptions::has(const name_t& switchName) const noexcept
+{
+    for (const auto& a : m_arguments)
+    {
+        if (a.value.empty() && (a.id == switchName || (switchName.size() == 1 && a.shortId == switchName.c_str()[0])))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 template <typename T>
-cxx::expected<T, CommandLineOptions::Result> CommandLineOptions::acquire(const name_t& optionName) const noexcept
+cxx::expected<T, CommandLineOptions::Result> CommandLineOptions::get(const name_t& optionName) const noexcept
 {
     for (const auto& a : m_arguments)
     {
         if (a.id == optionName)
         {
+            if (a.value.empty())
+            {
+                return cxx::error<Result>(Result::NO_SUCH_VALUE);
+            }
+
             T value;
             if (!cxx::convert::fromString(a.value.c_str(), value))
             {
@@ -337,16 +348,28 @@ CommandLineParser&& CommandLineParser::addOption(const entry_t& option) && noexc
     return std::move(*this);
 }
 
+void print(const void* const memory, const uint64_t length) noexcept
+{
+    auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::cout << std::put_time(std::localtime(&now), "%F %T : ");
+
+    for (uint64_t i = 0; i < length; ++i)
+    {
+        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2)
+                  << static_cast<uint16_t>(static_cast<const uint8_t*>(memory)[i]) << " ";
+    }
+    std::cout << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
+    iox::log::LogManager::GetLogManager().SetDefaultLogLevel(iox::log::LogLevel::kError);
+
     auto options =
         CommandLineParser()
-            .addOption({'h', "help", "Display help.", ArgumentType::SWITCH})
             .addOption({'s', "service", "Name of the service to subscribe to.", ArgumentType::REQUIRED_VALUE})
             .addOption({'i', "instance", "Name of the instance to subscribe to.", ArgumentType::REQUIRED_VALUE})
             .addOption({'e', "event", "Mame of the event to subscribe to.", ArgumentType::REQUIRED_VALUE})
             .addOption({'r', "runtime", "Name used to register at RouDi.", ArgumentType::OPTIONAL_VALUE})
             .parse(argc, argv);
-
-    std::cout << "hello world" << std::endl;
 }
