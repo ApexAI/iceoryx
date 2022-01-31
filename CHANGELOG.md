@@ -21,6 +21,7 @@
 - Extend cxx::optional constructor for in place construction so that copy/move for values inside the optional even could be deleted[\#967](https://github.com/eclipse-iceoryx/iceoryx/issues/967)
 - Add templated `from`/`into` free functions to formalize conversions from enums and other types [#992](https://github.com/eclipse-iceoryx/iceoryx/issues/992)
 - UniqueId class for unique IDs within a process [#1010](https://github.com/eclipse-iceoryx/iceoryx/issues/1010)
+- Add PrefixTree and TypedAllocator to iceoryx hoofs [\#859](https://github.com/eclipse-iceoryx/iceoryx/issues/859)
 
 **Bugfixes:**
 
