@@ -40,14 +40,14 @@ enum class ActiveChunk : uint32_t
 
 struct Transaction
 {
-    ActiveChunk ActiveChunk{ActiveChunk::FIRST};
+    ActiveChunk activeChunk{ActiveChunk::FIRST};
     // We need a world-view counter to detect if StatusPortWriter::store operation overtook a
     // StatusPortReader::take operation
     uint32_t abaCounter{0U};
 
     bool operator==(const Transaction& rhs) const
     {
-        return (ActiveChunk == rhs.ActiveChunk) && (abaCounter == rhs.abaCounter);
+        return (activeChunk == rhs.activeChunk) && (abaCounter == rhs.abaCounter);
     }
 
     bool operator!=(const Transaction& rhs) const
@@ -108,13 +108,15 @@ class StatusPortReader
 
     void take(cxx::function_ref<void(const T&)> callable) const noexcept
     {
+        // The user needs to provide a callable which can deal with Frankenstein objects (half-written data)
         Transaction currentTransaction;
 
         do
         {
             // Get current world view
             currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire);
-            auto currentReadPosition = static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.ActiveChunk);
+            auto currentReadPosition =
+                static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.activeChunk);
 
             if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())
             {
@@ -125,19 +127,42 @@ class StatusPortReader
             // Nope, we just need to detect if the StatusPortWriter has stored something in the meantime aka the world a
             // turned one step further. In such a case, we'll just copy the data again and re-call the callable
 
-            // To prevent crashes due to Frankenstein objects (half-written data), we copy the data to our class
-            // beforehand. memcpy can never crash when copying Frankenstein objects
-            std::memcpy(reinterpret_cast<void*>(const_cast<T*>(&m_copyOfUserData)),
-                        &m_statusPortDataPtr->chunks[currentReadPosition].data.value(),
-                        sizeof(T));
+            callable(*(m_statusPortDataPtr->chunks[currentReadPosition].data));
 
-            callable(m_copyOfUserData); // potentially corrupeted data
             // Re-call the callable if the world changed in the meantime
         } while (currentTransaction != m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire));
     }
 
+    void copyTake(cxx::function_ref<void(const T&)> callable) const noexcept
+    {
+        Transaction currentTransaction;
+        T copyOfUserData;
+
+        do
+        {
+            // Get current world view
+            currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire);
+            auto currentReadPosition =
+                static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.activeChunk);
+
+            if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())
+            {
+                return;
+            }
+
+            // To prevent crashes due to Frankenstein objects (half-written data), we copy the data to our class
+            // beforehand. memcpy can never crash when copying Frankenstein objects
+            std::memcpy(reinterpret_cast<void*>(const_cast<T*>(&copyOfUserData)),
+                        &m_statusPortDataPtr->chunks[currentReadPosition].data.value(),
+                        sizeof(T));
+
+            // Re-call the callable if the world changed in the meantime
+        } while (currentTransaction != m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire));
+        // Now we are sure that data isn't corrupted
+        callable(copyOfUserData);
+    }
+
   private:
-    T m_copyOfUserData;
     StatusPortData<T>* m_statusPortDataPtr;
     /// @todo #982 add getMembers() when integrating into RouDi infrastructure
 };
@@ -167,9 +192,9 @@ class StatusPortWriter
         auto currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_relaxed);
         // Get the readPosition and toggle it to get write position
         auto currentWritePosition =
-            1 xor static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.ActiveChunk);
+            1 xor static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.activeChunk);
 
-        /// @todo #982 Is it possible to pass an empty optional to the callable?
+        /// @todo #982 Later we'll directly pass the dereferenced raw shared memory pointer
         // callable(*(m_statusPortDataPtr->chunks[currentWritePosition].data));
 
         // Update our new world view, it can't fail because we're the only writer
