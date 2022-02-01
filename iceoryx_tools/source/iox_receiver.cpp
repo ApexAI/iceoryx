@@ -76,7 +76,8 @@ int main(int argc, char* argv[])
         while (subscriber.hasData())
         {
             subscriber.take().and_then([&](const void* payload) {
-                uint64_t payloadSize = 8U;
+                const auto* const header = iox::mepoo::ChunkHeader::fromUserPayload(payload);
+                uint64_t payloadSize = header->userPayloadSize();
                 print(payload, payloadSize, counter++);
                 subscriber.release(payload);
             });

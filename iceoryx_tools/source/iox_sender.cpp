@@ -37,6 +37,29 @@ void print(const void* const memory, const uint64_t length, const uint64_t count
     std::cout << std::endl;
 }
 
+bool sendDataReceivedFromPipe(iox::popo::UntypedPublisher& publisher, uint64_t& counter, const uint64_t chunkSize)
+{
+    bool stopPublish = false;
+    publisher.loan(chunkSize).and_then([&](auto& sample) {
+        char* data = static_cast<char*>(sample);
+        for (uint64_t i = 0; i < chunkSize && std::cin.good(); ++i)
+        {
+            data[i] = static_cast<char>(std::cin.get());
+            if (data[i] == EOF)
+            {
+                for (uint64_t k = i + 1; k < chunkSize; ++k)
+                {
+                    data[i] = '\0';
+                }
+                stopPublish = true;
+            }
+        }
+        print(data, chunkSize, counter++);
+        publisher.publish(sample);
+    });
+    return stopPublish;
+}
+
 int main(int argc, char* argv[])
 {
     iox::log::LogManager::GetLogManager().SetDefaultLogLevel(iox::log::LogLevel::kError);
@@ -69,26 +92,8 @@ int main(int argc, char* argv[])
     bool stopPublish = false;
     while (!iox::posix::hasTerminationRequested())
     {
-        if (maybePipe)
-        {
-            publisher.loan(*maybePipe).and_then([&](auto& sample) {
-                char* data = static_cast<char*>(sample);
-                for (uint64_t i = 0; i < *maybePipe && std::cin.good(); ++i)
-                {
-                    data[i] = static_cast<char>(std::cin.get());
-                    if (data[i] == EOF)
-                    {
-                        for (uint64_t k = i + 1; k < *maybePipe; ++k)
-                        {
-                            data[i] = '\0';
-                        }
-                        stopPublish = true;
-                    }
-                }
-                print(data, *maybePipe, counter++);
-                publisher.publish(sample);
-            });
-        }
+        maybePipe.and_then(
+            [&](auto& pipeSize) { stopPublish = sendDataReceivedFromPipe(publisher, counter, *maybePipe); });
 
         if (stopPublish)
         {
