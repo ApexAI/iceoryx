@@ -13,6 +13,7 @@ The target of the `StatusPort` are the following use-case:
 * Readers don't access the data directly but by a lambda
     * Preventing torn reads, since the `StatusPortReader` detects if the data
     changed during `take()` operation (Frankenstein check) and re-executes the lambda
+* Has to be attachable to `Listener`
 
 Potential applications are:
 
@@ -28,6 +29,7 @@ Potential applications are:
 
 ### Discarded ideas
 
+#### Atomic pointer
 The pointer to the currently active and used chunk could also be stored in an `std::atomic`.
 
 ```cpp
@@ -38,7 +40,13 @@ However, it would need the full 64-bit and which is not needed when managing
 just two chunks. Hence an `abaCounter` would need to be stored in a separate
 `std::atomic` variable.
 
+### Omit `ServiceDescription`
+
 * No discovery, no `CaPro`, no QoS
+
+### atomic<T>::exchange
+
+* Not possible because we are not allowed to write data into shared memory as a reader
 
 ### Terminology
 

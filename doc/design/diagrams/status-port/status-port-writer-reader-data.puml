@@ -2,20 +2,20 @@
 
 skinparam classAttributeIconSize 0
 
-enum UsedChunk {
+enum ActiveChunk {
   FIRST
   SECOND
 }
 
 class Transaction {
-  +usedChunk: UsedChunk
+  +activeChunk: ActiveChunk
   +abaCounter: uint32_t
 }
 
 class StatusPortData {
   +latestTransaction: std::atomic<Transaction>
   +serviceDescription: capro::ServiceDescription
-  +chunks: SharedChunk[0..2]
+  +chunks: SharedChunk[2]
 }
 
 class StatusPortReader<T> {

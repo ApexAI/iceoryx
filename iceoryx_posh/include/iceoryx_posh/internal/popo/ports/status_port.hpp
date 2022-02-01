@@ -31,8 +31,8 @@ namespace iox
 {
 namespace popo
 {
-/// @todo #982 Create common .hpp for UsedChunk and Transaction
-enum class UsedChunk : uint32_t
+/// @todo #982 Create common .hpp for ActiveChunk and Transaction
+enum class ActiveChunk : uint32_t
 {
     FIRST = 0,
     SECOND = 1
@@ -40,14 +40,14 @@ enum class UsedChunk : uint32_t
 
 struct Transaction
 {
-    UsedChunk usedChunk{UsedChunk::FIRST};
+    ActiveChunk ActiveChunk{ActiveChunk::FIRST};
     // We need a world-view counter to detect if StatusPortWriter::store operation overtook a
     // StatusPortReader::take operation
     uint32_t abaCounter{0U};
 
     bool operator==(const Transaction& rhs) const
     {
-        return (usedChunk == rhs.usedChunk) && (abaCounter == rhs.abaCounter);
+        return (ActiveChunk == rhs.ActiveChunk) && (abaCounter == rhs.abaCounter);
     }
 
     bool operator!=(const Transaction& rhs) const
@@ -89,9 +89,6 @@ struct StatusPortData
     capro::ServiceDescription serviceDescription;
 };
 
-// template <typename T>
-// using StatusPortData = Sample<T, StatusPortTransactions<T>>; // eigentlich StatusPortSample?
-
 template <typename T>
 class StatusPortReader
 {
@@ -117,7 +114,7 @@ class StatusPortReader
         {
             // Get current world view
             currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire);
-            auto currentReadPosition = static_cast<std::underlying_type<UsedChunk>::type>(currentTransaction.usedChunk);
+            auto currentReadPosition = static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.ActiveChunk);
 
             if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())
             {
@@ -134,7 +131,7 @@ class StatusPortReader
                         &m_statusPortDataPtr->chunks[currentReadPosition].data.value(),
                         sizeof(T));
 
-            callable(m_copyOfUserData);
+            callable(m_copyOfUserData); // potentially corrupeted data
             // Re-call the callable if the world changed in the meantime
         } while (currentTransaction != m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire));
     }
@@ -170,7 +167,7 @@ class StatusPortWriter
         auto currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_relaxed);
         // Get the readPosition and toggle it to get write position
         auto currentWritePosition =
-            1 xor static_cast<std::underlying_type<UsedChunk>::type>(currentTransaction.usedChunk);
+            1 xor static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.ActiveChunk);
 
         /// @todo #982 Is it possible to pass an empty optional to the callable?
         // callable(*(m_statusPortDataPtr->chunks[currentWritePosition].data));
@@ -180,7 +177,7 @@ class StatusPortWriter
         callable(valueToStore);
         m_statusPortDataPtr->chunks[currentWritePosition].data.emplace(valueToStore);
 
-        Transaction newTransaction{static_cast<UsedChunk>(currentWritePosition), ++currentTransaction.abaCounter};
+        Transaction newTransaction{static_cast<ActiveChunk>(currentWritePosition), ++currentTransaction.abaCounter};
         m_statusPortDataPtr->latestTransaction.store(newTransaction, std::memory_order_release);
         // Store operation aka world view is now observable for all readers
     }
