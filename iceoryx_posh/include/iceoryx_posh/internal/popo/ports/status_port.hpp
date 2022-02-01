@@ -116,7 +116,7 @@ class StatusPortReader
         do
         {
             // Get current world view
-            currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_relaxed);
+            currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire);
             auto currentReadPosition = static_cast<std::underlying_type<UsedChunk>::type>(currentTransaction.usedChunk);
 
             if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())

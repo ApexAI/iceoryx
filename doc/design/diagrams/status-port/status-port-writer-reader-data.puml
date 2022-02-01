@@ -1,0 +1,42 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+enum UsedChunk {
+  FIRST
+  SECOND
+}
+
+class Transaction {
+  +usedChunk: UsedChunk
+  +abaCounter: uint32_t
+}
+
+class StatusPortData {
+  +latestTransaction: std::atomic<Transaction>
+  +serviceDescription: capro::ServiceDescription
+  +chunks: SharedChunk[0..2]
+}
+
+class StatusPortReader<T> {
+  +StatusPortReader(statusPortDataPtr: cxx::not_null<StatusPortData* const)
+  +take(callable: cxx::function_ref<void(const T&)>): void
+  -getMembers() const: const StatusPortData*
+  -getMembers(): StatusPortData*
+  -m_copyOfUserData: T
+  -m_statusPortDataPtr: StatusPortData*
+}
+
+
+class StatusPortWriter<T> {
+  +StatusPortWriter(statusPortDataPtr: cxx::not_null<StatusPortData* const)
+  +store(callable: cxx::function_ref<void(T&)>): void
+  -getMembers() const: const StatusPortData*
+  -getMembers(): StatusPortData*
+  -m_statusPortDataPtr: StatusPortData*
+}
+
+StatusPortWriter ..> StatusPortData
+StatusPortReader ..> StatusPortData
+
+@enduml
