@@ -52,7 +52,14 @@ cxx::expected<const RequestHeader*, ChunkReceiveResult> ServerPortUser::getReque
 
 void ServerPortUser::releaseRequest(const RequestHeader* const requestHeader) noexcept
 {
-    m_chunkReceiver.release(requestHeader->getChunkHeader());
+    if (requestHeader != nullptr)
+    {
+        m_chunkReceiver.release(requestHeader->getChunkHeader());
+    }
+    else
+    {
+        cxx::Ensures(requestHeader != nullptr && "requestHeader must not be a nullptr");
+    }
 }
 
 bool ServerPortUser::hasNewRequests() const noexcept
@@ -70,6 +77,8 @@ ServerPortUser::allocateResponse(const RequestHeader* const requestHeader,
                                  const uint32_t userPayloadSize,
                                  const uint32_t userPayloadAlignment) noexcept
 {
+    // TODO nullptr check for requestHeader ... with Ensures?
+
     auto allocateResult = m_chunkSender.tryAllocate(
         getUniqueID(), userPayloadSize, userPayloadAlignment, sizeof(ResponseHeader), alignof(ResponseHeader));
 
@@ -106,12 +115,17 @@ void ServerPortUser::sendResponse(ResponseHeader* const responseHeader) noexcept
                     /// @note do not access the member of responseHeader since the ownership is passed to sendToQueue
                     /// and it might not be valid anymore
                     LogWarn() << "Could not deliver to queue!";
+                    // TODO error handler
                 }
             })
-            .or_else([] { LogWarn() << "Could not deliver to queue! Queue not available anymore!"; });
+            .or_else([] {
+                LogWarn() << "Could not deliver to queue! Queue not available anymore!";
+                // TODO error handler
+            });
     }
     else
     {
+        // TODO release response and call error handler
         LogWarn() << "Try to send request without being connected!";
     }
 }
