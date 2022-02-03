@@ -133,35 +133,6 @@ class StatusPortReader
         } while (currentTransaction != m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire));
     }
 
-    void copyTake(cxx::function_ref<void(const T&)> callable) const noexcept
-    {
-        Transaction currentTransaction;
-        T copyOfUserData;
-
-        do
-        {
-            // Get current world view
-            currentTransaction = m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire);
-            auto currentReadPosition =
-                static_cast<std::underlying_type<ActiveChunk>::type>(currentTransaction.activeChunk);
-
-            if (!m_statusPortDataPtr->chunks[currentReadPosition].data.has_value())
-            {
-                return;
-            }
-
-            // To prevent crashes due to Frankenstein objects (half-written data), we copy the data to our class
-            // beforehand. memcpy can never crash when copying Frankenstein objects
-            std::memcpy(reinterpret_cast<void*>(const_cast<T*>(&copyOfUserData)),
-                        &m_statusPortDataPtr->chunks[currentReadPosition].data.value(),
-                        sizeof(T));
-
-            // Re-call the callable if the world changed in the meantime
-        } while (currentTransaction != m_statusPortDataPtr->latestTransaction.load(std::memory_order_acquire));
-        // Now we are sure that data isn't corrupted
-        callable(copyOfUserData);
-    }
-
   private:
     StatusPortData<T>* m_statusPortDataPtr;
     /// @todo #982 add getMembers() when integrating into RouDi infrastructure
