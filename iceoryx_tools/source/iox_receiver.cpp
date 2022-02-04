@@ -14,7 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_hoofs/internal/cxx/command_line_parser.hpp"
+#include "iceoryx_hoofs/cxx/command_line.hpp"
 #include "iceoryx_hoofs/posix_wrapper/signal_watcher.hpp"
 #include "iceoryx_posh/popo/untyped_subscriber.hpp"
 #include "iceoryx_posh/popo/wait_set.hpp"
@@ -39,12 +39,19 @@ void print(const void* const memory, const uint64_t length, const uint64_t count
     std::cout << std::endl;
 }
 
+struct CommandLine
+{
+    COMMAND_LINE(CommandLine, "receives message from any services and prints the hexcode of the content");
+
+    REQUIRED_VALUE(capro::IdString_t, service, 's', "service", "Name of the service to subscribe to.");
+};
+
 int main(int argc, char* argv[])
 {
     iox::log::LogManager::GetLogManager().SetDefaultLogLevel(iox::log::LogLevel::kError);
 
     auto options =
-        cxx::CommandLineParser()
+        cxx::CommandLineParser("Generic receiver")
             .addOption({'s', "service", "Name of the service to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
             .addOption({'i', "instance", "Name of the instance to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
             .addOption({'e', "event", "Mame of the event to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})

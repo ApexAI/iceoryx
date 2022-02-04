@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     iox::log::LogManager::GetLogManager().SetDefaultLogLevel(iox::log::LogLevel::kError);
 
     auto options =
-        cxx::CommandLineParser()
+        cxx::CommandLineParser("generic sender")
             .addOption({'s', "service", "Name of the service to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
             .addOption({'i', "instance", "Name of the instance to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
             .addOption({'e', "event", "Mame of the event to publish to.", cxx::ArgumentType::REQUIRED_VALUE})
