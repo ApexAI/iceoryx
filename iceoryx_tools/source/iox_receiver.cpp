@@ -44,32 +44,23 @@ struct CommandLine
     COMMAND_LINE(CommandLine, "receives message from any services and prints the hexcode of the content");
 
     REQUIRED_VALUE(capro::IdString_t, service, 's', "service", "Name of the service to subscribe to.");
+    REQUIRED_VALUE(capro::IdString_t, instance, 'i', "instance", "Name of the instance to subscribe to.");
+    REQUIRED_VALUE(capro::IdString_t, event, 'e', "event", "Name of the event to subscribe to.");
+    OPTIONAL_VALUE(RuntimeName_t, runtime, "GenericReceiver", 'r', "runtime", "Name used when registering at RouDi.");
 };
 
 int main(int argc, char* argv[])
 {
     iox::log::LogManager::GetLogManager().SetDefaultLogLevel(iox::log::LogLevel::kError);
 
-    auto options =
-        cxx::CommandLineParser("Generic receiver")
-            .addOption({'s', "service", "Name of the service to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
-            .addOption({'i', "instance", "Name of the instance to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
-            .addOption({'e', "event", "Mame of the event to subscribe to.", cxx::ArgumentType::REQUIRED_VALUE})
-            .addOption({'r', "runtime", "Name used to register at RouDi.", cxx::ArgumentType::OPTIONAL_VALUE})
-            .parse(argc, argv);
+    CommandLine cmd(argc, argv);
 
-    capro::IdString_t service(cxx::TruncateToCapacity, options.get<capro::IdString_t>("service").value());
-    capro::IdString_t instance(cxx::TruncateToCapacity, options.get<capro::IdString_t>("instance").value());
-    capro::IdString_t event(cxx::TruncateToCapacity, options.get<capro::IdString_t>("event").value());
+    std::cout << "\n  application  :  " << cmd.runtime() << std::endl;
+    std::cout << "  service      :  " << cmd.service() << ", " << cmd.instance() << ", " << cmd.event() << "\n"
+              << std::endl;
 
-    auto maybeRuntime = options.get<RuntimeName_t>("runtime");
-    RuntimeName_t runtime(cxx::TruncateToCapacity, (maybeRuntime) ? maybeRuntime.value() : "GenericReceiver");
-
-    std::cout << "\n  application  :  " << runtime << std::endl;
-    std::cout << "  service      :  " << service << ", " << instance << ", " << event << "\n" << std::endl;
-
-    iox::runtime::PoshRuntime::initRuntime(runtime);
-    iox::popo::UntypedSubscriber subscriber({service, instance, event});
+    iox::runtime::PoshRuntime::initRuntime(cmd.runtime());
+    iox::popo::UntypedSubscriber subscriber({cmd.service(), cmd.instance(), cmd.event()});
     iox::popo::WaitSet<> waitset;
     waitset.attachEvent(subscriber, popo::SubscriberEvent::DATA_RECEIVED).or_else([](auto&) {
         std::cerr << "unable to attach subscriber to waitset" << std::endl;
