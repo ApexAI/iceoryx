@@ -26,16 +26,42 @@ namespace roudi
 {
 cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceDescription& serviceDescription) noexcept
 {
-    auto match = findExact(serviceDescription);
-
-    if (match)
+    auto index = find(serviceDescription);
+    if (index != NO_INDEX)
     {
-        match->count++;
+        // entry exists, increment counter
+        auto& entry = m_serviceDescriptions[index];
+        entry->referenceCounter++;
         return cxx::success<>();
     }
 
-    if (addNewEntry(serviceDescription))
+    // entry does not exist, find a free slot if it exists
+
+    // fast path to a free slot (previously removed)
+    // note: we prefer entries close to the front
+    if (m_freeIndex != NO_INDEX)
     {
+        auto& entry = m_serviceDescriptions[m_freeIndex];
+        entry.emplace(serviceDescription, 1);
+        m_freeIndex = NO_INDEX;
+        return cxx::success<>();
+    }
+
+    // search from start
+    for (auto& entry : m_serviceDescriptions)
+    {
+        if (!entry)
+        {
+            entry.emplace(serviceDescription, 1);
+            return cxx::success<>();
+        }
+    }
+
+    // append new entry at the end
+    if (m_serviceDescriptions.emplace_back())
+    {
+        auto& entry = m_serviceDescriptions.back();
+        entry.emplace(serviceDescription, 1);
         return cxx::success<>();
     }
 
@@ -44,27 +70,31 @@ cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceD
 
 void ServiceRegistry::remove(const capro::ServiceDescription& serviceDescription) noexcept
 {
-    auto match = findExact(serviceDescription);
-
-    if (match)
+    auto index = find(serviceDescription);
+    if (index != NO_INDEX)
     {
-        if (match->count > 1)
+        auto& entry = m_serviceDescriptions[index];
+
+        if (entry->referenceCounter > 1)
         {
-            match->count--;
+            entry->referenceCounter--;
         }
         else
         {
-            removeEntry(match);
+            entry.reset();
+            m_freeIndex = index;
         }
     }
 }
 
 void ServiceRegistry::removeAll(const capro::ServiceDescription& serviceDescription) noexcept
 {
-    auto match = findExact(serviceDescription);
-    if (match)
+    auto index = find(serviceDescription);
+    if (index != NO_INDEX)
     {
-        removeEntry(match);
+        auto& entry = m_serviceDescriptions[index];
+        entry.reset();
+        m_freeIndex = index;
     }
 }
 
@@ -108,13 +138,13 @@ void ServiceRegistry::find(ServiceDescriptionVector_t& searchResult,
         return find_(WILDCARD, WILDCARD, *event, searchResult);
     }
 
-    return findAll(searchResult);
+    return find_all(searchResult);
 }
 
 const ServiceRegistry::ServiceDescriptionVector_t ServiceRegistry::getServices() const noexcept
 {
     ServiceDescriptionVector_t allEntries;
-    findAll(allEntries);
+    find_all(allEntries);
     return allEntries;
 }
 } // namespace roudi

@@ -20,6 +20,7 @@
 #include "iceoryx_hoofs/memory/typed_allocator.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <type_traits>
 #include <vector>
 

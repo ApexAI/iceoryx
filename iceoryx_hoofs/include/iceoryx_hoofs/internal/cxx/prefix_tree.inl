@@ -177,9 +177,9 @@ bool PrefixTree<Value, Capacity, MaxKeyLength>::remove(const Key& key, const Val
     // if value does not exist at key, we cannot remove it
     auto removed = deleteValue(node, value);
 
-    if (node->child)
+    if (node->data || node->child)
     {
-        // the node is needed since it has children (which lead to data otherwise they would not exist)
+        // the node is needed since it has data or children (which lead to data otherwise they would not exist)
         return removed;
     }
 
