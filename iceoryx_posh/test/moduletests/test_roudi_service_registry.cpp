@@ -16,10 +16,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_hoofs/cxx/helplets.hpp"
+#include "iceoryx_hoofs/cxx/optional.hpp"
 #include "iceoryx_hoofs/cxx/string.hpp"
 #include "iceoryx_posh/internal/roudi/service_registry.hpp"
 
 #include "test.hpp"
+
+#include <chrono>
 
 namespace
 {
@@ -443,6 +446,129 @@ TEST_F(ServiceRegistry_test, AddingVariousServiceDescriptionAndGetServicesDoesNo
     }
     EXPECT_THAT(serviceDescriptionVector.size(), Eq(4));
     EXPECT_THAT(service1Found && service2Found && service4Found, Eq(true));
+}
+
+#include <ctime>
+#include <unistd.h>
+
+// TODO: use <random>
+
+using string_t = iox::capro::IdString_t;
+using search_result_t = ServiceRegistry::ServiceDescriptionVector_t;
+
+string_t randomString(uint32_t size = string_t::capacity())
+{
+    // contains no `0`
+    static const char chars[] = "123456789"
+                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                "abcdefghijklmnopqrstuvwxyz";
+
+    constexpr auto N = string_t::capacity();
+
+    if (size > N)
+        size = N;
+
+    char a[N + 1];
+    for (uint64_t i = 0; i < size; ++i)
+    {
+        auto c = chars[rand() % (sizeof(chars) - 1)];
+        a[i] = c;
+    }
+    a[size] = '\0';
+
+    string_t s(a);
+    return s;
+}
+
+TEST_F(ServiceRegistry_test, CanAddAtMaximalNumberOfDifferentEntries)
+{
+    constexpr auto MAX = ServiceRegistry::MAX_SERVICE_DESCRIPTIONS;
+
+    auto start = std::chrono::steady_clock::now();
+
+    uint32_t numDifferentEntriesAdded = 0;
+    do
+    {
+        auto id = randomString();
+        ServiceDescription sd(id, id, id);
+        auto result = sut.add(sd);
+        if (result.has_error())
+        {
+            break;
+        }
+        numDifferentEntriesAdded++;
+    } while (true);
+
+    auto end = std::chrono::steady_clock::now();
+
+    // duplicates do not count to the max and may be generated randomly
+    // but we only need to guarantee that we can at least add the max
+    EXPECT_GE(numDifferentEntriesAdded, MAX);
+
+    float runtimeInMs =
+        static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) / 1000.0f;
+    std::cerr << "runtime " << runtimeInMs << "ms" << std::endl;
+}
+
+TEST_F(ServiceRegistry_test, SearchInFullRegistry)
+{
+    constexpr auto CAP = string_t::capacity();
+
+    string_t fixedId(iox::cxx::TruncateToCapacity, std::string(CAP, '0'));
+
+    ServiceDescription lastAdded;
+    do
+    {
+        auto id = randomString();
+        ServiceDescription sd(fixedId, fixedId, id);
+
+        auto result = sut.add(sd);
+        if (result.has_error())
+        {
+            break;
+        }
+        lastAdded = sd;
+    } while (true);
+
+    // remove the last and replace it with a unique id we control
+    sut.removeAll(lastAdded);
+
+    // is unique (random does not generate 0s) and last if a vector is used internally
+    // for almost worst case search (search on last string will terminate early whp)
+
+    auto id = randomString(CAP - 1);
+    id.unsafe_append("0");
+    ServiceDescription uniqueSd(fixedId, fixedId, id);
+    auto result = sut.add(uniqueSd);
+    EXPECT_FALSE(result.has_error());
+
+    search_result_t searchResult;
+    auto& service = uniqueSd.getServiceIDString();
+    auto& instance = uniqueSd.getInstanceIDString();
+    auto& event = uniqueSd.getEventIDString();
+
+    // This is close to a worst case search but not quite due to randomness in the las string
+    // This is somewhat required as we need different strings to create a full registry
+    // This could be achieved with determinstic string enumeration instead of randomness but is more cumbersome)
+    // For a general order of magnitude this suffices and is closer to the average time anyway.
+
+    constexpr int NUM_SEARCHES = 10000;
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < NUM_SEARCHES; ++i)
+    {
+        sut.find(searchResult, service, instance, event);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+
+
+    float runtimeInMs =
+        static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()) / 1000000.0f;
+    float avgSearchTimeMs = runtimeInMs / NUM_SEARCHES;
+    std::cerr << "runtime " << runtimeInMs << "ms "
+              << "avg search time " << avgSearchTimeMs << "ms" << std::endl;
+
+    // ASSERT_EQ(searchResult.size(), 1);
+    ASSERT_GT(searchResult.size(), 0);
 }
 
 } // namespace

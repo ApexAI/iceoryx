@@ -53,7 +53,7 @@ class ServiceRegistry
     };
 
     /// @todo #415 should be connected with iox::MAX_NUMBER_OF_SERVICES
-    static constexpr uint32_t MAX_SERVICE_DESCRIPTIONS = 100U;
+    static constexpr uint32_t MAX_SERVICE_DESCRIPTIONS = 2000U;
     static constexpr uint32_t NO_INDEX = MAX_SERVICE_DESCRIPTIONS;
 
 
@@ -72,6 +72,8 @@ class ServiceRegistry
     /// @brief Removes given service description from registry if service is found
     /// @param[in] serviceDescription, service to be removed
     void remove(const capro::ServiceDescription& serviceDescription) noexcept;
+
+    void removeAll(const capro::ServiceDescription& serviceDescription) noexcept;
 
     /// @brief Searches for given service description in registry
     /// @param[in] searchResult, reference to the vector which will be filled with the results
