@@ -157,9 +157,8 @@ TEST(PoshRuntime, LeadingSlashAppName)
 
     auto errorHandlerCalled{false};
     iox::Error receivedError{iox::Error::kNO_ERROR};
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&errorHandlerCalled,
-         &receivedError](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&errorHandlerCalled, &receivedError](const iox::Error error, const iox::ErrorLevel) {
             errorHandlerCalled = true;
             receivedError = error;
         });
@@ -195,8 +194,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareInterfaceWithInvalidNodeNameIsNotSuccessfu
 {
     ::testing::Test::RecordProperty("TEST_ID", "d207e121-d7c2-4a23-a202-1af311f6982b");
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&detectedError](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&detectedError](const iox::Error error, const iox::ErrorLevel errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
         });
@@ -221,8 +220,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareInterfaceInterfacelistOverflow)
 {
     ::testing::Test::RecordProperty("TEST_ID", "0e164d07-dede-46c3-b2a3-ad78a11c0691");
     auto interfacelistOverflowDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&interfacelistOverflowDetected](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&interfacelistOverflowDetected](const iox::Error error, const iox::ErrorLevel) {
             interfacelistOverflowDetected = true;
             EXPECT_THAT(error, Eq(iox::Error::kPORT_POOL__INTERFACELIST_OVERFLOW));
         });
@@ -310,8 +309,8 @@ TEST_F(PoshRuntime_test, getMiddlewarePublisherPublisherlistOverflow)
     ::testing::Test::RecordProperty("TEST_ID", "f1f1a662-9580-40a1-a116-6ea1cb791516");
     auto publisherlistOverflowDetected{false};
 
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&publisherlistOverflowDetected](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&publisherlistOverflowDetected](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPORT_POOL__PUBLISHERLIST_OVERFLOW)
             {
                 publisherlistOverflowDetected = true;
@@ -341,8 +340,8 @@ TEST_F(PoshRuntime_test, GetMiddlewarePublisherWithSameServiceDescriptionsAndOne
 {
     ::testing::Test::RecordProperty("TEST_ID", "77fb6dfd-a00d-459e-9dd3-90010d7b8af7");
     auto publisherDuplicateDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&publisherDuplicateDetected](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&publisherDuplicateDetected](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPOSH__RUNTIME_PUBLISHER_PORT_NOT_UNIQUE)
             {
                 publisherDuplicateDetected = true;
@@ -374,9 +373,8 @@ TEST_F(PoshRuntime_test, GetMiddlewarePublisherWithForbiddenServiceDescriptionsF
 {
     ::testing::Test::RecordProperty("TEST_ID", "130541c9-94de-4bc4-9471-0a65de310232");
     uint16_t forbiddenServiceDescriptionDetected{0U};
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler(
-        [&forbiddenServiceDescriptionDetected](
-            const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&forbiddenServiceDescriptionDetected](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPOSH__RUNTIME_SERVICE_DESCRIPTION_FORBIDDEN)
             {
                 forbiddenServiceDescriptionDetected++;
@@ -529,8 +527,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareSubscriberSubscriberlistOverflow)
 {
     ::testing::Test::RecordProperty("TEST_ID", "d1281cbd-6520-424e-aace-fbd3aa5d73e9");
     auto subscriberlistOverflowDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&subscriberlistOverflowDetected](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&subscriberlistOverflowDetected](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPORT_POOL__SUBSCRIBERLIST_OVERFLOW)
             {
                 subscriberlistOverflowDetected = true;
@@ -692,8 +690,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareClientWhenMaxClientsAreUsedResultsInClient
 {
     ::testing::Test::RecordProperty("TEST_ID", "6f2de2bf-5e7e-47b1-be42-92cf3fa71ba6");
     auto clientOverflowDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard =
+        iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>([&](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPORT_POOL__CLIENTLIST_OVERFLOW)
             {
                 clientOverflowDetected = true;
@@ -727,8 +725,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareClientWithInvalidNodeNameLeadsToErrorHandl
     clientOptions.nodeName = m_invalidNodeName;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler(
-        [&detectedError](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&detectedError](const iox::Error error, const iox::ErrorLevel errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
         });
@@ -803,8 +801,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareServerWhenMaxServerAreUsedResultsInServerl
 {
     ::testing::Test::RecordProperty("TEST_ID", "8f679838-3332-440c-aa95-d5c82d53a7cd");
     auto serverOverflowDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard =
+        iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>([&](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPORT_POOL__SERVERLIST_OVERFLOW)
             {
                 serverOverflowDetected = true;
@@ -838,8 +836,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareServerWithInvalidNodeNameLeadsToErrorHandl
     serverOptions.nodeName = m_invalidNodeName;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler(
-        [&detectedError](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&detectedError](const iox::Error error, const iox::ErrorLevel errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
         });
@@ -862,9 +860,8 @@ TEST_F(PoshRuntime_test, GetMiddlewareConditionVariableListOverflow)
 {
     ::testing::Test::RecordProperty("TEST_ID", "6776a648-03c7-4bd0-ab24-72ed7e118e4f");
     auto conditionVariableListOverflowDetected{false};
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&conditionVariableListOverflowDetected](
-            const iox::Error error, const std::function<void()>, const iox::ErrorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&conditionVariableListOverflowDetected](const iox::Error error, const iox::ErrorLevel) {
             if (error == iox::Error::kPORT_POOL__CONDITION_VARIABLE_LIST_OVERFLOW)
             {
                 conditionVariableListOverflowDetected = true;
@@ -905,8 +902,8 @@ TEST_F(PoshRuntime_test, CreatingNodeWithInvalidNodeNameLeadsToErrorHandlerCall)
     iox::runtime::NodeProperty nodeProperty(m_invalidNodeName, nodeDeviceIdentifier);
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&detectedError](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&detectedError](const iox::Error error, const iox::ErrorLevel errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
         });

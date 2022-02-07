@@ -401,8 +401,8 @@ TEST_F(ServerPort_test, ReleaseRequestWithInvalidChunkCallsTheErrorHandler)
     auto sharedChunk = getChunkWithInitializedRequestHeaderAndData();
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&](const iox::Error error, const iox::ErrorLevel errorLevel) {
             EXPECT_THAT(error, Eq(iox::Error::kPOPO__CHUNK_RECEIVER_INVALID_CHUNK_TO_RELEASE_FROM_USER));
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
             detectedError.emplace(error);
@@ -419,8 +419,8 @@ TEST_F(ServerPort_test, ReleaseRequestWithNullptrRequestHeaderCallsTheErrorHandl
     auto& sut = serverPortWithOfferOnCreate;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&](const iox::Error error, const iox::ErrorLevel errorLevel) {
             EXPECT_THAT(error, Eq(iox::Error::kPOPO__SERVER_PORT_INVALID_REQUEST_TO_RELEASE_FROM_USER));
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
             detectedError.emplace(error);
@@ -633,8 +633,8 @@ TEST_F(ServerPort_test, ReleaseResponseWithInvalidChunkCallsTheErrorHandler)
     auto& sut = serverPortWithOfferOnCreate;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&](const iox::Error error, const iox::ErrorLevel errorLevel) {
             EXPECT_THAT(error, Eq(iox::Error::kPOPO__CHUNK_SENDER_INVALID_CHUNK_TO_FREE_FROM_USER));
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
             detectedError.emplace(error);
@@ -656,8 +656,8 @@ TEST_F(ServerPort_test, ReleaseResponseWithWithNullptrResponseHeaderCallsTheErro
     auto& sut = serverPortWithOfferOnCreate;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&](const iox::Error error, const iox::ErrorLevel errorLevel) {
             EXPECT_THAT(error, Eq(iox::Error::kPOPO__SERVER_PORT_INVALID_RESPONSE_TO_FREE_FROM_USER));
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
             detectedError.emplace(error);
@@ -678,8 +678,8 @@ TEST_F(ServerPort_test, SendResponseWithWithNullptrResponseHeaderCallsTheErrorHa
     auto& sut = serverPortWithOfferOnCreate;
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler<iox::Error>::setTemporaryErrorHandler(
-        [&](const iox::Error error, const std::function<void()>, const iox::ErrorLevel errorLevel) {
+    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+        [&](const iox::Error error, const iox::ErrorLevel errorLevel) {
             EXPECT_THAT(error, Eq(iox::Error::kPOPO__SERVER_PORT_INVALID_RESPONSE_TO_SEND_FROM_USER));
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::SEVERE));
             detectedError.emplace(error);
