@@ -22,6 +22,7 @@
 #include "iceoryx_hoofs/cxx/vector.hpp"
 #include "iceoryx_posh/capro/service_description.hpp"
 
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <utility>
@@ -39,6 +40,7 @@ class ServiceRegistry
     };
 
     using ReferenceCounter_t = uint64_t;
+    using generation_t = uint64_t;
 
     struct ServiceDescriptionEntry
     {
@@ -52,13 +54,68 @@ class ServiceRegistry
         ReferenceCounter_t count{0U};
     };
 
+
     /// @todo #415 should be connected with iox::MAX_NUMBER_OF_SERVICES
     static constexpr uint32_t MAX_SERVICE_DESCRIPTIONS = 5000U;
 
     using ServiceDescriptionVector_t = cxx::vector<ServiceDescriptionEntry, MAX_SERVICE_DESCRIPTIONS>;
-
     using Entry_t = cxx::optional<ServiceDescriptionEntry>;
-    using ServiceDescriptionContainer_t = cxx::vector<Entry_t, MAX_SERVICE_DESCRIPTIONS>;
+
+    // dirty wrapper (do not change much other code)
+    struct Entry
+    {
+        Entry_t entry;
+
+        operator bool() const
+        {
+            return entry.has_value();
+        }
+
+        Entry_t& operator->()
+        {
+            return entry;
+        }
+
+        const Entry_t& operator->() const
+        {
+            return entry;
+        }
+
+        ServiceDescriptionEntry& operator*()
+        {
+            return entry.value();
+        }
+
+        const ServiceDescriptionEntry& operator*() const
+        {
+            return entry.value();
+        }
+
+        void reset()
+        {
+            entry.reset();
+        }
+
+        void update(generation_t newGeneration) const
+        {
+            // assume exclusive access to generation
+            m_generation.store(newGeneration);
+        }
+
+        generation_t generation() const
+        {
+            return m_generation;
+        }
+
+      private:
+        mutable std::atomic<generation_t> m_generation{0};
+    };
+
+    using index_t = uint32_t;
+    using IndexContainer_t = cxx::vector<index_t, MAX_SERVICE_DESCRIPTIONS>;
+    using ServiceDescriptionContainer_t = cxx::vector<Entry, MAX_SERVICE_DESCRIPTIONS>;
+
+    // !!! assume the modification and find operations happen with exclusive access (no concurrency)
 
     /// @brief Adds given service description to registry
     /// @param[in] serviceDescription, service to be added
@@ -89,6 +146,56 @@ class ServiceRegistry
     /// @return ServiceDescriptionVector_t, copy of complete service registry
     const ServiceDescriptionVector_t getServices() const noexcept;
 
+    // todo: need those variations for all cases
+    generation_t findIndex(const capro::IdString_t& service,
+                           const capro::IdString_t& instance,
+                           const capro::IdString_t& event,
+                           IndexContainer_t& searchResult) const noexcept
+    {
+        auto g = generation();
+        for (index_t index = 0; index < m_serviceDescriptions.size(); ++index)
+        {
+            auto& entry = m_serviceDescriptions[index];
+
+            if (entry && entry->serviceDescription.getServiceIDString() == service
+                && entry->serviceDescription.getInstanceIDString() == instance
+                && entry->serviceDescription.getEventIDString() == event)
+            {
+                entry.update(g);
+                searchResult.emplace_back(index);
+            }
+        }
+
+        return g;
+    }
+
+    void readIndices(generation_t queryGeneration,
+                     const IndexContainer_t& indices,
+                     ServiceDescriptionVector_t& result) const noexcept
+    {
+        for (auto index : indices)
+        {
+            // the reference is always valid
+            auto& entry = m_serviceDescriptions[index];
+
+            //!!! need a trivial copy here
+            // we copy out of an optional that may be concurrently updated
+            // is this ok?
+            // can we perform a memcpy
+            auto copy = entry.entry.value();
+
+            // entry.generation was updated at least during query
+            if (entry.generation() <= queryGeneration)
+            {
+                // copy is valid (ignore wraparound)
+                // entry was modified later, consider it not to be in the result set
+                // valid, since we can assume the query was taken at some point earlier
+                // and the entry was either removed or replaced (even if replaced with the same the result is valid)
+                result.emplace_back(copy);
+            }
+        }
+    }
+
   private:
     static constexpr uint32_t NO_INDEX = MAX_SERVICE_DESCRIPTIONS;
 
@@ -103,6 +210,13 @@ class ServiceRegistry
     // we should not use a queue (or stack) here since they are not optimal
     // for the filling pattern of a vector (prefer entries close to the front)
     uint32_t m_freeIndex{NO_INDEX};
+
+    std::atomic<generation_t> m_generation{0};
+
+    generation_t generation() const
+    {
+        return m_generation;
+    }
 
   private:
     // functions for the different search cases
@@ -142,6 +256,11 @@ class ServiceRegistry
               ServiceDescriptionVector_t& searchResult) const noexcept;
 
     void findAll(ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    generation_t update()
+    {
+        return m_generation.fetch_add(1) + 1;
+    }
 };
 } // namespace roudi
 } // namespace iox
