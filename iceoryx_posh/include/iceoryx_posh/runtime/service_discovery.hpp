@@ -43,8 +43,8 @@ class ServiceDiscovery
     /// @return ServiceContainer
     /// ServiceContainer: on success, container that is filled with all matching instances
     ServiceContainer findService(const cxx::optional<capro::IdString_t>& service,
-                                                const cxx::optional<capro::IdString_t>& instance,
-                                                const cxx::optional<capro::IdString_t>& event) noexcept;
+                                 const cxx::optional<capro::IdString_t>& instance,
+                                 const cxx::optional<capro::IdString_t>& event) noexcept;
 
   private:
     popo::Subscriber<roudi::ServiceRegistry> m_serviceRegistrySubscriber{
