@@ -50,8 +50,8 @@ class StatusPort_test : public Test
     // Transaction<TestDataType> ackTransactions[1];
 
     StatusPortData<TestDataType> acknowledgedTransactions;
-    StatusPortReader<TestDataType> sut1{&acknowledgedTransactions};
-    StatusPortWriter<TestDataType> sut2{&acknowledgedTransactions};
+    StatusPortReader<TestDataType> sut1{acknowledgedTransactions};
+    StatusPortWriter<TestDataType> sut2{acknowledgedTransactions};
 };
 
 
