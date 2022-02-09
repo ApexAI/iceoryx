@@ -44,7 +44,7 @@ class ServiceDiscovery_test : public RouDi_GTest
     ServiceDiscovery sut;
 };
 
-TEST_F(ServiceDiscovery_test, FindServiceWithWildcardsReturnsOnlyIntrospectionServices)
+TEST_F(ServiceDiscovery_test, FindServiceWithWildcardsReturnsOnlyIntrospectionServicesAndServiceRegistry)
 {
     ::testing::Test::RecordProperty("TEST_ID", "d944f32c-edef-44f5-a6eb-c19ee73c98eb");
     auto searchResult = sut.findService(iox::capro::Wildcard, iox::capro::Wildcard, iox::capro::Wildcard);
@@ -52,7 +52,7 @@ TEST_F(ServiceDiscovery_test, FindServiceWithWildcardsReturnsOnlyIntrospectionSe
 
     for (auto& service : searchResult)
     {
-        EXPECT_THAT(service.getServiceIDString().c_str(), StrEq("Introspection"));
+        EXPECT_THAT(service.getInstanceIDString().c_str(), StrEq("RouDi_ID"));
     }
 }
 
@@ -103,7 +103,7 @@ TEST_F(ServiceDiscovery_test, ReofferedServiceWithValidServiceDescriptionCanBeFo
     EXPECT_THAT(*serviceContainer.begin(), Eq(SERVICE_DESCRIPTION));
 }
 
-TEST_F(ServiceDiscovery_test, OfferExsistingServiceMultipleTimesIsRedundant)
+TEST_F(ServiceDiscovery_test, OfferExistingServiceMultipleTimesIsRedundant)
 {
     ::testing::Test::RecordProperty("TEST_ID", "ae0790ed-4e1b-4f12-94b3-c9e56433c935");
     const iox::capro::ServiceDescription SERVICE_DESCRIPTION("service", "instance", "event");
