@@ -40,5 +40,24 @@ ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdStri
     return searchResult;
 }
 
+void ServiceDiscovery::enableEvent(iox::popo::TriggerHandle&& triggerHandle IOX_MAYBE_UNUSED,
+                                   const ServiceDiscoveryEvents event IOX_MAYBE_UNUSED) noexcept
+{
+}
+
+void ServiceDiscovery::disableEvent(const ServiceDiscoveryEvents state IOX_MAYBE_UNUSED) noexcept
+{
+}
+
+void ServiceDiscovery::invalidateTrigger(const uint64_t uniqueTriggerId IOX_MAYBE_UNUSED)
+{
+}
+
+iox::popo::WaitSetIsConditionSatisfiedCallback
+ServiceDiscovery::getCallbackForIsStateConditionSatisfied(const ServiceDiscoveryEvents event IOX_MAYBE_UNUSED)
+{
+    return iox::popo::WaitSetIsConditionSatisfiedCallback();
+}
+
 } // namespace runtime
 } // namespace iox
