@@ -490,14 +490,15 @@ TEST_F(ServiceDiscovery_test, FindServiceReturnsMaxServices)
     EXPECT_TRUE(serviceContainer == serviceContainerExp);
 }
 
-/// @todo #415 add enum mapping SERVICE_REGISTRY_HAS_CHANGED
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToWaitSet)
 {
     iox::popo::WaitSet<10U> waitSet;
 
     waitSet
-        .attachEvent(
-            sut, iox::popo::SubscriberEvent::DATA_RECEIVED, 0U, iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(sut,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     0U,
+                     iox::popo::createNotificationCallback(testCallback))
         .and_then([]() { GTEST_SUCCEED(); })
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
 }
@@ -507,8 +508,10 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedbyWaitSetAboutSingleServ
     iox::popo::WaitSet<1U> waitSet;
 
     waitSet
-        .attachEvent(
-            sut, iox::popo::SubscriberEvent::DATA_RECEIVED, 0U, iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(sut,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     0U,
+                     iox::popo::createNotificationCallback(testCallback))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
 
     const iox::capro::ServiceDescription SERVICE_DESCRIPTION("Moep", "Fluepp", "Shoezzel");
@@ -531,7 +534,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyWaitSetFindsSingleServic
 
     waitSet
         .attachEvent(sut,
-                     iox::popo::SubscriberEvent::DATA_RECEIVED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
                      0U,
                      iox::popo::createNotificationCallback(searchForService, serviceDescriptionToSearchFor))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
@@ -554,8 +557,9 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToListener)
     iox::popo::Listener listener;
 
     listener
-        .attachEvent(
-            sut, iox::popo::SubscriberEvent::DATA_RECEIVED, iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(sut,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     iox::popo::createNotificationCallback(testCallback))
         .and_then([]() { GTEST_SUCCEED(); })
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 }
@@ -565,8 +569,9 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedByListenerAboutSingleSer
     iox::popo::Listener listener;
 
     listener
-        .attachEvent(
-            sut, iox::popo::SubscriberEvent::DATA_RECEIVED, iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(sut,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     iox::popo::createNotificationCallback(testCallback))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 
     const iox::capro::ServiceDescription SERVICE_DESCRIPTION("Moep", "Fluepp", "Shoezzel");
@@ -584,9 +589,9 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyListenerFindsSingleServi
 
     listener
         .attachEvent(sut,
-                     iox::popo::SubscriberEvent::DATA_RECEIVED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
                      iox::popo::createNotificationCallback(searchForService, serviceDescriptionToSearchFor))
-        .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
+        .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 
     iox::popo::UntypedPublisher publisher(serviceDescriptionToSearchFor);
 
