@@ -492,6 +492,7 @@ TEST_F(ServiceDiscovery_test, FindServiceReturnsMaxServices)
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToWaitSet)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "fc0eeb7a-6f2a-481f-ae8a-1e17460e261f");
     iox::popo::WaitSet<10U> waitSet;
 
     waitSet
@@ -505,6 +506,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToWaitSet)
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedbyWaitSetAboutSingleService)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "f1cf36b5-3db2-4e6f-8e05-e7e449530ec0");
     iox::popo::WaitSet<1U> waitSet;
 
     waitSet
@@ -529,6 +531,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedbyWaitSetAboutSingleServ
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyWaitSetFindsSingleService)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "1ecde7e0-f5b2-4721-b309-66f32f40a7bf");
     iox::popo::WaitSet<1U> waitSet;
     iox::capro::ServiceDescription serviceDescriptionToSearchFor("Soep", "Moemi", "Luela");
 
@@ -554,6 +557,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyWaitSetFindsSingleServic
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToListener)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "def201f7-d1bf-4031-8e50-a2ad22ee303c");
     iox::popo::Listener listener;
 
     listener
@@ -566,6 +570,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToListener)
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedByListenerAboutSingleService)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "305107fc-41dd-431c-8032-ed5e82f93038");
     iox::popo::Listener listener;
 
     listener
@@ -584,6 +589,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedByListenerAboutSingleSer
 
 TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyListenerFindsSingleService)
 {
+    ::testing::Test::RecordProperty("TEST_ID", "b38ba8a4-ff27-437a-b376-13125cb419cb");
     iox::popo::Listener listener;
     iox::capro::ServiceDescription serviceDescriptionToSearchFor("Gimbel", "Seggel", "Doedel");
 
