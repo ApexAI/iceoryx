@@ -145,7 +145,7 @@ class StatusPortWriter
     StatusPortWriter(StatusPortData<T>& statusPortDataRef) noexcept
         : m_statusPortDataRef(statusPortDataRef)
     /// @todo #982 Replace once the RouDi infrastructure is ready
-    // m_statusPortDataPtr(iox::runtime::PoshRuntime::getInstance().getMiddlewareStatusPort(sizeof(T)))
+    // m_statusPortDataRef(iox::runtime::PoshRuntime::getInstance().getMiddlewareStatusPort(sizeof(T)))
     {
     }
 
