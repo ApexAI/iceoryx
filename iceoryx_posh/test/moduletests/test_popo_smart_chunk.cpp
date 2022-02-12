@@ -299,7 +299,7 @@ TYPED_TEST(SmartChunkTest, SendingSmartChunkMultipleTimesFails)
     this->send(this->producer.sut);
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::Error>(
         [&detectedError](const iox::Error error, const auto errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::MODERATE));
@@ -318,7 +318,7 @@ TYPED_TEST(SmartChunkTest, SendingMovedSmartChunkFails)
     destination.sut = std::move(this->producer.sut);
 
     iox::cxx::optional<iox::Error> detectedError;
-    auto errorHandlerGuard = iox::ErrorHandler::setTemporaryErrorHandler<iox::Error>(
+    auto errorHandlerGuard = iox::ErrorHandlerMock::setTemporaryErrorHandler<iox::Error>(
         [&detectedError](const iox::Error error, const auto errorLevel) {
             detectedError.emplace(error);
             EXPECT_THAT(errorLevel, Eq(iox::ErrorLevel::MODERATE));
