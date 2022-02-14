@@ -42,6 +42,7 @@ class ServiceRegistry
     using ReferenceCounter_t = uint64_t;
     using generation_t = uint64_t;
 
+    static constexpr generation_t UPDATING = 0U;
     struct ServiceDescriptionEntry
     {
         ServiceDescriptionEntry(const capro::ServiceDescription& sd, ReferenceCounter_t count)
@@ -96,10 +97,20 @@ class ServiceRegistry
             entry.reset();
         }
 
-        void update(generation_t newGeneration) const
+        void beginUpdate() const
         {
-            // assume exclusive access to generation
-            m_generation.store(newGeneration);
+            m_generation.store(UPDATING, std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_release);
+        }
+
+        void endUpdate(generation_t generation) const
+        {
+            m_generation.store(generation, std::memory_order_release);
+        }
+
+        void update(generation_t generation) const
+        {
+            m_generation.store(generation, std::memory_order_relaxed);
         }
 
         generation_t generation() const
@@ -169,31 +180,56 @@ class ServiceRegistry
         return g;
     }
 
-    void readIndices(generation_t queryGeneration,
-                     const IndexContainer_t& indices,
-                     ServiceDescriptionVector_t& result) const noexcept
+    bool tryReadAll(generation_t queryGeneration, ServiceDescriptionVector_t& result) const noexcept
     {
-        for (auto index : indices)
+        auto readGen = generation();
+        if (queryGeneration > readGen)
         {
-            // the reference is always valid
-            auto& entry = m_serviceDescriptions[index];
-
-            //!!! need a trivial copy here
-            // we copy out of an optional that may be concurrently updated
-            // is this ok?
-            // can we perform a memcpy
-            auto copy = entry.entry.value();
-
-            // entry.generation was updated at least during query
-            if (entry.generation() <= queryGeneration)
-            {
-                // copy is valid (ignore wraparound)
-                // entry was modified later, consider it not to be in the result set
-                // valid, since we can assume the query was taken at some point earlier
-                // and the entry was either removed or replaced (even if replaced with the same the result is valid)
-                result.emplace_back(copy);
-            }
+            // overflow case, query invalid, wait for update
+            return false;
         }
+
+        for (auto& slot : m_serviceDescriptions)
+        {
+            auto& entry = slot.entry;
+
+            if (!entry)
+            {
+                continue; // unused entry
+            }
+
+            auto g = slot.generation();
+
+            if (g == UPDATING)
+            {
+                continue; // entry is currently changing, ignore it
+            }
+
+            if (g > queryGeneration)
+            {
+                continue; // entry changed after query, ignore it
+            }
+
+            auto copy = *entry;
+            std::atomic_thread_fence(std::memory_order_release);
+
+            // includes generation == UPDATING since g != UPDATING
+            if (g != slot.generation())
+            {
+                continue; // entry changed during read, ignore it
+            }
+
+            // copy is valid
+            // optimize: place directly at back and remove or overwrite in error case
+            result.emplace_back(copy);
+        }
+
+        return true;
+    }
+
+    generation_t generation() const
+    {
+        return m_generation;
     }
 
   private:
@@ -211,12 +247,8 @@ class ServiceRegistry
     // for the filling pattern of a vector (prefer entries close to the front)
     uint32_t m_freeIndex{NO_INDEX};
 
-    std::atomic<generation_t> m_generation{0};
+    std::atomic<generation_t> m_generation{1};
 
-    generation_t generation() const
-    {
-        return m_generation;
-    }
 
   private:
     // functions for the different search cases
@@ -259,7 +291,20 @@ class ServiceRegistry
 
     generation_t update()
     {
-        return m_generation.fetch_add(1) + 1;
+        auto newGeneration = m_generation.fetch_add(1) + 1;
+
+        // overflow = UPDATING (for efficiency to save stores)
+        if (newGeneration == UPDATING)
+        {
+            for (auto& slot : m_serviceDescriptions)
+            {
+                slot.update(1);
+            }
+
+            // 0 is never a generation
+            return m_generation.fetch_add(1) + 1;
+        }
+        return newGeneration;
     }
 };
 } // namespace roudi

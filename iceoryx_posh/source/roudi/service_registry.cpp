@@ -39,10 +39,12 @@ cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceD
     if (m_freeIndex != NO_INDEX)
     {
         auto& entry = m_serviceDescriptions[m_freeIndex];
-        auto g = update();
-        entry.update(g);
 
+        auto g = update();
+        entry.beginUpdate();
         entry.entry.emplace(serviceDescription, 1U);
+        entry.endUpdate(g);
+
         m_freeIndex = NO_INDEX;
         return cxx::success<>();
     }
@@ -53,8 +55,10 @@ cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceD
         if (!entry)
         {
             auto g = update();
-            entry.update(g);
+            entry.beginUpdate();
             entry.entry.emplace(serviceDescription, 1U);
+            entry.endUpdate(g);
+
             return cxx::success<>();
         }
     }
@@ -63,10 +67,12 @@ cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceD
     if (m_serviceDescriptions.emplace_back())
     {
         auto& entry = m_serviceDescriptions.back();
-        auto g = update();
-        entry.update(g);
 
+        auto g = update();
+        entry.beginUpdate();
         entry.entry.emplace(serviceDescription, 1U);
+        entry.endUpdate(g);
+
         return cxx::success<>();
     }
 
@@ -86,9 +92,10 @@ void ServiceRegistry::remove(const capro::ServiceDescription& serviceDescription
         }
         else
         {
-            entry.reset();
             auto g = update();
-            entry.update(g);
+            entry.beginUpdate();
+            entry.reset();
+            entry.endUpdate(g);
             // reuse the slot in the next insertion
             m_freeIndex = index;
         }
@@ -102,9 +109,10 @@ void ServiceRegistry::removeAll(const capro::ServiceDescription& serviceDescript
     {
         auto& entry = m_serviceDescriptions[index];
 
-        entry.reset();
         auto g = update();
-        entry.update(g);
+        entry.beginUpdate();
+        entry.reset();
+        entry.endUpdate(g);
         // reuse the slot in the next insertion
         m_freeIndex = index;
     }
@@ -161,14 +169,11 @@ const ServiceRegistry::ServiceDescriptionVector_t ServiceRegistry::getServices()
 
 uint32_t ServiceRegistry::find(const capro::ServiceDescription& serviceDescription) const noexcept
 {
-    // todo: factor out (every find updates generations of the result, but we need access to the entries)
-    auto g = generation(); // generation may not change while we search (as the registry cannot be modified)
     for (uint32_t i = 0; i < m_serviceDescriptions.size(); ++i)
     {
         auto& entry = m_serviceDescriptions[i];
         if (entry && entry->serviceDescription == serviceDescription)
         {
-            entry.update(g);
             return i;
         }
     }
@@ -181,12 +186,10 @@ void ServiceRegistry::find(const capro::IdString_t& service,
                            Wildcard,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getServiceIDString() == service)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -197,12 +200,10 @@ void ServiceRegistry::find(Wildcard,
                            Wildcard,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getInstanceIDString() == instance)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -213,12 +214,10 @@ void ServiceRegistry::find(Wildcard,
                            const capro::IdString_t& event,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getEventIDString() == event)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -229,13 +228,11 @@ void ServiceRegistry::find(const capro::IdString_t& service,
                            Wildcard,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getServiceIDString() == service
             && entry->serviceDescription.getInstanceIDString() == instance)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -246,13 +243,11 @@ void ServiceRegistry::find(const capro::IdString_t& service,
                            const capro::IdString_t& event,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getServiceIDString() == service
             && entry->serviceDescription.getEventIDString() == event)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -263,13 +258,11 @@ void ServiceRegistry::find(Wildcard,
                            const capro::IdString_t& event,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getInstanceIDString() == instance
             && entry->serviceDescription.getEventIDString() == event)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -280,14 +273,12 @@ void ServiceRegistry::find(const capro::IdString_t& service,
                            const capro::IdString_t& event,
                            ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry && entry->serviceDescription.getServiceIDString() == service
             && entry->serviceDescription.getInstanceIDString() == instance
             && entry->serviceDescription.getEventIDString() == event)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }
@@ -295,12 +286,10 @@ void ServiceRegistry::find(const capro::IdString_t& service,
 
 void ServiceRegistry::findAll(ServiceDescriptionVector_t& searchResult) const noexcept
 {
-    auto g = generation();
     for (auto& entry : m_serviceDescriptions)
     {
         if (entry)
         {
-            entry.update(g);
             searchResult.emplace_back(*entry);
         }
     }

@@ -570,4 +570,12 @@ TEST_F(ServiceRegistry_test, SearchInFullRegistryWorks)
     ASSERT_EQ(searchResult.size(), 1);
 }
 
+TEST_F(ServiceRegistry_test, read)
+{
+    auto q = sut.generation();
+    ServiceRegistry::ServiceDescriptionVector_t readResult;
+    auto result = sut.tryReadAll(q, readResult);
+    ASSERT_TRUE(result);
+}
+
 } // namespace
