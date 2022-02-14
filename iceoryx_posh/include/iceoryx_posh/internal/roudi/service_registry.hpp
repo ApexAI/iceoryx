@@ -31,7 +31,6 @@ namespace iox
 {
 namespace roudi
 {
-static capro::ServiceDescription serviceRegistryService{"ServiceRegistry", "RouDi_ID", "ServiceRegistry"};
 class ServiceRegistry
 {
   public:
