@@ -497,7 +497,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToWaitSet)
 
     waitSet
         .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED,
                      0U,
                      iox::popo::createNotificationCallback(testCallback))
         .and_then([]() { GTEST_SUCCEED(); })
@@ -511,7 +511,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedbyWaitSetAboutSingleServ
 
     waitSet
         .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED,
                      0U,
                      iox::popo::createNotificationCallback(testCallback))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
@@ -537,7 +537,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyWaitSetFindsSingleServic
 
     waitSet
         .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED,
                      0U,
                      iox::popo::createNotificationCallback(searchForService, serviceDescriptionToSearchFor))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to wait set"; });
@@ -561,9 +561,8 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsAttachableToListener)
     iox::popo::Listener listener;
 
     listener
-        .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
-                     iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(
+            sut, ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED, iox::popo::createNotificationCallback(testCallback))
         .and_then([]() { GTEST_SUCCEED(); })
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 }
@@ -574,9 +573,8 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryIsNotifiedByListenerAboutSingleSer
     iox::popo::Listener listener;
 
     listener
-        .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
-                     iox::popo::createNotificationCallback(testCallback))
+        .attachEvent(
+            sut, ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED, iox::popo::createNotificationCallback(testCallback))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 
     const iox::capro::ServiceDescription SERVICE_DESCRIPTION("Moep", "Fluepp", "Shoezzel");
@@ -595,7 +593,7 @@ TEST_F(ServiceDiscovery_test, ServiceDiscoveryNotifiedbyListenerFindsSingleServi
 
     listener
         .attachEvent(sut,
-                     ServiceDiscoveryEvent::SERVICE_REGISTRY_HAS_CHANGED,
+                     ServiceDiscoveryEvent::SERVICE_REGISTRY_CHANGED,
                      iox::popo::createNotificationCallback(searchForService, serviceDescriptionToSearchFor))
         .or_else([](auto) { GTEST_FAIL() << "Could not attach to listener"; });
 
