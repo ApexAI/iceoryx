@@ -21,14 +21,18 @@ namespace iox
 {
 namespace runtime
 {
-ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdString_t>& service,
-                                               const cxx::optional<capro::IdString_t>& instance,
-                                               const cxx::optional<capro::IdString_t>& event) noexcept
+void ServiceDiscovery::update()
 {
     m_serviceRegistrySubscriber.take().and_then([&](popo::Sample<const roudi::ServiceRegistry>& serviceRegistrySample) {
         m_serviceRegistry = *serviceRegistrySample;
     });
+}
 
+ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdString_t>& service,
+                                               const cxx::optional<capro::IdString_t>& instance,
+                                               const cxx::optional<capro::IdString_t>& event) noexcept
+{
+    update();
     roudi::ServiceRegistry::ServiceDescriptionVector_t tempSearchResult;
     m_serviceRegistry.find(tempSearchResult, service, instance, event);
 
