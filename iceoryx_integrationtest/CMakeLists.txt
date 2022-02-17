@@ -35,6 +35,9 @@ if(BUILD_TESTING)
   add_ros_test(iceoryx_integrationtest/test_complexdata_example.py)
   add_ros_test(iceoryx_integrationtest/test_user_header_example.py)
   add_ros_test(iceoryx_integrationtest/test_icediscovery_example.py)
+  add_ros_test(iceoryx_integrationtest/test_request_response_basic.py)
+  add_ros_test(iceoryx_integrationtest/test_request_response_listener.py)
+  add_ros_test(iceoryx_integrationtest/test_request_response_untyped.py)
 
 endif()
 
