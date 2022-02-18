@@ -29,6 +29,83 @@
 
 namespace iox
 {
+template <typename T>
+class Slot
+{
+  public:
+    // no concurrent writes
+    void beginWrite()
+    {
+        m_value.store(UPDATING, std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_release);
+    }
+
+    void endWrite(uint64_t count)
+    {
+        auto value = (count << 1) + 1;
+        m_value.store(value, std::memory_order_release);
+    }
+
+    void reset(uint64_t count)
+    {
+        beginWrite();
+        m_data.reset();
+        endWrite(count);
+    }
+
+    void write(const T& data, uint64_t count)
+    {
+        beginWrite();
+        m_data.emplace(data);
+        endWrite(count);
+    }
+
+    bool read(T& buffer)
+    {
+        do
+        {
+            auto oldValue = value();
+            if (*m_data)
+            {
+                auto p = &(*m_data);
+                std::memcpy(&buffer, p, sizeof(T));
+            }
+            else
+            {
+                return false;
+            }
+
+            if (oldValue == value())
+            {
+                return true;
+            }
+        } while (true);
+        return false;
+    }
+
+    auto value()
+    {
+        return m_value.load(std::memory_order_acquire);
+    }
+
+    auto count()
+    {
+        return m_value.load(std::memory_order_acquire) >> 1;
+    }
+
+    bool updating()
+    {
+        return m_value.load(std::memory_order_acquire) == UPDATING;
+    }
+
+  private:
+    static constexpr uint64_t UPDATING = 0U;
+
+    std::atomic<uint64_t> m_value{1U};
+
+    cxx::optional<T> m_data;
+};
+
 namespace roudi
 {
 class ServiceRegistry

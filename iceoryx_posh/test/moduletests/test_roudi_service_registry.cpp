@@ -578,4 +578,27 @@ TEST_F(ServiceRegistry_test, read)
     ASSERT_TRUE(result);
 }
 
+TEST(Slot_test, read)
+{
+    iox::Slot<int> sut;
+    uint64_t c = sut.count();
+
+    std::cout << sut.value() << std::endl;
+    sut.write(73, c + 1);
+    std::cout << sut.value() << std::endl;
+
+    int x;
+
+    auto success = sut.read(x);
+    if (success)
+    {
+        std::cout << "read " << x << std::endl;
+        std::cout << sut.value() << std::endl;
+    }
+
+    c = sut.count();
+    sut.reset(c + 1);
+    std::cout << sut.value() << std::endl;
+}
+
 } // namespace
