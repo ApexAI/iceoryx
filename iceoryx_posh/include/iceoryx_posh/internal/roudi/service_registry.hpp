@@ -32,6 +32,147 @@ namespace iox
 {
 namespace roudi
 {
+// TODO: internal class and definitions, not to be tested directly
+using generation_t = uint64_t;
+template <typename T>
+class Slot
+{
+    // TODO: cannot assert that with ServiceDescription (as there is a copy ctor but it is memcpyable anyway...)
+    // static_assert(std::is_trivially_copyable<T>::value, "T must be trivially copyable");
+
+  public:
+    Slot() = default;
+
+    Slot(const Slot& other)
+    {
+        // shaky with atomics and general T but ok as we use it
+        void* p = this;
+        std::memcpy(p, &other, sizeof(Slot));
+    }
+
+    Slot& operator=(const Slot& rhs)
+    {
+        if (this != &rhs)
+        {
+            // shaky with atomics and general T but ok as we use it
+            void* p = this;
+            std::memcpy(p, &rhs, sizeof(Slot));
+        }
+        return *this;
+    }
+
+    void beginWrite()
+    {
+        m_value.store(UPDATING, std::memory_order_relaxed);
+        // fence is needed to prevent the store to be ordered after the actual update,
+        // atomic release store alone cannot achieve this
+        std::atomic_thread_fence(std::memory_order_release);
+    }
+
+    // we want to set the counter to something we control externally
+    // but the least significant bit will always be 1 afterwards
+    void endWrite(generation_t generation)
+    {
+        auto value = (generation << 1) + 1;
+        m_value.store(value, std::memory_order_release);
+    }
+
+    void updateGeneration(generation_t generation)
+    {
+        m_value.store(generation << 1, std::memory_order_relaxed);
+    }
+
+    void reset(generation_t generation)
+    {
+        beginWrite();
+        m_data.reset();
+        endWrite(generation);
+    }
+
+    void write(const T& data, generation_t generation)
+    {
+        beginWrite();
+        m_data.emplace(data);
+        endWrite(generation);
+    }
+
+    // can modify with these functions
+    cxx::optional<T>& data()
+    {
+        return m_data;
+    }
+
+    T& operator*()
+    {
+        return *m_data;
+    }
+
+    const T& operator*() const
+    {
+        return *m_data;
+    }
+
+    T* operator->()
+    {
+        return m_data.has_value() ? &(*m_data) : nullptr;
+    }
+
+    const T* operator->() const
+    {
+        return m_data.has_value() ? &(*m_data) : nullptr;
+    }
+
+    bool read(T& buffer) const
+    {
+        do
+        {
+            auto oldValue = value();
+            if (*m_data)
+            {
+                auto p = &(*m_data);
+                std::memcpy(&buffer, p, sizeof(T));
+            }
+            else
+            {
+                return false;
+            }
+
+            if (oldValue == value())
+            {
+                return true;
+            }
+        } while (true);
+        return false;
+    }
+
+    auto value() const
+    {
+        return m_value.load(std::memory_order_acquire);
+    }
+
+    auto generation() const
+    {
+        return m_value.load(std::memory_order_relaxed) >> 1;
+    }
+
+    bool isUpdating() const
+    {
+        return m_value.load(std::memory_order_relaxed) == UPDATING;
+    }
+
+    operator bool() const
+    {
+        return m_data.has_value();
+    }
+
+  private:
+    // most importantly the least significant bit is 0
+    static constexpr generation_t UPDATING = 0U;
+
+    std::atomic<generation_t> m_value{1U};
+    cxx::optional<T> m_data;
+};
+
 class ServiceRegistry
 {
   public:
@@ -59,6 +200,25 @@ class ServiceRegistry
     static constexpr uint32_t MAX_SERVICE_DESCRIPTIONS = iox::MAX_PUBLISHERS;
 
     using ServiceDescriptionVector_t = cxx::vector<ServiceDescriptionEntry, MAX_SERVICE_DESCRIPTIONS>;
+
+    ServiceRegistry() = default;
+
+    // TODO: forbid later when we stop copying the registry
+    ServiceRegistry(const ServiceRegistry& other)
+    {
+        void* p = this;
+        std::memcpy(p, &other, sizeof(ServiceRegistry));
+    }
+
+    ServiceRegistry& operator=(const ServiceRegistry& rhs)
+    {
+        if (&rhs != this)
+        {
+            void* p = this;
+            std::memcpy(p, &rhs, sizeof(ServiceRegistry));
+        }
+        return *this;
+    }
 
     /// @brief Adds a given publisher service description to registry
     /// @param[in] serviceDescription, service to be added
@@ -107,13 +267,42 @@ class ServiceRegistry
     /// @return ServiceDescriptionVector_t, copy of complete service registry
     const ServiceDescriptionVector_t getServices() const noexcept;
 
+    generation_t generation()
+    {
+        // do not use the lowest bit
+        // TODO: can be made more efficient with slots without shifts, leave it for clarity now
+        return m_generation.load() >> 1;
+    }
+
+    generation_t updateGeneration()
+    {
+        // new generation (do not use the lowest bit)
+        // do not really need fetch add as we have no concurrent updates
+        auto generation = m_generation.fetch_add(2U, std::memory_order_relaxed) + 2U;
+        if (generation == 0U)
+        {
+            // overflow (very rare), update generation of all used slots
+            for (auto& slot : m_slots)
+            {
+                if (slot)
+                {
+                    slot.updateGeneration(0U);
+                }
+            }
+        }
+        return (generation >> 1);
+    }
+
   private:
-    using Entry_t = cxx::optional<ServiceDescriptionEntry>;
-    using ServiceDescriptionContainer_t = cxx::vector<Entry_t, MAX_SERVICE_DESCRIPTIONS>;
+    // using Entry_t = cxx::optional<ServiceDescriptionEntry>;
+    using Slot_t = Slot<ServiceDescriptionEntry>;
+    using SlotContainer_t = cxx::vector<Slot_t, MAX_SERVICE_DESCRIPTIONS>;
 
     static constexpr uint32_t NO_INDEX = MAX_SERVICE_DESCRIPTIONS;
 
-    ServiceDescriptionContainer_t m_serviceDescriptions;
+    std::atomic<generation_t> m_generation{0U};
+
+    SlotContainer_t m_slots;
 
     // store the last known free Index (if any is known)
     // we could use a queue (or stack) here since they are not optimal

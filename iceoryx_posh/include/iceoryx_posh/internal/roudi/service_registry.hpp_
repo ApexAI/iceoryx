@@ -1,0 +1,395 @@
+// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2021 - 2022 by Apex.AI Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// SPDX-License-Identifier: Apache-2.0
+#ifndef IOX_POSH_ROUDI_SERVICE_REGISTRY_HPP
+#define IOX_POSH_ROUDI_SERVICE_REGISTRY_HPP
+
+#include "iceoryx_hoofs/cxx/expected.hpp"
+#include "iceoryx_hoofs/cxx/optional.hpp"
+#include "iceoryx_hoofs/cxx/vector.hpp"
+#include "iceoryx_posh/capro/service_description.hpp"
+
+#include <atomic>
+#include <cstdint>
+#include <map>
+#include <utility>
+
+namespace iox
+{
+template <typename T>
+class Slot
+{
+  public:
+    // no concurrent writes
+    void beginWrite()
+    {
+        m_value.store(UPDATING, std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_release);
+    }
+
+    void endWrite(uint64_t count)
+    {
+        auto value = (count << 1) + 1;
+        m_value.store(value, std::memory_order_release);
+    }
+
+    void reset(uint64_t count)
+    {
+        beginWrite();
+        m_data.reset();
+        endWrite(count);
+    }
+
+    void write(const T& data, uint64_t count)
+    {
+        beginWrite();
+        m_data.emplace(data);
+        endWrite(count);
+    }
+
+    bool read(T& buffer)
+    {
+        do
+        {
+            auto oldValue = value();
+            if (*m_data)
+            {
+                auto p = &(*m_data);
+                std::memcpy(&buffer, p, sizeof(T));
+            }
+            else
+            {
+                return false;
+            }
+
+            if (oldValue == value())
+            {
+                return true;
+            }
+        } while (true);
+        return false;
+    }
+
+    T* get()
+    {
+        return (*m_data) ? &(*m_data) : nullptr;
+    }
+
+    auto value()
+    {
+        return m_value.load(std::memory_order_acquire);
+    }
+
+    auto count()
+    {
+        return m_value.load(std::memory_order_acquire) >> 1;
+    }
+
+    bool updating()
+    {
+        return m_value.load(std::memory_order_acquire) == UPDATING;
+    }
+
+  private:
+    static constexpr uint64_t UPDATING = 0U;
+
+    std::atomic<uint64_t> m_value{1U};
+
+    cxx::optional<T> m_data;
+};
+
+namespace roudi
+{
+class ServiceRegistry
+{
+  public:
+    enum class Error
+    {
+        SERVICE_REGISTRY_FULL,
+    };
+
+    using ReferenceCounter_t = uint64_t;
+    using generation_t = uint64_t;
+
+    static constexpr generation_t UPDATING = 0U;
+    struct ServiceDescriptionEntry
+    {
+        ServiceDescriptionEntry(const capro::ServiceDescription& sd, ReferenceCounter_t count)
+            : serviceDescription(sd)
+            , count(count)
+        {
+        }
+
+        capro::ServiceDescription serviceDescription{};
+        ReferenceCounter_t count{0U};
+    };
+
+
+    /// @todo #415 should be connected with iox::MAX_NUMBER_OF_SERVICES
+    static constexpr uint32_t MAX_SERVICE_DESCRIPTIONS = 5000U;
+
+    using ServiceDescriptionVector_t = cxx::vector<ServiceDescriptionEntry, MAX_SERVICE_DESCRIPTIONS>;
+    using Entry_t = cxx::optional<ServiceDescriptionEntry>;
+
+    // dirty wrapper (do not change much other code)
+    struct Entry
+    {
+        Entry_t entry;
+
+        operator bool() const
+        {
+            return entry.has_value();
+        }
+
+        Entry_t& operator->()
+        {
+            return entry;
+        }
+
+        const Entry_t& operator->() const
+        {
+            return entry;
+        }
+
+        ServiceDescriptionEntry& operator*()
+        {
+            return entry.value();
+        }
+
+        const ServiceDescriptionEntry& operator*() const
+        {
+            return entry.value();
+        }
+
+        void reset()
+        {
+            entry.reset();
+        }
+
+        void beginUpdate() const
+        {
+            m_generation.store(UPDATING, std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_release);
+        }
+
+        void endUpdate(generation_t generation) const
+        {
+            m_generation.store(generation, std::memory_order_release);
+        }
+
+        void update(generation_t generation) const
+        {
+            m_generation.store(generation, std::memory_order_relaxed);
+        }
+
+        generation_t generation() const
+        {
+            return m_generation;
+        }
+
+      private:
+        mutable std::atomic<generation_t> m_generation{0};
+    };
+
+    using index_t = uint32_t;
+    using IndexContainer_t = cxx::vector<index_t, MAX_SERVICE_DESCRIPTIONS>;
+    using ServiceDescriptionContainer_t = cxx::vector<Entry, MAX_SERVICE_DESCRIPTIONS>;
+
+    // !!! assume the modification and find operations happen with exclusive access (no concurrency)
+
+    /// @brief Adds given service description to registry
+    /// @param[in] serviceDescription, service to be added
+    /// @return ServiceRegistryError, error wrapped in cxx::expected
+    cxx::expected<Error> add(const capro::ServiceDescription& serviceDescription) noexcept;
+
+    /// @brief Removes given service description from registry if service is found,
+    ///        in case of multiple occurrences only one occurrence is removed
+    /// @param[in] serviceDescription, service to be removed
+    void remove(const capro::ServiceDescription& serviceDescription) noexcept;
+
+    /// @brief Removes given service description from registry if service is found,
+    ///        all occurences are removed
+    /// @param[in] serviceDescription, service to be removed
+    void removeAll(const capro::ServiceDescription& serviceDescription) noexcept;
+
+    /// @brief Searches for given service description in registry
+    /// @param[in] searchResult, reference to the vector which will be filled with the results
+    /// @param[in] service, string or wildcard (= iox::cxx::nullopt) to search for
+    /// @param[in] instance, string or wildcard (= iox::cxx::nullopt) to search for
+    /// @param[in] event, string or wildcard (= iox::cxx::nullopt) to search for
+    void find(ServiceDescriptionVector_t& searchResult,
+              const cxx::optional<capro::IdString_t>& service,
+              const cxx::optional<capro::IdString_t>& instance,
+              const cxx::optional<capro::IdString_t>& event) const noexcept;
+
+    /// @brief Returns all service descriptions as copy
+    /// @return ServiceDescriptionVector_t, copy of complete service registry
+    const ServiceDescriptionVector_t getServices() const noexcept;
+
+    // todo: need those variations for all cases
+    generation_t findIndex(const capro::IdString_t& service,
+                           const capro::IdString_t& instance,
+                           const capro::IdString_t& event,
+                           IndexContainer_t& searchResult) const noexcept
+    {
+        auto g = generation();
+        for (index_t index = 0; index < m_serviceDescriptions.size(); ++index)
+        {
+            auto& entry = m_serviceDescriptions[index];
+
+            if (entry && entry->serviceDescription.getServiceIDString() == service
+                && entry->serviceDescription.getInstanceIDString() == instance
+                && entry->serviceDescription.getEventIDString() == event)
+            {
+                entry.update(g);
+                searchResult.emplace_back(index);
+            }
+        }
+
+        return g;
+    }
+
+    bool tryReadAll(generation_t queryGeneration, ServiceDescriptionVector_t& result) const noexcept
+    {
+        auto readGen = generation();
+        if (queryGeneration > readGen)
+        {
+            // overflow case, query invalid, wait for update
+            return false;
+        }
+
+        for (auto& slot : m_serviceDescriptions)
+        {
+            auto& entry = slot.entry;
+
+            if (!entry)
+            {
+                continue; // unused entry
+            }
+
+            auto g = slot.generation();
+
+            if (g == UPDATING)
+            {
+                continue; // entry is currently changing, ignore it
+            }
+
+            if (g > queryGeneration)
+            {
+                continue; // entry changed after query, ignore it
+            }
+
+            auto copy = *entry;
+            std::atomic_thread_fence(std::memory_order_release);
+
+            // includes generation == UPDATING since g != UPDATING
+            if (g != slot.generation())
+            {
+                continue; // entry changed during read, ignore it
+            }
+
+            // copy is valid
+            // optimize: place directly at back and remove or overwrite in error case
+            result.emplace_back(copy);
+        }
+
+        return true;
+    }
+
+    generation_t generation() const
+    {
+        return m_generation;
+    }
+
+  private:
+    static constexpr uint32_t NO_INDEX = MAX_SERVICE_DESCRIPTIONS;
+
+    // tag type for internal overloads
+    struct Wildcard
+    {
+    };
+
+    ServiceDescriptionContainer_t m_serviceDescriptions;
+
+    // store the last known free Index (if any is known)
+    // we should not use a queue (or stack) here since they are not optimal
+    // for the filling pattern of a vector (prefer entries close to the front)
+    uint32_t m_freeIndex{NO_INDEX};
+
+    std::atomic<generation_t> m_generation{1};
+
+
+  private:
+    // functions for the different search cases
+    // tag types are not needed in all cases to distinguish overloads but kept for consistency
+
+    uint32_t find(const capro::ServiceDescription& serviceDescription) const noexcept;
+
+    void
+    find(const capro::IdString_t& service, Wildcard, Wildcard, ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void find(Wildcard,
+              const capro::IdString_t& instance,
+              Wildcard,
+              ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void
+    find(Wildcard, Wildcard, const capro::IdString_t& event, ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void find(const capro::IdString_t& service,
+              const capro::IdString_t& instance,
+              Wildcard,
+              ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void find(const capro::IdString_t& service,
+              Wildcard,
+              const capro::IdString_t& event,
+              ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void find(Wildcard,
+              const capro::IdString_t& instance,
+              const capro::IdString_t& event,
+              ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void find(const capro::IdString_t& service,
+              const capro::IdString_t& instance,
+              const capro::IdString_t& event,
+              ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    void findAll(ServiceDescriptionVector_t& searchResult) const noexcept;
+
+    generation_t update()
+    {
+        auto newGeneration = m_generation.fetch_add(1) + 1;
+
+        // overflow = UPDATING (for efficiency to save stores)
+        if (newGeneration == UPDATING)
+        {
+            for (auto& slot : m_serviceDescriptions)
+            {
+                slot.update(1);
+            }
+
+            // 0 is never a generation
+            return m_generation.fetch_add(1) + 1;
+        }
+        return newGeneration;
+    }
+};
+} // namespace roudi
+} // namespace iox
+
+#endif // IOX_POSH_ROUDI_SERVICE_REGISTRY_HPP

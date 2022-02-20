@@ -34,42 +34,46 @@ cxx::expected<ServiceRegistry::Error> ServiceRegistry::add(const capro::ServiceD
     {
         // multiple entries with the same service descripion are possible
         // and we just increase the count in this case (multi-set semantics)
-        // entry exists, increment counter
-        auto& entry = m_serviceDescriptions[index];
-        ((*entry).*count)++;
+        // slot exists, increment counter
+        auto& slot = m_slots[index];
+        ((*slot).*count)++;
         return cxx::success<>();
     }
 
-    // entry does not exist, find a free slot if it exists
+    auto updateSlot = [&](Slot_t& slot) {
+        slot.beginWrite();
+        slot.data().emplace(serviceDescription);
+        (*slot).*count = 1U;
+        slot.endWrite(updateGeneration());
+    };
 
-    // fast path to a free slot (which was occupied by previously removed entry),
+    // slot does not exist, find a free slot if it exists
+
+    // fast path to a free slot (which was occupied by previously removed slot),
     // prefer to fill entries close to the front
     if (m_freeIndex != NO_INDEX)
     {
-        auto& entry = m_serviceDescriptions[m_freeIndex];
-        entry.emplace(serviceDescription);
-        (*entry).*count = 1U;
+        auto& slot = m_slots[m_freeIndex];
+        updateSlot(slot);
         m_freeIndex = NO_INDEX;
         return cxx::success<>();
     }
 
     // search from start
-    for (auto& entry : m_serviceDescriptions)
+    for (auto& slot : m_slots)
     {
-        if (!entry)
+        if (!slot)
         {
-            entry.emplace(serviceDescription);
-            (*entry).*count = 1U;
+            updateSlot(slot);
             return cxx::success<>();
         }
     }
 
-    // append new entry at the end (the size only grows up to capacity)
-    if (m_serviceDescriptions.emplace_back())
+    // append new slot at the end (the size only grows up to capacity)
+    if (m_slots.emplace_back())
     {
-        auto& entry = m_serviceDescriptions.back();
-        entry.emplace(serviceDescription);
-        (*entry).*count = 1U;
+        auto& slot = m_slots.back();
+        updateSlot(slot);
         return cxx::success<>();
     }
 
@@ -93,13 +97,13 @@ void ServiceRegistry::removePublisher(const capro::ServiceDescription& serviceDe
     auto index = findIndex(serviceDescription);
     if (index != NO_INDEX)
     {
-        auto& entry = m_serviceDescriptions[index];
+        auto& slot = m_slots[index];
 
-        if (entry && entry->publisherCount >= 1U)
+        if (slot && slot->publisherCount >= 1U)
         {
-            if (--entry->publisherCount == 0U && entry->serverCount == 0)
+            if (--slot->publisherCount == 0U && slot->serverCount == 0)
             {
-                entry.reset();
+                slot.reset(updateGeneration());
                 // reuse the slot in the next insertion
                 m_freeIndex = index;
             }
@@ -112,13 +116,13 @@ void ServiceRegistry::removeServer(const capro::ServiceDescription& serviceDescr
     auto index = findIndex(serviceDescription);
     if (index != NO_INDEX)
     {
-        auto& entry = m_serviceDescriptions[index];
+        auto& slot = m_slots[index];
 
-        if (entry && entry->serverCount >= 1U)
+        if (slot && slot->serverCount >= 1U)
         {
-            if (--entry->serverCount == 0U && entry->publisherCount == 0)
+            if (--slot->serverCount == 0U && slot->publisherCount == 0)
             {
-                entry.reset();
+                slot.reset(updateGeneration());
                 // reuse the slot in the next insertion
                 m_freeIndex = index;
             }
@@ -131,8 +135,10 @@ void ServiceRegistry::purge(const capro::ServiceDescription& serviceDescription)
     auto index = findIndex(serviceDescription);
     if (index != NO_INDEX)
     {
-        auto& entry = m_serviceDescriptions[index];
-        entry.reset();
+        auto& slot = m_slots[index];
+        slot.beginWrite();
+        slot.data().reset();
+        slot.endWrite(updateGeneration());
         // reuse the slot in the next insertion
         m_freeIndex = index;
     }
@@ -143,7 +149,7 @@ void ServiceRegistry::find(ServiceDescriptionVector_t& searchResult,
                            const cxx::optional<capro::IdString_t>& instance,
                            const cxx::optional<capro::IdString_t>& event) const noexcept
 {
-    auto function = [&](const ServiceDescriptionEntry& entry) { searchResult.emplace_back(entry); };
+    auto function = [&](const ServiceDescriptionEntry& slot) { searchResult.emplace_back(slot); };
     find(service, instance, event, function);
 }
 
@@ -157,17 +163,17 @@ void ServiceRegistry::find(const cxx::optional<capro::IdString_t>& service,
         return;
     }
 
-    for (auto& entry : m_serviceDescriptions)
+    for (auto& slot : m_slots)
     {
-        if (entry)
+        if (slot)
         {
-            bool match = (service) ? (entry->serviceDescription.getServiceIDString() == *service) : true;
-            match &= (instance) ? (entry->serviceDescription.getInstanceIDString() == *instance) : true;
-            match &= (event) ? (entry->serviceDescription.getEventIDString() == *event) : true;
+            bool match = (service) ? (slot->serviceDescription.getServiceIDString() == *service) : true;
+            match &= (instance) ? (slot->serviceDescription.getInstanceIDString() == *instance) : true;
+            match &= (event) ? (slot->serviceDescription.getEventIDString() == *event) : true;
 
             if (match)
             {
-                callable(*entry);
+                callable(*slot);
             }
         }
     }
@@ -176,17 +182,17 @@ void ServiceRegistry::find(const cxx::optional<capro::IdString_t>& service,
 const ServiceRegistry::ServiceDescriptionVector_t ServiceRegistry::getServices() const noexcept
 {
     ServiceDescriptionVector_t allEntries;
-    auto function = [&](const ServiceDescriptionEntry& entry) { allEntries.emplace_back(entry); };
+    auto function = [&](const ServiceDescriptionEntry& slot) { allEntries.emplace_back(slot); };
     applyToAll(function);
     return allEntries;
 }
 
 uint32_t ServiceRegistry::findIndex(const capro::ServiceDescription& serviceDescription) const noexcept
 {
-    for (uint32_t i = 0; i < m_serviceDescriptions.size(); ++i)
+    for (uint32_t i = 0; i < m_slots.size(); ++i)
     {
-        auto& entry = m_serviceDescriptions[i];
-        if (entry && entry->serviceDescription == serviceDescription)
+        auto& slot = m_slots[i];
+        if (slot && slot->serviceDescription == serviceDescription)
         {
             return i;
         }
@@ -201,11 +207,11 @@ void ServiceRegistry::applyToAll(cxx::function_ref<void(const ServiceDescription
         return;
     }
 
-    for (auto& entry : m_serviceDescriptions)
+    for (auto& slot : m_slots)
     {
-        if (entry)
+        if (slot)
         {
-            callable(*entry);
+            callable(*slot);
         }
     }
 }
