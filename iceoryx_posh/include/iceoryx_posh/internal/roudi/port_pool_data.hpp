@@ -24,6 +24,7 @@
 #include "iceoryx_posh/internal/popo/ports/interface_port.hpp"
 #include "iceoryx_posh/internal/popo/ports/publisher_port_data.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_data.hpp"
+#include "iceoryx_posh/internal/roudi/service_registry.hpp"
 #include "iceoryx_posh/internal/runtime/node_data.hpp"
 
 namespace iox
@@ -58,6 +59,8 @@ struct PortPoolData
 
     FixedPositionContainer<iox::popo::PublisherPortData, MAX_PUBLISHERS> m_publisherPortMembers;
     FixedPositionContainer<iox::popo::SubscriberPortData, MAX_SUBSCRIBERS> m_subscriberPortMembers;
+
+    ServiceRegistry m_serviceRegistry; // needs to be in shared memory
 };
 
 } // namespace roudi

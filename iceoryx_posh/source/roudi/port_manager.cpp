@@ -67,6 +67,7 @@ PortManager::PortManager(RouDiMemoryInterface* roudiMemoryInterface) noexcept
     registryPortOptions.nodeName = iox::NodeName_t("Service Registry");
     registryPortOptions.offerOnCreate = true;
 
+    m_serviceRegistryPtr = &(m_portPool->serviceRegistry());
     m_serviceRegistryPublisherPortData =
         acquirePublisherPortDataWithoutDiscovery(
             {SERVICE_REGISTRY_SERVICE_NAME, SERVICE_REGISTRY_INSTANCE_NAME, SERVICE_REGISTRY_EVENT_NAME},
@@ -79,6 +80,7 @@ PortManager::PortManager(RouDiMemoryInterface* roudiMemoryInterface) noexcept
                 errorHandler(Error::kPORT_MANAGER__NO_PUBLISHER_PORT_FOR_SERVICE_REGISTRY, nullptr, ErrorLevel::FATAL);
             })
             .value();
+
     // now the port to send registry information exists and can be used to publish service registry changes
     PublisherPortRouDiType serviceRegistryPort(m_serviceRegistryPublisherPortData.value());
     doDiscoveryForPublisherPort(serviceRegistryPort);
@@ -288,7 +290,7 @@ void PortManager::handleInterfaces() noexcept
         /// @todo iox-#27 I guess this was necessary since a service could be offered via ServiceDiscovery;
         /// this was removed and I somehow have the feeling this breaks the interface ports with the changes from this
         /// PR if the CaproServiceType is something different than NON
-        auto serviceVector = m_serviceRegistry.getServices();
+        auto serviceVector = m_portPool->serviceRegistry().getServices();
 
         caproMessage.m_serviceType = capro::CaproServiceType::NONE;
 
@@ -680,11 +682,14 @@ popo::InterfacePortData* PortManager::acquireInterfacePortData(capro::Interfaces
 
 void PortManager::publishServiceRegistry() const noexcept
 {
+#if 0
+    // TODO: remove - should not happen (object is fully constructed)
     if (!m_serviceRegistryPublisherPortData.has_value())
     {
         LogWarn() << "Could not publish service registry!";
         return;
     }
+
     PublisherPortUserType publisher(m_serviceRegistryPublisherPortData.value());
     publisher
         .tryAllocateChunk(sizeof(ServiceRegistry),
@@ -700,12 +705,29 @@ void PortManager::publishServiceRegistry() const noexcept
             publisher.sendChunk(chunk);
         })
         .or_else([](auto&) { LogWarn() << "Could not allocate a chunk for the service registry!"; });
+#endif
+
+    PublisherPortUserType publisher(m_serviceRegistryPublisherPortData.value());
+    publisher
+        .tryAllocateChunk(sizeof(ServiceRegistryPtr_t),
+                          alignof(ServiceRegistryPtr_t),
+                          CHUNK_NO_USER_HEADER_SIZE,
+                          CHUNK_NO_USER_HEADER_ALIGNMENT)
+        .and_then([&](auto& chunk) {
+            auto sample = static_cast<ServiceRegistryPtr_t*>(chunk->userPayload());
+
+            // It's ok to copy as the modifications happen in the same thread and not concurrently
+            *sample = m_serviceRegistryPtr;
+
+            publisher.sendChunk(chunk);
+        })
+        .or_else([](auto&) { LogWarn() << "Could not allocate a chunk for the service registry pointer!"; });
 }
 
 
 void PortManager::addEntryToServiceRegistry(const capro::ServiceDescription& service) noexcept
 {
-    m_serviceRegistry.addPublisher(service).or_else([&](auto&) {
+    m_portPool->serviceRegistry().addPublisher(service).or_else([&](auto&) {
         LogWarn() << "Could not add service " << service.getServiceIDString() << " to service registry!";
         errorHandler(Error::kPOSH__PORT_MANAGER_COULD_NOT_ADD_SERVICE_TO_REGISTRY, nullptr, ErrorLevel::MODERATE);
     });
@@ -714,7 +736,7 @@ void PortManager::addEntryToServiceRegistry(const capro::ServiceDescription& ser
 
 void PortManager::removeEntryFromServiceRegistry(const capro::ServiceDescription& service) noexcept
 {
-    m_serviceRegistry.removePublisher(service);
+    m_portPool->serviceRegistry().removePublisher(service);
     publishServiceRegistry();
 }
 

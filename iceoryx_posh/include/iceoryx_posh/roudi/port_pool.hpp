@@ -27,6 +27,7 @@
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_multi_producer.hpp"
 #include "iceoryx_posh/internal/popo/ports/subscriber_port_single_producer.hpp"
 #include "iceoryx_posh/internal/roudi/port_pool_data.hpp"
+#include "iceoryx_posh/internal/roudi/service_registry.hpp"
 #include "iceoryx_posh/internal/runtime/node_data.hpp"
 #include "iceoryx_posh/popo/publisher_options.hpp"
 #include "iceoryx_posh/popo/subscriber_options.hpp"
@@ -105,6 +106,11 @@ class PortPool
     void removeInterfacePort(popo::InterfacePortData* const portData) noexcept;
     void removeNodeData(runtime::NodeData* const nodeData) noexcept;
     void removeConditionVariableData(popo::ConditionVariableData* const conditionVariableData) noexcept;
+
+    ServiceRegistry& serviceRegistry()
+    {
+        return m_portPoolData->m_serviceRegistry;
+    }
 
   private:
     PortPoolData* m_portPoolData;

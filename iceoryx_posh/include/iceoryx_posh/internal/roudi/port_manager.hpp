@@ -139,9 +139,11 @@ class PortManager
   private:
     RouDiMemoryInterface* m_roudiMemoryInterface{nullptr};
     PortPool* m_portPool{nullptr};
-    ServiceRegistry m_serviceRegistry;
+
     PortIntrospectionType m_portIntrospection;
 
+    using ServiceRegistryPtr_t = iox::rp::RelativePointer<ServiceRegistry>;
+    ServiceRegistryPtr_t m_serviceRegistryPtr;
     cxx::optional<PublisherPortRouDiType::MemberType_t*> m_serviceRegistryPublisherPortData;
 
     // some ports for the service registry requires special handling

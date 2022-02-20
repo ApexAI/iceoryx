@@ -25,19 +25,22 @@ ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdStri
                                                const cxx::optional<capro::IdString_t>& instance,
                                                const cxx::optional<capro::IdString_t>& event) noexcept
 {
-    m_serviceRegistrySubscriber.take().and_then([&](popo::Sample<const roudi::ServiceRegistry>& serviceRegistrySample) {
-        m_serviceRegistry = *serviceRegistrySample;
+    m_serviceRegistrySubscriber.take().and_then([&](popo::Sample<const ServiceRegistryPtr_t>& serviceRegistrySample) {
+        m_serviceRegistry = *serviceRegistrySample; // can be optimized, the pointer never changes at the moment
     });
 
-    roudi::ServiceRegistry::ServiceDescriptionVector_t tempSearchResult;
-    m_serviceRegistry.find(tempSearchResult, service, instance, event);
-
     ServiceContainer searchResult;
-    for (auto& service : tempSearchResult)
+    if (m_serviceRegistry)
     {
-        if (service.publisherCount > 0)
+        roudi::ServiceRegistry::ServiceDescriptionVector_t tempSearchResult;
+        m_serviceRegistry->find(tempSearchResult, service, instance, event);
+
+        for (auto& service : tempSearchResult)
         {
-            searchResult.push_back(service.serviceDescription);
+            if (service.publisherCount > 0)
+            {
+                searchResult.push_back(service.serviceDescription);
+            }
         }
     }
 
