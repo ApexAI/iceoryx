@@ -122,15 +122,16 @@ class Slot
         return m_data.has_value() ? &(*m_data) : nullptr;
     }
 
-    bool read(T& buffer) const
+    bool read(T& buffer, generation_t& generation) const
     {
         do
         {
             auto oldValue = value();
-            if (*m_data)
+            if (m_data)
             {
-                auto p = &(*m_data);
-                std::memcpy(&buffer, p, sizeof(T));
+                auto src = &(*m_data);
+                void* dst = &buffer;
+                std::memcpy(dst, src, sizeof(T));
             }
             else
             {
@@ -139,9 +140,16 @@ class Slot
 
             if (oldValue == value())
             {
+                generation = oldValue >> 1;
                 return true;
             }
         } while (true);
+        return false;
+    }
+
+    // TODO
+    bool read(Slot& slot) const
+    {
         return false;
     }
 
@@ -267,7 +275,7 @@ class ServiceRegistry
     /// @return ServiceDescriptionVector_t, copy of complete service registry
     const ServiceDescriptionVector_t getServices() const noexcept;
 
-    generation_t generation()
+    generation_t generation() const
     {
         // do not use the lowest bit
         // TODO: can be made more efficient with slots without shifts, leave it for clarity now
@@ -291,6 +299,86 @@ class ServiceRegistry
             }
         }
         return (generation >> 1);
+    }
+
+    // semantically not the same as a copy in general, as it can be used concurrently
+    // TODO: fix logic error
+    void updateFrom(const ServiceRegistry& source)
+    {
+        // we assume we are outdated compared to source
+        auto sourceGen = source.generation();
+        auto thisGen = generation();
+
+        if (sourceGen == thisGen)
+        {
+            // we are up to date, nothing to do
+            return;
+        }
+
+        // TODO: simplify update logic
+        auto& sourceSlots = source.m_slots;
+        auto sourceSize = source.m_slots.size();
+        if (sourceSize > m_slots.size())
+        {
+            m_slots.resize(sourceSlots.size());
+        }
+
+        if (thisGen > sourceGen)
+        {
+            // generation overflow, need to update all
+            for (uint32_t i = 0; i < sourceSize; ++i)
+            {
+                auto& slot = source.m_slots[i];
+                auto& dstSlot = m_slots[i];
+                auto& buffer = *m_slots[i].data();
+                auto g = slot.generation();
+
+                slot.read(buffer, g);
+                if (slot.read(buffer, g))
+                {
+                    dstSlot.updateGeneration(g);
+                }
+                else
+                {
+                    dstSlot.reset(g);
+                }
+            }
+            m_generation.store(sourceGen);
+            return;
+        }
+
+        // thisGen < sourceGen, only update the slots we need to
+        // (unfortunately we still need to iterate but this can be improved if we send the changed slot
+        // later as well, but we need to incorporate the generation in checks then to ensure we did not lose
+        // updates)
+
+
+        for (uint32_t i = 0; i < sourceSlots.size(); ++i)
+        {
+            auto& slot = source.m_slots[i];
+            auto g = slot.generation();
+            if (g > thisGen)
+            {
+                auto& dstSlot = m_slots[i];
+                // TODO: use slot reading abstraction
+                if (slot)
+                {
+                    auto& buffer = *dstSlot.data();
+                    if (slot.read(buffer, g))
+                    {
+                        dstSlot.updateGeneration(g);
+                    }
+                    else
+                    {
+                        dstSlot.reset(g);
+                    }
+                }
+                else
+                {
+                    dstSlot.reset(g);
+                }
+            }
+        }
     }
 
   private:

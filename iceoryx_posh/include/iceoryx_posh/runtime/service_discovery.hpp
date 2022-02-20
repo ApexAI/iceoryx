@@ -62,6 +62,8 @@ class ServiceDiscovery
 
     friend iox::popo::NotificationAttorney;
 
+    // TODO: mutex find calls in the discovery
+
   private:
     void enableEvent(popo::TriggerHandle&& triggerHandle, const ServiceDiscoveryEvent event) noexcept;
     void disableEvent(const ServiceDiscoveryEvent event) noexcept;
@@ -70,11 +72,27 @@ class ServiceDiscovery
     getCallbackForIsStateConditionSatisfied(const popo::SubscriberState state);
 
     // once it gets initialized it stays valid while Roudi lives (as with runtime and shared memory)
-    roudi::ServiceRegistry* m_serviceRegistry{nullptr};
+    roudi::ServiceRegistry* m_remoteServiceRegistry{nullptr};
+    roudi::ServiceRegistry m_cachedServiceRegistry;
+
     using ServiceRegistryPtr_t = iox::rp::RelativePointer<roudi::ServiceRegistry>;
     popo::Subscriber<ServiceRegistryPtr_t> m_serviceRegistrySubscriber{
         {SERVICE_REGISTRY_SERVICE_NAME, SERVICE_REGISTRY_INSTANCE_NAME, SERVICE_REGISTRY_EVENT_NAME},
         {1U, 1U, iox::NodeName_t("Service Registry"), true}};
+
+    void updateCache()
+    {
+        m_serviceRegistrySubscriber.take().and_then(
+            [&](popo::Sample<const ServiceRegistryPtr_t>& serviceRegistrySample) {
+                m_remoteServiceRegistry =
+                    *serviceRegistrySample; // can be optimized, the pointer never changes at the moment
+            });
+
+        if (m_remoteServiceRegistry)
+        {
+            m_cachedServiceRegistry.updateFrom(*m_remoteServiceRegistry);
+        }
+    }
 };
 
 
