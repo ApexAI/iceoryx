@@ -21,6 +21,7 @@ namespace iox
 {
 namespace runtime
 {
+#if 0    
 ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdString_t>& service,
                                                const cxx::optional<capro::IdString_t>& instance,
                                                const cxx::optional<capro::IdString_t>& event) noexcept
@@ -42,6 +43,33 @@ ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdStri
 
     return searchResult;
 }
+#else
+ServiceContainer ServiceDiscovery::findService(const cxx::optional<capro::IdString_t>& service,
+                                               const cxx::optional<capro::IdString_t>& instance,
+                                               const cxx::optional<capro::IdString_t>& event) noexcept
+{
+    ServiceContainer searchResult;
+
+    if (!m_remoteServiceRegistry)
+    {
+        m_serviceRegistrySubscriber.take().and_then(
+            [&](popo::Sample<const ServiceRegistryPtr_t>& serviceRegistrySample) {
+                m_remoteServiceRegistry = *serviceRegistrySample;
+            });
+    }
+
+    if (m_remoteServiceRegistry)
+    {
+        using Entry = iox::roudi::ServiceRegistry::ServiceDescriptionEntry;
+        auto filter = [&](const Entry& entry) { searchResult.push_back(entry.serviceDescription); };
+
+        // issue a lockfree remote find
+        m_remoteServiceRegistry->find_lf(service, instance, event, filter);
+    }
+
+    return searchResult;
+}
+#endif
 
 void ServiceDiscovery::findService(const cxx::optional<capro::IdString_t>& service,
                                    const cxx::optional<capro::IdString_t>& instance,

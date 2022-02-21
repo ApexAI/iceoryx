@@ -179,6 +179,53 @@ void ServiceRegistry::find(const cxx::optional<capro::IdString_t>& service,
     }
 }
 
+void ServiceRegistry::find_lf(const cxx::optional<capro::IdString_t>& service,
+                              const cxx::optional<capro::IdString_t>& instance,
+                              const cxx::optional<capro::IdString_t>& event,
+                              cxx::function_ref<void(const ServiceDescriptionEntry&)> callable) const noexcept
+{
+    if (!callable)
+    {
+        return;
+    }
+
+    ServiceDescriptionEntry entry;
+    generation_t g;
+
+    auto queryGen = generation();
+
+    for (auto& slot : m_slots)
+    {
+        if (slot.tryRead(entry, g))
+        {
+            // TODO: do we want this check for consistency of the query?
+            // overflow should be accounted for(???)
+            if (g > queryGen)
+            {
+                // slot has higher generation then the query, so is outdated compared
+                // to the point at which we issued the query -> we are free to not return anything
+                continue;
+            }
+            // we read a valid entry with generation g
+            // note that the entry may now change concurrently but we onlyreport the past anyway
+            // the copy is unfortunate, essentially we perform an expensive copy for each query
+            // hence why the cache update strategy is (probably) more effective
+            //
+            // A search at roudi and only reading at the result indices would be most effective
+            // ( while filtering out any outdated values like here)
+
+            bool match = (service) ? (entry.serviceDescription.getServiceIDString() == *service) : true;
+            match &= (instance) ? (entry.serviceDescription.getInstanceIDString() == *instance) : true;
+            match &= (event) ? (entry.serviceDescription.getEventIDString() == *event) : true;
+
+            if (match)
+            {
+                callable(entry);
+            }
+        }
+    }
+}
+
 const ServiceRegistry::ServiceDescriptionVector_t ServiceRegistry::getServices() const noexcept
 {
     ServiceDescriptionVector_t allEntries;

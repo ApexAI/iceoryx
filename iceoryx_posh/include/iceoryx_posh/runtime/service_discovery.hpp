@@ -76,17 +76,22 @@ class ServiceDiscovery
     roudi::ServiceRegistry m_cachedServiceRegistry;
 
     using ServiceRegistryPtr_t = iox::rp::RelativePointer<roudi::ServiceRegistry>;
+
+    // TODO: we should not send the pointer multiple times but this is the simplest way for now to test
+    // the changes
     popo::Subscriber<ServiceRegistryPtr_t> m_serviceRegistrySubscriber{
         {SERVICE_REGISTRY_SERVICE_NAME, SERVICE_REGISTRY_INSTANCE_NAME, SERVICE_REGISTRY_EVENT_NAME},
         {1U, 1U, iox::NodeName_t("Service Registry"), true}};
 
     void updateCache()
     {
-        m_serviceRegistrySubscriber.take().and_then(
-            [&](popo::Sample<const ServiceRegistryPtr_t>& serviceRegistrySample) {
-                m_remoteServiceRegistry =
-                    *serviceRegistrySample; // can be optimized, the pointer never changes at the moment
-            });
+        if (!m_remoteServiceRegistry)
+        {
+            m_serviceRegistrySubscriber.take().and_then(
+                [&](popo::Sample<const ServiceRegistryPtr_t>& serviceRegistrySample) {
+                    m_remoteServiceRegistry = *serviceRegistrySample;
+                });
+        }
 
         if (m_remoteServiceRegistry)
         {

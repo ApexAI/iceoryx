@@ -26,6 +26,7 @@
 
 
 #include <cstdint>
+#include <thread>
 #include <utility>
 
 namespace iox
@@ -122,11 +123,47 @@ class Slot
         return m_data.has_value() ? &(*m_data) : nullptr;
     }
 
+    bool tryRead(T& buffer, generation_t& generation) const
+    {
+        auto oldValue = value();
+        if (oldValue == UPDATING)
+        {
+            return false;
+        }
+
+        // TODO: fix this check to work concurrently
+        if (m_data)
+        {
+            auto src = &(*m_data);
+            void* dst = &buffer;
+            std::memcpy(dst, src, sizeof(T));
+        }
+        else
+        {
+            // no data
+            return false;
+        }
+
+        if (oldValue == value())
+        {
+            // read succeeded unchanged
+            generation = oldValue >> 1;
+            return true;
+        }
+        return false;
+    }
+
     bool read(T& buffer, generation_t& generation) const
     {
         do
         {
             auto oldValue = value();
+            if (oldValue == UPDATING)
+            {
+                std::this_thread::yield();
+                continue;
+            }
+
             if (m_data)
             {
                 auto src = &(*m_data);
@@ -144,12 +181,6 @@ class Slot
                 return true;
             }
         } while (true);
-        return false;
-    }
-
-    // TODO
-    bool read(Slot& slot) const
-    {
         return false;
     }
 
@@ -391,6 +422,11 @@ class ServiceRegistry
         // (but the update is at least as new as the cached generation, which is sufficient)
         m_generation.store(srcGen);
     }
+
+    void find_lf(const cxx::optional<capro::IdString_t>& service,
+                 const cxx::optional<capro::IdString_t>& instance,
+                 const cxx::optional<capro::IdString_t>& event,
+                 cxx::function_ref<void(const ServiceDescriptionEntry&)> callable) const noexcept;
 
   private:
     // using Entry_t = cxx::optional<ServiceDescriptionEntry>;
