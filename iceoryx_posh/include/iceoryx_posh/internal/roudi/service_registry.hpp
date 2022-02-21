@@ -193,6 +193,7 @@ class ServiceRegistry
 
     struct ServiceDescriptionEntry
     {
+        ServiceDescriptionEntry() = default;
         ServiceDescriptionEntry(const capro::ServiceDescription& serviceDescription);
 
         capro::ServiceDescription serviceDescription;
@@ -302,83 +303,93 @@ class ServiceRegistry
     }
 
     // semantically not the same as a copy in general, as it can be used concurrently
-    // TODO: fix logic error
+    // TODO: fix logic error, simplify update logic
     void updateFrom(const ServiceRegistry& source)
     {
         // we assume we are outdated compared to source
-        auto sourceGen = source.generation();
-        auto thisGen = generation();
+        auto srcGen = source.generation();
+        auto dstGen = generation();
 
-        if (sourceGen == thisGen)
+        if (srcGen == dstGen)
         {
             // we are up to date, nothing to do
             return;
         }
+        auto& srcSlots = source.m_slots;
+        auto srcSize = source.m_slots.size();
 
-        // TODO: simplify update logic
-        auto& sourceSlots = source.m_slots;
-        auto sourceSize = source.m_slots.size();
-        if (sourceSize > m_slots.size())
+        // can only grow
+        if (srcSize > m_slots.size())
         {
-            m_slots.resize(sourceSlots.size());
+            m_slots.resize(srcSlots.size());
         }
 
-        if (thisGen > sourceGen)
-        {
-            // generation overflow, need to update all
-            for (uint32_t i = 0; i < sourceSize; ++i)
-            {
-                auto& slot = source.m_slots[i];
-                auto& dstSlot = m_slots[i];
-                auto& buffer = *m_slots[i].data();
-                auto g = slot.generation();
+        // note that srcSize can grow concurrently, but we do not care
+        // as we take a concurrent snapshot
 
-                slot.read(buffer, g);
-                if (slot.read(buffer, g))
+        // TODO: find a way to copy directly into the destination optional
+        // for efficiency
+
+        ServiceDescriptionEntry buffer;
+
+        if (dstGen > srcGen)
+        {
+            // generation overflow, need to update all slots
+
+            for (uint32_t i = 0; i < srcSize; ++i)
+            {
+                auto& srcSlot = source.m_slots[i];
+                auto& dstSlot = m_slots[i];
+                generation_t g;
+
+                if (srcSlot && srcSlot.read(buffer, g))
                 {
-                    dstSlot.updateGeneration(g);
+                    // update our slot to what we read src dst slot
+                    // overkill, needs no protection if not used concurrently
+                    dstSlot.write(buffer, g);
                 }
                 else
                 {
+                    // dst slot is empty, set ours to empty as well
                     dstSlot.reset(g);
                 }
             }
-            m_generation.store(sourceGen);
-            return;
         }
-
-        // thisGen < sourceGen, only update the slots we need to
-        // (unfortunately we still need to iterate but this can be improved if we send the changed slot
-        // later as well, but we need to incorporate the generation in checks then to ensure we did not lose
-        // updates)
-
-
-        for (uint32_t i = 0; i < sourceSlots.size(); ++i)
+        else
         {
-            auto& slot = source.m_slots[i];
-            auto g = slot.generation();
-            if (g > thisGen)
+            // the usual case
+            // dstGen < srcGen, and we only update the slots we need to
+            //
+            // (unfortunately we still need to iterate but this can be improved if we send the changed slot index
+            // as well, but we need to incorporate the overall generation then to ensure we did not lose
+            // updates - this requires a larger queue)
+            for (uint32_t i = 0; i < srcSize; ++i)
             {
+                auto& srcSlot = source.m_slots[i];
                 auto& dstSlot = m_slots[i];
-                // TODO: use slot reading abstraction
-                if (slot)
+                generation_t g = srcSlot.generation(); // snapshot, can change
+
+                // only update slots that differ in generation
+                if (dstSlot.generation() != g)
                 {
-                    auto& buffer = *dstSlot.data();
-                    if (slot.read(buffer, g))
+                    if (srcSlot && srcSlot.read(buffer, g))
                     {
-                        dstSlot.updateGeneration(g);
+                        // update our slot to what we read src dst slot
+                        // overkill, needs no protection if not used concurrently
+                        dstSlot.write(buffer, g);
                     }
                     else
                     {
+                        // dst slot is empty, set ours to empty as well
                         dstSlot.reset(g);
                     }
                 }
-                else
-                {
-                    dstSlot.reset(g);
-                }
             }
         }
+
+        // the slots may have a newer generation than our cached generation indiciates
+        // (but the update is at least as new as the cached generation, which is sufficient)
+        m_generation.store(srcGen);
     }
 
   private:
