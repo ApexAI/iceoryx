@@ -36,6 +36,11 @@
 - Replace IPC-channel-based `findService` with pub/sub-based on [#415](https://github.com/eclipse-iceoryx/iceoryx/issues/415)
 - Add `findService` method to `ServiceDiscovery` which applies a callable to all matching services [\#1105](https://github.com/eclipse-iceoryx/iceoryx/pull/1105)
 - Increase limits of `ServiceRegistry` to support the maximum number of publishers and servers that are configured in `iceoryx_posh_types.hpp` [\#1074](https://github.com/eclipse-iceoryx/iceoryx/issues/1074)
+- Request/Response communication with iceoryx [\#27](https://github.com/eclipse-iceoryx/iceoryx/issues/27)
+    - For more details how this feature can be used please have a look at the `iceoryx_examples/request_response`
+    - Limitations
+        - The port introspection is not aware of the new `Client` and `Server` [\#1128](https://github.com/eclipse-iceoryx/iceoryx/issues/1128)
+        - The DDS gateway is not aware of the new `Server` [\#1145](https://github.com/eclipse-iceoryx/iceoryx/issues/1145)
 
 **Bugfixes:**
 
