@@ -31,6 +31,8 @@ include(IceoryxPlatform)
 
 if(CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCHES Darwin)
     option(BUILD_SHARED_LIBS "Create shared libraries by default" ON)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 #
