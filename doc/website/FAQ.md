@@ -99,4 +99,4 @@ docker run -it --shm-size="2g" ubuntu
 To avoid undefined behavior of iceoryx posh it is recommended to terminate RouDi and the corresponding middleware
 processes with SIGINT or SIGTERM. In RouDi, we have integrated a sighandler that catches the signals and gives RouDi
 the chance to exit and clean-up everything. This also applies for processes. Therefore, we recommend adding a signalhandler
-to your process (see [this example](../../iceoryx_examples/icedelivery/iox_publisher_untyped.cpp)).
+to your process (see [this example](examples/icedelivery.md)).

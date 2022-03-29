@@ -1,5 +1,3 @@
-<!-- @todo Move the content of this file to doc/website/concepts/ -->
-
 # Shared memory communication
 
 ## The basics
@@ -28,7 +26,7 @@ the file system) that is made accessible via a mapping to a memory area in their
 A single segment may be mapped to multiple processes, however the addresses to which it is mapped to may be
 (and probably will be) different between processes.
 
-![Shared memory mapping](website/images/shared-memory-mapping.svg)
+![Shared memory mapping](../images/shared-memory-mapping.svg)
 
 The POSIX API provides the [utilities](http://man7.org/linux/man-pages/man7/shm_overview.7.html) for working with
 shared memory segments.
@@ -42,13 +40,13 @@ These segments are logically partitioned into "mempools". Mempools contain a num
 
 Memory chunks are the basic unit used for shared memory access in an iceoryx system.
 
-![Memory segment visualization](website/images/memory-segment-visualization.svg)
+![Memory segment visualization](../images/memory-segment-visualization.svg)
 
 The number of segments used by an iceoryx system, along with the configuration of the mempools they contain, are
 provided to the system via configuration.
 
 The configuration can be provided at compile time (as a header) or at runtime (as a toml-formatted text file).
-See the [configuration guide](./website/advanced/configuration-guide.md#configuring-mempools-for-roudi) for more details.
+See the [configuration guide](../advanced/configuration-guide.md#configuring-mempools-for-roudi) for more details.
 
 ## Zero-copy communication
 
@@ -82,4 +80,4 @@ the `iox::rp::relocatable_ptr`.
 Using these types, the difference in memory mapping is not a factor when it comes to locating a memory chunk.
 
 A more detailed discussion about how these types work can be found
-[here](design/relocatable_pointer.md).
+[here](../design/relocatable_pointer.md).

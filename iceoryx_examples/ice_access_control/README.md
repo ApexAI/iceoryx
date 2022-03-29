@@ -101,7 +101,7 @@ to read, but don't have write access. Users in the writer group have both read a
 
 !!! tip
     Shared memory segment can also be configured via a
-    [TOML config](../../doc/website/advanced/configuration-guide.md#dynamic-configuration) file.
+    [TOML config](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/advanced/configuration-guide.md#dynamic-configuration) file.
 
 The radar app is started with the user _perception_, which is in the group _privileged_. Therefore it has write access
 to the _privileged_ segment and is sending data into the _privileged_ shared memory segment.
@@ -118,7 +118,7 @@ infotainment segment. Hence, the data is written to this segment.
 
 The shared memory segments can be found under `/dev/shm`
 
-```
+```console
 moss@reynholm:$ getfacl /dev/shm/*
 # file: dev/shm/iceoryx_mgmt
 # owner: roudi
