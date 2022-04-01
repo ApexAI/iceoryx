@@ -817,7 +817,7 @@ TEST_F(ServerPort_test, asStringLiteralConvertsRequestResultValuesToStrings)
                             ServerRequestResult::UNDEFINED_CHUNK_RECEIVE_ERROR,
                             ServerRequestResult::NO_PENDING_REQUESTS_AND_SERVER_DOES_NOT_OFFER})
     {
-        auto enumString = iox::popo::asStringLiteral(sut);
+        auto enumString = iox::log::asStringLiteral(sut);
 
         switch (sut)
         {
@@ -856,7 +856,7 @@ TEST_F(ServerPort_test, LogStreamConvertsAllocationErrorValueToString)
     }
 
     ASSERT_THAT(loggerMock.m_logs.size(), Eq(1U));
-    EXPECT_THAT(loggerMock.m_logs[0].message, StrEq(iox::popo::asStringLiteral(sut)));
+    EXPECT_THAT(loggerMock.m_logs[0].message, StrEq(iox::log::asStringLiteral(sut)));
 }
 
 // END ServerRequestResult string tests

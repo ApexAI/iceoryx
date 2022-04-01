@@ -17,6 +17,7 @@
 #define IOX_HOOFS_CXX_FILESYSTEM_HPP
 
 #include <cstdint>
+#include <ostream>
 
 namespace iox
 {
@@ -126,8 +127,8 @@ perms operator^=(perms& lhs, const perms& rhs) noexcept;
 /// @param[in] stream reference to the stream
 /// @param[in] value the file permission
 /// @return the reference to the stream
-template <typename StreamType>
-StreamType& operator<<(StreamType& stream, perms value) noexcept;
+// template <typename StreamType>
+std::ostream& operator<<(std::ostream& stream, perms value) noexcept;
 } // namespace cxx
 } // namespace iox
 

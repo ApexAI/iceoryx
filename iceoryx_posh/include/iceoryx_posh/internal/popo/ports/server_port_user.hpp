@@ -43,7 +43,7 @@ enum class ServerRequestResult
 /// @brief Converts the ServerRequestResult to a string literal
 /// @param[in] value to convert to a string literal
 /// @return pointer to a string literal
-inline constexpr const char* asStringLiteral(const ServerRequestResult value) noexcept;
+// inline constexpr const char* asStringLiteral(const ServerRequestResult value) noexcept;
 
 /// @brief Convenience stream operator to easily use the `asStringLiteral` function with std::ostream
 /// @param[in] stream sink to write the message to
@@ -55,7 +55,7 @@ inline std::ostream& operator<<(std::ostream& stream, ServerRequestResult value)
 /// @param[in] stream sink to write the message to
 /// @param[in] value to convert to a string literal
 /// @return the reference to `stream` which was provided as input parameter
-inline log::LogStream& operator<<(log::LogStream& stream, ServerRequestResult value) noexcept;
+// inline log::LogStream& operator<<(log::LogStream& stream, ServerRequestResult value) noexcept;
 } // namespace popo
 
 namespace cxx
@@ -64,6 +64,12 @@ template <>
 constexpr popo::ServerRequestResult
 from<popo::ChunkReceiveResult, popo::ServerRequestResult>(const popo::ChunkReceiveResult value) noexcept;
 } // namespace cxx
+
+namespace log
+{
+template <>
+inline constexpr const char* asStringLiteral<popo::ServerRequestResult>(const popo::ServerRequestResult value) noexcept;
+} // namespace log
 
 namespace popo
 {

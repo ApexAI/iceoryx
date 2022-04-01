@@ -18,6 +18,7 @@
 #define IOX_HOOFS_LOG_LOGSTREAM_HPP
 
 #include "iceoryx_hoofs/cxx/convert.hpp"
+#include "iceoryx_hoofs/cxx/type_traits.hpp"
 #include "iceoryx_hoofs/log/logcommon.hpp"
 
 #include <bitset>
@@ -112,6 +113,13 @@ struct LogRawBuffer
     uint8_t size;
 };
 
+template <typename T>
+inline constexpr const char* asStringLiteral(const T) noexcept
+{
+    static_assert(cxx::always_false_v<T>, "'asStringLiteral' is not specialized for the specified type");
+    return "";
+}
+
 class Logger;
 
 class LogStream
@@ -151,6 +159,15 @@ class LogStream
     {
         m_logEntry.message.append("0b");
         m_logEntry.message.append(std::bitset<std::numeric_limits<decltype(val.value)>::digits>(val.value).to_string());
+        m_flushed = false;
+        return *this;
+    }
+
+    template <typename T,
+              typename std::enable_if<std::is_enum<T>::value && !std::is_convertible<T, int>::value, int>::type = 0>
+    inline LogStream& operator<<(const T val) noexcept
+    {
+        m_logEntry.message.append(asStringLiteral(val));
         m_flushed = false;
         return *this;
     }

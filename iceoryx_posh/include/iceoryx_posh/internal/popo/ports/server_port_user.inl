@@ -38,36 +38,40 @@ from<popo::ChunkReceiveResult, popo::ServerRequestResult>(const popo::ChunkRecei
 }
 } // namespace cxx
 
-namespace popo
+namespace log
 {
-inline constexpr const char* asStringLiteral(const ServerRequestResult value) noexcept
+template <>
+inline constexpr const char* asStringLiteral<popo::ServerRequestResult>(const popo::ServerRequestResult value) noexcept
 {
     switch (value)
     {
-    case ServerRequestResult::TOO_MANY_REQUESTS_HELD_IN_PARALLEL:
+    case popo::ServerRequestResult::TOO_MANY_REQUESTS_HELD_IN_PARALLEL:
         return "ServerRequestResult::TOO_MANY_REQUESTS_HELD_IN_PARALLEL";
-    case ServerRequestResult::NO_PENDING_REQUESTS:
+    case popo::ServerRequestResult::NO_PENDING_REQUESTS:
         return "ServerRequestResult::NO_PENDING_REQUESTS";
-    case ServerRequestResult::UNDEFINED_CHUNK_RECEIVE_ERROR:
+    case popo::ServerRequestResult::UNDEFINED_CHUNK_RECEIVE_ERROR:
         return "ServerRequestResult::UNDEFINED_CHUNK_RECEIVE_ERROR";
-    case ServerRequestResult::NO_PENDING_REQUESTS_AND_SERVER_DOES_NOT_OFFER:
+    case popo::ServerRequestResult::NO_PENDING_REQUESTS_AND_SERVER_DOES_NOT_OFFER:
         return "ServerRequestResult::NO_PENDING_REQUESTS_AND_SERVER_DOES_NOT_OFFER";
     }
 
     return "[Undefined ServerRequestResult]";
 }
+} // namespace log
 
+namespace popo
+{
 inline std::ostream& operator<<(std::ostream& stream, ServerRequestResult value) noexcept
 {
-    stream << asStringLiteral(value);
+    stream << log::asStringLiteral(value);
     return stream;
 }
 
-inline log::LogStream& operator<<(log::LogStream& stream, ServerRequestResult value) noexcept
-{
-    stream << asStringLiteral(value);
-    return stream;
-}
+// inline log::LogStream& operator<<(log::LogStream& stream, ServerRequestResult value) noexcept
+// {
+//     stream << asStringLiteral(value);
+//     return stream;
+// }
 
 inline constexpr const char* asStringLiteral(const ServerSendError value) noexcept
 {

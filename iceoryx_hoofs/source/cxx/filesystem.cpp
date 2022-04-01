@@ -62,8 +62,8 @@ perms operator^=(perms& lhs, const perms& rhs) noexcept
     return lhs = lhs ^ rhs;
 }
 
-template <typename StreamType>
-StreamType& operator<<(StreamType& stream, perms value) noexcept
+// template <typename StreamType>
+std::ostream& operator<<(std::ostream& stream, perms value) noexcept
 {
     if (value == perms::unknown)
     {
@@ -182,7 +182,7 @@ StreamType& operator<<(StreamType& stream, perms value) noexcept
     return stream;
 }
 
-template std::ostream& operator<<(std::ostream&, perms) noexcept;
-template log::LogStream& operator<<(log::LogStream&, perms) noexcept;
+// template std::ostream& operator<<(std::ostream&, perms) noexcept;
+// template log::LogStream& operator<<(log::LogStream&, perms) noexcept;
 } // namespace cxx
 } // namespace iox
