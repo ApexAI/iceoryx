@@ -107,7 +107,7 @@ uint64_t counter{0};
 constexpr const char GREEN_RIGHT_ARROW[] = "\033[32m->\033[m ";
 while (!iox::posix::hasTerminationRequested())
 {
-    publisher.loan().and_then([&](auto& sample) {
+    publisher.loan().and_then([&](auto& sample) -> void {
         sample->counter = counter++;
         consoleOutput("Sending   ", GREEN_RIGHT_ARROW, sample->counter);
         sample.publish();
