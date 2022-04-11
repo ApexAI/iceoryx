@@ -94,7 +94,7 @@ while (!iox::posix::hasTerminationRequested())
     fibonacciCurrent = fibonacciNext;
 
     publisher.loan(Data{fibonacciCurrent})
-        .and_then([&](auto& sample) -> void {
+        .and_then([&](auto& sample) {
             // ...
         })
         .or_else([&](auto& error) {

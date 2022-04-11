@@ -113,7 +113,7 @@ messages. The request is transmitted to the server via the `send()` API.
 <!-- [geoffrey] [iceoryx_examples/request_response/client_cxx_waitset.cpp] [[send request]] -->
 ```cpp
 client.loan()
-    .and_then([&](auto& request) -> void {
+    .and_then([&](auto& request) {
         request.getRequestHeader().setSequenceId(ctx.requestSequenceId);
         ctx.expectedResponseSequenceId = ctx.requestSequenceId;
         ctx.requestSequenceId += 1;
@@ -194,7 +194,7 @@ void onRequestReceived(iox::popo::Server<AddRequest, AddResponse>* server)
         std::cout << APP_NAME << " Got Request: " << request->augend << " + " << request->addend << std::endl;
 
         server->loan(request)
-            .and_then([&](auto& response) -> void {
+            .and_then([&](auto& response) {
                 response->sum = request->augend + request->addend;
                 std::cout << APP_NAME << " Send Response: " << response->sum << std::endl;
                 response.send().or_else(

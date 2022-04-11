@@ -234,7 +234,7 @@ Usage #1 default constructs the data type in-place:
 //  * Sample can be held until ready to publish.
 //  * Data is default constructed during loan
 publisher.loan()
-    .and_then([&](auto& sample) -> void {
+    .and_then([&](auto& sample) {
         sample->x = sampleValue1;
         sample->y = sampleValue1;
         sample->z = sampleValue1;
@@ -256,7 +256,7 @@ Usage #2 constructs the data type with the values provided in loan:
 //  * Sample can be held until ready to publish.
 //  * Data is constructed with the arguments provided.
 publisher.loan(sampleValue2, sampleValue2, sampleValue2)
-    .and_then([](auto& sample) -> void { sample.publish(); })
+    .and_then([](auto& sample) { sample.publish(); })
     .or_else([](auto& error) {
         // Do something with error
         std::cerr << "Unable to loan sample, error: " << error << std::endl;
