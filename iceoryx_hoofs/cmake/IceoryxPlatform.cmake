@@ -44,6 +44,20 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Cla
     set(ICEORYX_WARNINGS PRIVATE ${ICEORYX_WARNINGS} -W -Wall -Wextra -Wuninitialized -Wpedantic -Wstrict-aliasing -Wcast-align -Wno-noexcept-type -Wconversion)
 endif()
 
+## ignore -Wmaybe-uninitialized for gcc
+## From the gcc documentation:
+##    compiler emits a warning if it cannot prove the uninitialized paths are 
+##    not executed at run time.
+## Here are very hard to debug false positives possible when the compiler is unable
+## to prove that a certain variable is initialized. This warning does not mean
+## that the variable is used uninitialized. It states that the variable is `maybe`
+## used uninitialized.
+## In combination with -Werror this leads to compile error and the only fix is
+## to assign already initialized variables again a value which can be very costly.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(ICEORYX_WARNINGS PRIVATE ${ICEORYX_WARNINGS} -Wno-maybe-uninitialized)
+endif()
+
 if(BUILD_STRICT)
     if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         set(ICEORYX_WARNINGS ${ICEORYX_WARNINGS} /W0) # TODO iox-#33 set to /WX
