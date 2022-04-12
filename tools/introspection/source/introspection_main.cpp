@@ -14,13 +14,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_introspection/iceoryx_introspection_app.hpp"
+#include "iceoryx_introspection/introspection_app.hpp"
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
-    using iox::client::introspection::IceOryxIntrospectionApp;
-    IceOryxIntrospectionApp introspection(argc, argv);
-    introspection.run();
+    using iox::client::introspection::IntrospectionApp;
+    IntrospectionApp introspection;
 
     return 0;
 }

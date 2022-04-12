@@ -46,7 +46,7 @@ endif()
 
 ## ignore -Wmaybe-uninitialized for gcc
 ## From the gcc documentation:
-##    compiler emits a warning if it cannot prove the uninitialized paths are 
+##    compiler emits a warning if it cannot prove the uninitialized paths are
 ##    not executed at run time.
 ## Here are very hard to debug false positives possible when the compiler is unable
 ## to prove that a certain variable is initialized. This warning does not mean
@@ -54,9 +54,9 @@ endif()
 ## used uninitialized.
 ## In combination with -Werror this leads to compile error and the only fix is
 ## to assign already initialized variables again a value which can be very costly.
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(ICEORYX_WARNINGS PRIVATE ${ICEORYX_WARNINGS} -Wno-maybe-uninitialized)
-endif()
+#if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    #set(ICEORYX_WARNINGS PRIVATE ${ICEORYX_WARNINGS} -Wno-maybe-uninitialized)
+#endif()
 
 if(BUILD_STRICT)
     if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
