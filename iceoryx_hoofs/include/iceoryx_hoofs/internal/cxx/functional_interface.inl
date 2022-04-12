@@ -114,9 +114,13 @@ inline Derived& AndThenWithValue<Derived, ValueType>::and_then(const Functor& ca
 {
     Derived* derivedThis = static_cast<Derived*>(this);
 
-    if (*derivedThis && and_then_callback_t(callable))
+    if (*derivedThis)
     {
-        callable(derivedThis->value());
+        auto callback = static_cast<and_then_callback_t>(callable);
+        if (callback)
+        {
+            callback(derivedThis->value());
+        }
     }
 
     return *derivedThis;
@@ -135,9 +139,13 @@ inline const Derived& AndThenWithValue<Derived, ValueType>::and_then(const Funct
 {
     const Derived* derivedThis = static_cast<const Derived*>(this);
 
-    if (*derivedThis && const_and_then_callback_t(callable))
+    if (*derivedThis)
     {
-        callable(derivedThis->value());
+        auto callback = static_cast<const_and_then_callback_t>(callable);
+        if (callback)
+        {
+            callback(derivedThis->value());
+        }
     }
 
     return *derivedThis;
