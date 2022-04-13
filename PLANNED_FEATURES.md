@@ -17,6 +17,7 @@ iceoryx.
 * Man page for RouDi and the runtime
 * Packages for linux distributions like debian, archlinux, gentoo
 * feature foobar
+* feature foobar2
 
 ## iceoryx v2.0
 
