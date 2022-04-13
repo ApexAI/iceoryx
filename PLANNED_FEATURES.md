@@ -16,6 +16,7 @@ iceoryx.
 * User defined memory provider to support hardware accelerators
 * Man page for RouDi and the runtime
 * Packages for linux distributions like debian, archlinux, gentoo
+* feature foobar
 
 ## iceoryx v2.0
 
