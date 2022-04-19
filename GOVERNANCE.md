@@ -7,6 +7,8 @@ This document describes the processes additionally to the [Eclipse process](http
 
 An up to date list of the maintainers can be found at the [Eclipse project page](https://projects.eclipse.org/projects/technology.iceoryx/who).
 
+foobar
+
 ## Bi-weekly meetup
 
 The developer meetup is held bi-weekly on Thursday from 17:00 - 18:00 CET. Everyone is welcome to join.
