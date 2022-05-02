@@ -23,13 +23,15 @@
 
 #include <iostream>
 
+using namespace ara;
+
 constexpr char APP_NAME[] = "iox-cpp-ara-skeleton";
 
 int main()
 {
-    ara::Runtime::GetInstance(APP_NAME);
+    Runtime::GetInstance(APP_NAME);
 
-    ara::core::String instanceIdentifier{iox::cxx::TruncateToCapacity, "Example"};
+    com::InstanceIdentifier instanceIdentifier{iox::cxx::TruncateToCapacity, "Example"};
     MinimalSkeleton skeleton{instanceIdentifier};
 
     skeleton.OfferService();
@@ -42,6 +44,7 @@ int main()
         // Event
         auto sample = skeleton.m_event.Allocate();
         (*sample).counter = counter;
+        (*sample).sendTimestamp = std::chrono::steady_clock::now();
         skeleton.m_event.Send(std::move(sample));
 
         // Field
