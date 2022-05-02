@@ -24,7 +24,6 @@
 class MinimalSkeleton
 {
   public:
-    /// @todo make c'tor of cxx::string constexpr'able
     static constexpr char m_serviceIdentifier[] = "MinimalSkeleton";
 
     MinimalSkeleton(ara::core::String& instanceIdentifier)
@@ -45,7 +44,7 @@ class MinimalSkeleton
     }
 
     const ara::core::String m_instanceIdentifier;
-    ara::com::EventPublisher<Topic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    ara::com::EventPublisher<TimestampTopic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
     Topic initalFieldValue{4242};
     ara::com::FieldPublisher<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field", initalFieldValue};
     ara::com::MethodServer computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};
