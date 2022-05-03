@@ -111,6 +111,7 @@ class EventSubscriber
   private:
     static void onSampleReceivedCallback(iox::popo::Subscriber<T>*, EventSubscriber* self)
     {
+        std::lock_guard<iox::posix::mutex> guard(m_mutex);
         self->m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
     }
 

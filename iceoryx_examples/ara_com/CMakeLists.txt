@@ -27,11 +27,17 @@ include(IceoryxPlatform)
 
 # @todo #1332 enable 1:N communication cmake switch
 
+option(USE_UDS "Send Events via UNIX domain sockets" ON)
+
 add_executable(iox-cpp-ara-skeleton ./iox_ara_skeleton.cpp ./minimal_skeleton.cpp)
 target_link_libraries(iox-cpp-ara-skeleton
     iceoryx_posh::iceoryx_posh
 )
 target_compile_options(iox-cpp-ara-skeleton PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+
+if(USE_UDS)
+  target_compile_definitions(iox-cpp-ara-skeleton PUBLIC -DUSE_UDS)
+endif(USE_UDS)
 
 target_include_directories(iox-cpp-ara-skeleton
     PUBLIC
@@ -45,6 +51,10 @@ target_link_libraries(iox-cpp-ara-proxy
     iceoryx_posh::iceoryx_posh
 )
 target_compile_options(iox-cpp-ara-proxy PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+
+if(USE_UDS)
+  target_compile_definitions(iox-cpp-ara-proxy PUBLIC -DUSE_UDS)
+endif(USE_UDS)
 
 target_include_directories(iox-cpp-ara-proxy
     PUBLIC

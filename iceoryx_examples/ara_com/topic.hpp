@@ -17,8 +17,12 @@
 #ifndef IOX_EXAMPLES_ARA_COM_TOPIC_DATA_HPP
 #define IOX_EXAMPLES_ARA_COm_TOPIC_DATA_HPP
 
+#include "iceoryx_hoofs/cxx/serialization.hpp"
+
 #include <chrono>
 #include <cstdint>
+
+constexpr uint32_t ONE_KILOBYTE = 1024U;
 
 struct AddRequest
 {
@@ -33,13 +37,64 @@ struct AddResponse
 
 struct Topic
 {
-    uint64_t counter{0};
+    uint32_t counter{0};
 };
 
 struct TimestampTopic
 {
-    uint64_t counter{0};
+    // Printed to console
+    uint32_t counter{0};
     std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{1};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+
+    // iox::cxx::Serialization serialize() const noexcept
+    // {
+    //     return iox::cxx::Serialization::create(counter, sendTimestamp, payloadSizeInBytes, data, subPackets);
+    // }
+    // static iox::cxx::expected<TimestampTopic, iox::cxx::Serialization::Error>
+    // deserialize(const iox::cxx::Serialization& serialized) noexcept
+    // {
+    //     TimestampTopic topic;
+
+    //     auto deserializationSuccessful = serialized.extract(
+    //         topic.counter, topic.sendTimestamp, topic.payloadSizeInBytes, topic.data, topic.subPackets);
+
+    //     if (!deserializationSuccessful)
+    //     {
+    //         return iox::cxx::error<iox::cxx::Serialization::Error>(
+    //             iox::cxx::Serialization::Error::DESERIALIZATION_FAILED);
+    //     }
+
+    //     return iox::cxx::success<TimestampTopic>(topic);
+    // }
+};
+
+struct TimestampTopic4Mb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{4096 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
+struct TimestampTopic16Mb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{16384 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
 };
 
 #endif // IOX_EXAMPLES_ARA_COM_TOPIC_DATA_HPP
