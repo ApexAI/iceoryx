@@ -27,11 +27,17 @@ include(IceoryxPlatform)
 
 # @todo #1332 enable 1:N communication cmake switch
 
+option(USE_UDS "Send Events via UNIX domain sockets" ON)
+
 add_executable(iox-cpp-automotive-skeleton ./iox_automotive_skeleton.cpp ./minimal_skeleton.cpp)
 target_link_libraries(iox-cpp-automotive-skeleton
     iceoryx_posh::iceoryx_posh
 )
 target_compile_options(iox-cpp-automotive-skeleton PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+
+if(USE_UDS)
+  target_compile_definitions(iox-cpp-automotive-skeleton PUBLIC -DUSE_UDS)
+endif(USE_UDS)
 
 target_include_directories(iox-cpp-automotive-skeleton
     PUBLIC
@@ -45,6 +51,10 @@ target_link_libraries(iox-cpp-automotive-proxy
     iceoryx_posh::iceoryx_posh
 )
 target_compile_options(iox-cpp-automotive-proxy PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
+
+if(USE_UDS)
+  target_compile_definitions(iox-cpp-automotive-proxy PUBLIC -DUSE_UDS)
+endif(USE_UDS)
 
 target_include_directories(iox-cpp-automotive-proxy
     PUBLIC

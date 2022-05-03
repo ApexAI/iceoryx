@@ -14,9 +14,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP
+#define IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP
+
 #include "topic.hpp"
 
+#ifdef USE_UDS
+#include "owl/kom/event_subscriber_uds.hpp"
+#else
 #include "owl/kom/event_subscriber.hpp"
+#endif
 #include "owl/kom/field_subscriber.hpp"
 #include "owl/kom/method_client.hpp"
 #include "owl/runtime.hpp"
@@ -60,7 +67,13 @@ class MinimalProxy
     }
 
     const owl::core::String m_instanceIdentifier;
+#ifdef USE_UDS
+    owl::kom::EventSubscriberUds<TimestampTopic16Mb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#else
     owl::kom::EventSubscriber<TimestampTopic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#endif
     owl::kom::FieldSubscriber<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field"};
     owl::kom::MethodClient computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};
 };
+
+#endif // IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP
