@@ -14,9 +14,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef IOX_EXAMPLES_ARA_COM_MINIMAL_SKELETON_HPP
+#define IOX_EXAMPLES_ARA_COM_MINIMAL_SKELETON_HPP
+
 #include "topic.hpp"
 
+#ifdef USE_UDS
+#include "ara/com/event_publisher_uds.hpp"
+#else
 #include "ara/com/event_publisher.hpp"
+#endif
 #include "ara/com/field_publisher.hpp"
 #include "ara/com/method_server.hpp"
 #include "ara/types.hpp"
@@ -44,8 +51,14 @@ class MinimalSkeleton
     }
 
     const ara::core::String m_instanceIdentifier;
+#ifdef USE_UDS
+    ara::com::EventPublisherUds<TimestampTopic16Mb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#else
     ara::com::EventPublisher<TimestampTopic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#endif
     Topic initalFieldValue{4242};
     ara::com::FieldPublisher<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field", initalFieldValue};
     ara::com::MethodServer computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};
 };
+
+#endif // IOX_EXAMPLES_ARA_COM_MINIMAL_SKELETON_HPP

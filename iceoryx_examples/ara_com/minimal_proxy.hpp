@@ -14,9 +14,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP
+#define IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP
+
 #include "topic.hpp"
 
+#ifdef USE_UDS
+#include "ara/com/event_subscriber_uds.hpp"
+#else
 #include "ara/com/event_subscriber.hpp"
+#endif
 #include "ara/com/field_subscriber.hpp"
 #include "ara/com/method_client.hpp"
 #include "ara/runtime.hpp"
@@ -60,7 +67,13 @@ class MinimalProxy
     }
 
     const ara::core::String m_instanceIdentifier;
+#ifdef USE_UDS
+    ara::com::EventSubscriberUds<TimestampTopic16Mb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#else
     ara::com::EventSubscriber<TimestampTopic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+#endif
     ara::com::FieldSubscriber<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field"};
     ara::com::MethodClient computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};
 };
+
+#endif // IOX_EXAMPLES_ARA_COM_MINIMAL_PROXY_HPP

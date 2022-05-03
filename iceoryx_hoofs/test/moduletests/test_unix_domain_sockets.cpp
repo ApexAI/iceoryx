@@ -374,6 +374,15 @@ TEST_F(UnixDomainSocket_test, SuccessfulCommunicationOfMultipleMessagesWithSendA
         [&]() { return server.timedReceive(1_ms); });
 }
 
+TEST_F(UnixDomainSocket_test, SuccessfulCommunicationWithZeroBytesInBetween)
+{
+    ::testing::Test::RecordProperty("TEST_ID", "7dc7798a-23c4-41f9-abe6-b9aec485f93f");
+    successfulSendAndReceive(
+        {{'f', 'o', 'o', '\0', 'f', 'o', 'o'}},
+        [&](auto& msg) { return client.send(msg); },
+        [&]() { return server.timedReceive(1_ms); });
+}
+
 void unableToSendTooLongMessage(const sendCall_t& send)
 {
     std::string message(UnixDomainSocket::MAX_MESSAGE_SIZE + 1, 'x');
