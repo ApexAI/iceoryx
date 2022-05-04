@@ -40,6 +40,11 @@ class MinimalSkeleton
     MinimalSkeleton(const MinimalSkeleton&) = delete;
     MinimalSkeleton& operator=(const MinimalSkeleton&) = delete;
 
+    ~MinimalSkeleton()
+    {
+        StopOfferService();
+    }
+
     void OfferService() noexcept
     {
         m_event.Offer();
