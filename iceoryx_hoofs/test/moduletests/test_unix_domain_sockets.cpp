@@ -213,9 +213,13 @@ void successfulSendAndReceive(const std::vector<std::string>& messages,
 
     for (auto& sentMessage : messages)
     {
+        // The UNIX domain socket abstraction writes all received Bytes to the std::string,
+        // hence we need to add a '\0' to our expected string
+        auto copyOfSentMessage = sentMessage;
+        copyOfSentMessage.push_back('\0');
         auto receivedMessage = receive();
         ASSERT_FALSE(receivedMessage.has_error());
-        EXPECT_EQ(*receivedMessage, sentMessage);
+        EXPECT_EQ(*receivedMessage, copyOfSentMessage);
     }
 }
 
@@ -288,7 +292,7 @@ TEST_F(UnixDomainSocket_test, SuccessfulCommunicationOfMaxLengthMessageWithSendA
 {
     ::testing::Test::RecordProperty("TEST_ID", "51fb179e-7256-47e8-8af9-6f14493ef253");
     successfulSendAndReceive(
-        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE, 'x')},
+        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE - 1, 'x')}, // Minus one because of the NULL termination
         [&](auto& msg) { return client.send(msg); },
         [&]() { return server.receive(); });
 }
@@ -297,7 +301,7 @@ TEST_F(UnixDomainSocket_test, SuccessfulCommunicationOfMaxLengthMessageWithTimed
 {
     ::testing::Test::RecordProperty("TEST_ID", "c5e9dbea-c514-4335-a151-bd38a806f048");
     successfulSendAndReceive(
-        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE, 'x')},
+        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE - 1, 'x')}, // Minus one because of the NULL termination
         [&](auto& msg) { return client.timedSend(msg, 1_ms); },
         [&]() { return server.receive(); });
 }
@@ -306,7 +310,7 @@ TEST_F(UnixDomainSocket_test, SuccessfulCommunicationOfMaxLengthMessageWithTimed
 {
     ::testing::Test::RecordProperty("TEST_ID", "6359e2bc-46ea-4cfa-9c51-bb3e5ad36834");
     successfulSendAndReceive(
-        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE, 'x')},
+        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE - 1, 'x')}, // Minus one because of the NULL termination
         [&](auto& msg) { return client.timedSend(msg, 1_ms); },
         [&]() { return server.timedReceive(1_ms); });
 }
@@ -315,7 +319,7 @@ TEST_F(UnixDomainSocket_test, SuccessfulCommunicationOfMaxLengthMessageWithSendA
 {
     ::testing::Test::RecordProperty("TEST_ID", "ec6b3ae4-5a87-499c-b41a-c759ee5a14f5");
     successfulSendAndReceive(
-        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE, 'x')},
+        {std::string(UnixDomainSocket::MAX_MESSAGE_SIZE - 1, 'x')}, // Minus one because of the NULL terminationu
         [&](auto& msg) { return client.send(msg); },
         [&]() { return server.timedReceive(1_ms); });
 }
@@ -439,7 +443,10 @@ TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocks, Repeat(5), [&] {
 
 TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocksUntilMessageIsReceived, Repeat(5), [&] {
     ::testing::Test::RecordProperty("TEST_ID", "76df3d40-d420-4c5f-b82a-3bf8b684a21b");
-    std::string message = "asdasda";
+    std::string sentMessage = "asdasda";
+    std::string expectedMessage = sentMessage;
+    expectedMessage.push_back('\0');
+
     std::thread waitThread([&] {
         this->signalThreadReady();
         auto start = std::chrono::steady_clock::now();
@@ -448,12 +455,12 @@ TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocksUntilMessageIsReceived, R
         TIMING_TEST_EXPECT_TRUE(end - start >= WAIT_IN_MS);
 
         TIMING_TEST_ASSERT_FALSE(msg.has_error());
-        TIMING_TEST_EXPECT_TRUE(*msg == message);
+        TIMING_TEST_EXPECT_TRUE(*msg == expectedMessage);
     });
 
     this->waitForThread();
     std::this_thread::sleep_for(WAIT_IN_MS);
-    TIMING_TEST_ASSERT_FALSE(client.send(message).has_error());
+    TIMING_TEST_ASSERT_FALSE(client.send(sentMessage).has_error());
     waitThread.join();
 });
 #endif
