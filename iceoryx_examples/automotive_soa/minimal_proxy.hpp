@@ -68,9 +68,9 @@ class MinimalProxy
 
     const owl::core::String m_instanceIdentifier;
 #ifdef USE_UDS
-    owl::kom::EventSubscriberUds<TimestampTopic16Mb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    owl::kom::EventSubscriberUds<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #else
-    owl::kom::EventSubscriber<TimestampTopic> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    owl::kom::EventSubscriber<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #endif
     owl::kom::FieldSubscriber<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field"};
     owl::kom::MethodClient computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};

@@ -66,13 +66,14 @@ class EventPublisherUds
 
     void Send(std::unique_ptr<SampleType> userSamplePtr) noexcept
     {
-        /// @todo #1332 Use cxx::Serialization?
-
         /// @todo #1332 replace push_back with append(charArray, count)
-
         std::string tempBuffer;
-        /// @todo store the uint32_t in four chars
-        tempBuffer.push_back(static_cast<uint8_t>(userSamplePtr->counter));
+
+        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0xFF000000) >> 24));
+        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x00FF0000) >> 16));
+        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x0000FF00) >> 8));
+        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x000000FF)));
+
         auto sendTimeStampNs = userSamplePtr->sendTimestamp.time_since_epoch().count();
         tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0xFF00000000000000) >> 56));
         tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x00FF000000000000) >> 48));
@@ -83,13 +84,10 @@ class EventPublisherUds
         tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x000000000000FF00) >> 8));
         tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x00000000000000FF)));
 
-
-        uint32_t offset = static_cast<uint32_t>(tempBuffer.size()) + 4;
-
+        constexpr uint8_t BYTES_OF_SUBPACKETS_INTEGER{4};
+        uint32_t offset = static_cast<uint32_t>(tempBuffer.size()) + BYTES_OF_SUBPACKETS_INTEGER;
         uint32_t totalSize = userSamplePtr->payloadSizeInBytes + offset;
-
         userSamplePtr->subPackets = totalSize / static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE);
-
         if (totalSize % static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE) > 0)
         {
             userSamplePtr->subPackets += 1;
@@ -144,8 +142,6 @@ class EventPublisherUds
             tempBuffer.clear();
             bytesToSend -= messageSize;
         }
-
-        std::cout << "We sent " << userSamplePtr->subPackets << " packets" << std::endl;
     }
 
     void Offer() noexcept

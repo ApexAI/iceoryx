@@ -27,7 +27,7 @@ include(IceoryxPlatform)
 
 # @todo #1332 enable 1:N communication cmake switch
 
-option(USE_UDS "Send Events via UNIX domain sockets" ON)
+option(USE_UDS "Send Events via UNIX domain sockets" OFF)
 
 add_executable(iox-cpp-automotive-skeleton ./iox_automotive_skeleton.cpp ./minimal_skeleton.cpp)
 target_link_libraries(iox-cpp-automotive-skeleton
