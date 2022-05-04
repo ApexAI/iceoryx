@@ -213,13 +213,9 @@ void successfulSendAndReceive(const std::vector<std::string>& messages,
 
     for (auto& sentMessage : messages)
     {
-        // The UNIX domain socket abstraction writes all received Bytes to the std::string,
-        // hence we need to add a '\0' to our expected string
-        auto copyOfSentMessage = sentMessage;
-        copyOfSentMessage.push_back('\0');
         auto receivedMessage = receive();
         ASSERT_FALSE(receivedMessage.has_error());
-        EXPECT_EQ(*receivedMessage, copyOfSentMessage);
+        EXPECT_EQ(*receivedMessage, sentMessage);
     }
 }
 
@@ -444,9 +440,6 @@ TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocks, Repeat(5), [&] {
 TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocksUntilMessageIsReceived, Repeat(5), [&] {
     ::testing::Test::RecordProperty("TEST_ID", "76df3d40-d420-4c5f-b82a-3bf8b684a21b");
     std::string sentMessage = "asdasda";
-    std::string expectedMessage = sentMessage;
-    expectedMessage.push_back('\0');
-
     std::thread waitThread([&] {
         this->signalThreadReady();
         auto start = std::chrono::steady_clock::now();
@@ -455,7 +448,7 @@ TIMING_TEST_F(UnixDomainSocket_test, TimedReceiveBlocksUntilMessageIsReceived, R
         TIMING_TEST_EXPECT_TRUE(end - start >= WAIT_IN_MS);
 
         TIMING_TEST_ASSERT_FALSE(msg.has_error());
-        TIMING_TEST_EXPECT_TRUE(*msg == expectedMessage);
+        TIMING_TEST_EXPECT_TRUE(*msg == sentMessage);
     });
 
     this->waitForThread();
