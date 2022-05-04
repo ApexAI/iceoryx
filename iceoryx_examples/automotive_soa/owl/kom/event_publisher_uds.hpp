@@ -116,7 +116,7 @@ class EventPublisherUds
             tempBuffer.push_back(userSamplePtr->data[k++]);
         }
         m_uds.send(tempBuffer).or_else([](auto&) {
-            std::cout << "Error occurred while sending on UNIX domain socket!" << std::endl;
+            std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
         });
         tempBuffer.clear();
         bytesToSend -= messageSize;
@@ -137,7 +137,7 @@ class EventPublisherUds
                 tempBuffer.push_back(userSamplePtr->data[k++]);
             }
             m_uds.send(tempBuffer).or_else([](auto&) {
-                std::cout << "Error occurred while sending on UNIX domain socket!" << std::endl;
+                std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
             });
             tempBuffer.clear();
             bytesToSend -= messageSize;

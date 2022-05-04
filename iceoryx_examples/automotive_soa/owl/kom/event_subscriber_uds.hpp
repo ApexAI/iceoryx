@@ -69,7 +69,7 @@ class EventSubscriberUds
 
         // Receive the first (up to) 4095 Bytes
         m_uds.receive().and_then([&](auto& msg) { tempBuffer.append(msg); }).or_else([](auto&) {
-            std::cout << "Error occurred while receiving UNIX domain socket!" << std::endl;
+            std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
         });
 
         if (tempBuffer.size() == 0)
@@ -104,7 +104,7 @@ class EventSubscriberUds
             for (uint32_t i = 0U; i < subPackets - 1; ++i)
             {
                 m_uds.receive().and_then([&](auto& msg) { tempBuffer.append(msg); }).or_else([](auto&) {
-                    std::cout << "Error occurred while receiving UNIX domain socket!" << std::endl;
+                    std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
                 });
             }
         }
