@@ -43,11 +43,10 @@ class Runtime
         return runtime;
     }
 
-    ara::com::ServiceHandleContainer<com::ProxyHandleType>
-    FindService(ara::com::ServiceIdentifier& serviceIdentifier,
-                ara::com::InstanceIdentifier& instanceIdentifier) noexcept
+    com::ServiceHandleContainer<com::ProxyHandleType> FindService(com::ServiceIdentifier& serviceIdentifier,
+                                                                  com::InstanceIdentifier& instanceIdentifier) noexcept
     {
-        ara::com::ServiceHandleContainer<com::ProxyHandleType> iceoryxServiceContainer;
+        com::ServiceHandleContainer<com::ProxyHandleType> iceoryxServiceContainer;
 
         m_discovery.findService(
             serviceIdentifier,
@@ -68,7 +67,7 @@ class Runtime
             iox::popo::MessagingPattern::REQ_RES);
 
         // We need to make sure that all three internal services representing 'MinimalSkeleton' are available
-        ara::com::ServiceHandleContainer<com::ProxyHandleType> araServiceContainer;
+        com::ServiceHandleContainer<com::ProxyHandleType> araServiceContainer;
         if (verifyThatServiceIsComplete(iceoryxServiceContainer))
         {
             araServiceContainer.push_back({serviceIdentifier, instanceIdentifier});
@@ -77,9 +76,9 @@ class Runtime
         return araServiceContainer;
     }
 
-    ara::com::FindServiceHandle StartFindService(ara::com::FindServiceHandler<com::ProxyHandleType> handler,
-                                                 ara::com::ServiceIdentifier& serviceIdentifier,
-                                                 ara::com::InstanceIdentifier& instanceIdentifier) noexcept
+    com::FindServiceHandle StartFindService(com::FindServiceHandler<com::ProxyHandleType> handler,
+                                            com::ServiceIdentifier& serviceIdentifier,
+                                            com::InstanceIdentifier& instanceIdentifier) noexcept
     {
         /// @todo #1332 Are duplicate entries allowed?
         m_callbacks.push_back({handler, {serviceIdentifier, instanceIdentifier}});
@@ -94,10 +93,10 @@ class Runtime
                 });
         }
 
-        return ara::com::FindServiceHandle({serviceIdentifier, instanceIdentifier});
+        return com::FindServiceHandle({serviceIdentifier, instanceIdentifier});
     }
 
-    void StopFindService(ara::com::FindServiceHandle handle) noexcept
+    void StopFindService(com::FindServiceHandle handle) noexcept
     {
         auto iter = m_callbacks.begin();
         for (; iter != m_callbacks.end(); iter++)
@@ -122,7 +121,7 @@ class Runtime
   private:
     explicit Runtime() noexcept = default;
 
-    bool verifyThatServiceIsComplete(ara::com::ServiceHandleContainer<com::ProxyHandleType>& container)
+    bool verifyThatServiceIsComplete(com::ServiceHandleContainer<com::ProxyHandleType>& container)
     {
         // The service level of AUTOSAR Adaptive is not available in iceoryx, instead every publisher and server is
         // considered as a service. A ara::com binding implementer would typically query the AUTOSAR meta model here, to
@@ -142,25 +141,27 @@ class Runtime
 
     static void invokeCallback(iox::runtime::ServiceDiscovery*, Runtime* self)
     {
+        // Requirements (not implemented, see below)
         // 1) Has the availability of one of the registered services changed?
         // 2) If yes, call the user-defined callback
+
         for (auto& callback : self->m_callbacks)
         {
             auto container =
                 self->FindService(callback.second.m_serviceIdentifier, callback.second.m_instanceIdentifier);
-            // if (container.empty())
-            // {
-            //     continue;
-            // }
-            (callback.first)(container,
-                             ara::com::FindServiceHandle(
-                                 {callback.second.m_serviceIdentifier, callback.second.m_instanceIdentifier}));
+            // Typically there should be a check for container.empty() and the callback should only be called when the
+            // availability of the specific service has changed. However, to notify the user in the ara::com example
+            // about a service, which has disappeared we call the callback on ANY change of the service registry
+            (callback.first)(
+                container,
+                com::FindServiceHandle({callback.second.m_serviceIdentifier, callback.second.m_instanceIdentifier}));
         }
     }
 
     iox::runtime::ServiceDiscovery m_discovery;
     iox::popo::Listener m_listener;
-    iox::cxx::vector<iox::cxx::pair<ara::com::FindServiceHandler<com::ProxyHandleType>, ara::com::FindServiceHandle>,
+    // A vector is not the optimal data structure but used here for simplicity
+    iox::cxx::vector<iox::cxx::pair<com::FindServiceHandler<com::ProxyHandleType>, com::FindServiceHandle>,
                      iox::MAX_NUMBER_OF_EVENTS_PER_LISTENER>
         m_callbacks;
 };
