@@ -68,9 +68,9 @@ class MinimalProxy
 
     const ara::core::String m_instanceIdentifier;
 #ifdef USE_UDS
-    ara::com::EventSubscriberUds<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    ara::com::EventSubscriberUds<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #else
-    ara::com::EventSubscriber<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    ara::com::EventSubscriber<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #endif
     ara::com::FieldSubscriber<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field"};
     ara::com::MethodClient computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};

@@ -57,9 +57,9 @@ class MinimalSkeleton
 
     const ara::core::String m_instanceIdentifier;
 #ifdef USE_UDS
-    ara::com::EventPublisherUds<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    ara::com::EventPublisherUds<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #else
-    ara::com::EventPublisher<TimestampTopic1Kb> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
+    ara::com::EventPublisher<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #endif
     Topic initalFieldValue{4242};
     ara::com::FieldPublisher<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field", initalFieldValue};
