@@ -22,7 +22,7 @@
 #include <chrono>
 #include <cstdint>
 
-constexpr uint32_t ONE_KILOBYTE = 1024U;
+constexpr uint32_t ONE_KILOBYTE = 1000U;
 
 struct AddRequest
 {
@@ -40,7 +40,7 @@ struct Topic
     uint32_t counter{0};
 };
 
-struct TimestampTopic
+struct TimestampTopic1Kb
 {
     // Printed to console
     uint32_t counter{0};
@@ -51,6 +51,7 @@ struct TimestampTopic
     char data[payloadSizeInBytes];
     uint32_t subPackets{0};
 
+    /// @todo #1332 Use cxx::Serialization and implement serialization for std::chrono::time_point?
     // iox::cxx::Serialization serialize() const noexcept
     // {
     //     return iox::cxx::Serialization::create(counter, sendTimestamp, payloadSizeInBytes, data, subPackets);
@@ -73,6 +74,66 @@ struct TimestampTopic
     // }
 };
 
+struct TimestampTopic4Kb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{4 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
+struct TimestampTopic16Kb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{16 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
+struct TimestampTopic64Kb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{64 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
+struct TimestampTopic256Kb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{256 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
+struct TimestampTopic1Mb
+{
+    // Printed to console
+    uint32_t counter{0};
+    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
+
+    // Not printed to console
+    static constexpr uint32_t payloadSizeInBytes{1024 * ONE_KILOBYTE};
+    char data[payloadSizeInBytes];
+    uint32_t subPackets{0};
+};
+
 struct TimestampTopic4Mb
 {
     // Printed to console
@@ -85,16 +146,5 @@ struct TimestampTopic4Mb
     uint32_t subPackets{0};
 };
 
-struct TimestampTopic16Mb
-{
-    // Printed to console
-    uint32_t counter{0};
-    std::chrono::time_point<std::chrono::steady_clock> sendTimestamp;
-
-    // Not printed to console
-    static constexpr uint32_t payloadSizeInBytes{16384 * ONE_KILOBYTE};
-    char data[payloadSizeInBytes];
-    uint32_t subPackets{0};
-};
 
 #endif // IOX_EXAMPLES_ARA_COM_TOPIC_DATA_HPP

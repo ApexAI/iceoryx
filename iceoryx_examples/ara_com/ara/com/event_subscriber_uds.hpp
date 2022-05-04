@@ -78,52 +78,27 @@ class EventSubscriberUds
         }
 
         // Deserialize the counter
-        sample.counter = tempBuffer[0];
+        sample.counter =
+            (static_cast<uint32_t>(tempBuffer[0]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[1]) & 0xFF) << 16
+            | (static_cast<uint32_t>(tempBuffer[2]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[3]) & 0xFF);
 
         // Deserialize the timestamp
         uint64_t sendTimestamp =
-            (static_cast<uint64_t>(tempBuffer[1]) & 0xFF) << 56 | (static_cast<uint64_t>(tempBuffer[2]) & 0xFF) << 48
-            | (static_cast<uint64_t>(tempBuffer[3]) & 0xFF) << 40 | (static_cast<uint64_t>(tempBuffer[4]) & 0xFF) << 32
-            | (static_cast<uint64_t>(tempBuffer[5]) & 0xFF) << 24 | (static_cast<uint64_t>(tempBuffer[6]) & 0xFF) << 16
-            | (static_cast<uint64_t>(tempBuffer[7]) & 0xFF) << 8 | (static_cast<uint64_t>(tempBuffer[8]) & 0xFF);
-
-        // std::cout << "Timestamp[1]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[1]
-        //           << std::endl;
-        // std::cout << "Timestamp[2]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[2]
-        //           << std::endl;
-        // std::cout << "Timestamp[3]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[3]
-        //           << std::endl;
-        // std::cout << "Timestamp[4]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[4]
-        //           << std::endl;
-        // std::cout << "Timestamp[5]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[5]
-        //           << std::endl;
-        // std::cout << "Timestamp[6]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[6]
-        //           << std::endl;
-        // std::cout << "Timestamp[7]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[7]
-        //           << std::endl;
-        // std::cout << "Timestamp[8]: " << std::hex << std::setfill('0') << std::setw(2) << (int)tempBuffer[8]
-        //           << std::endl;
-
+            (static_cast<uint64_t>(tempBuffer[4]) & 0xFF) << 56 | (static_cast<uint64_t>(tempBuffer[5]) & 0xFF) << 48
+            | (static_cast<uint64_t>(tempBuffer[6]) & 0xFF) << 40 | (static_cast<uint64_t>(tempBuffer[7]) & 0xFF) << 32
+            | (static_cast<uint64_t>(tempBuffer[8]) & 0xFF) << 24 | (static_cast<uint64_t>(tempBuffer[9]) & 0xFF) << 16
+            | (static_cast<uint64_t>(tempBuffer[10]) & 0xFF) << 8 | (static_cast<uint64_t>(tempBuffer[11]) & 0xFF);
         int64_t castedSendTimestamp = static_cast<int64_t>(sendTimestamp);
-
-        // std::cout << "unsigned Timestamp: " << std::hex << std::setfill('0') << std::setw(2) << sendTimestamp
-        //           << std::endl;
-        // std::cout << "Signed Timestamp: " << std::hex << std::setfill('0') << std::setw(2) << castedSendTimestamp
-        //           << std::endl;
-
         sample.sendTimestamp = std::chrono::time_point<std::chrono::steady_clock>(
             std::chrono::duration<int64_t, std::nano>(castedSendTimestamp));
 
         // Deserialize subPackets
         uint32_t subPackets =
-            (static_cast<uint32_t>(tempBuffer[9]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[10]) & 0xFF) << 16
-            | (static_cast<uint32_t>(tempBuffer[11]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[12]) & 0xFF);
+            (static_cast<uint32_t>(tempBuffer[12]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[13]) & 0xFF) << 16
+            | (static_cast<uint32_t>(tempBuffer[14]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[15]) & 0xFF);
         sample.subPackets = subPackets;
 
-        std::cout << "We received " << subPackets << " packets!" << std::endl;
-
-
-        // If more than 4095 Bytes were send int consecutive message, receive them now
+        // If more than 4095 Bytes were send in consecutive messages, receive them now
         if (subPackets > 1)
         {
             for (uint32_t i = 0U; i < subPackets - 1; ++i)
@@ -134,8 +109,6 @@ class EventSubscriberUds
             }
         }
 
-        std::cout << "Buffer size: " << tempBuffer.size() << std::endl;
-
         // Complete fragmented message was received, now we call the user-defined callable
         callable(samplePtr);
         return numberOfSamples;
@@ -144,12 +117,16 @@ class EventSubscriberUds
     void SetReceiveHandler(EventReceiveHandler handler)
     {
         std::lock_guard<iox::posix::mutex> guard(m_mutex);
+        if (HasReceiverHandler())
+        {
+            std::cout << "Re-attaching a receiver handler is not supported with UNIX domain sockets!" << std::endl;
+            return;
+        }
         m_receiveHandler.emplace(handler);
         std::thread([&]() {
             while (true)
             {
-                // As UDS has a blocking receive, we call the user callback in an endless loop and
-                // wait till having received a complete message
+                // We call the user callback in an endless loop and wait till having received a complete message
                 m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
             }
         }).detach();
@@ -157,12 +134,12 @@ class EventSubscriberUds
 
     void UnsetReceiveHandler()
     {
-        std::lock_guard<iox::posix::mutex> guard(m_mutex);
-        m_receiveHandler.reset();
+        std::cout << "Unsetting the receive handler is not supported with UNIX domain sockets!" << std::endl;
     }
 
-    bool HasReceiverHandler() const
+    bool HasReceiverHandler()
     {
+        std::lock_guard<iox::posix::mutex> guard(m_mutex);
         return m_receiveHandler.has_value();
     }
 
