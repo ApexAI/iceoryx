@@ -179,6 +179,13 @@ All new code should follow the folder structure.
 5. Add integration test for example
 6. [Record an asciicast](./tools/website/how-to-record-asciicast.md) and embed image link
 
+## Documentation
+
+* Use relative links everywhere
+* All content in the repository (aka `.md` files) is published on [iceoryx.io](https://iceoryx.io/)
+  * With few exceptions like `CONTRIBUTING.md` and main `README.md`
+* `.md` files of the examples are copied to `doc/website/` before the export script is run
+
 ## Testing
 
 We use [Google test](https://github.com/google/googletest) for our unit and integration tests. We require compatibility
