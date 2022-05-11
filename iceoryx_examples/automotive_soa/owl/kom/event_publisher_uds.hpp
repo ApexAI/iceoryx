@@ -40,7 +40,7 @@ class EventPublisherUds
     EventPublisherUds& operator=(EventPublisherUds&&) = delete;
 
     EventPublisherUds(const core::String& service, const core::String& instance, const core::String& event) noexcept
-        : m_publisher({service, instance, event}, {1U, "", true})
+        : m_publisher({service, instance, event}, {1U, iox::NodeName_t(), true})
         , m_instanceId(instance)
     {
     }
