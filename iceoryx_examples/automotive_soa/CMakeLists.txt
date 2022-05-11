@@ -39,7 +39,7 @@ if(USE_UDS)
   target_compile_definitions(iox-cpp-automotive-skeleton PUBLIC -DUSE_UDS)
 endif(USE_UDS)
 
-target_include_directories(iox-cpp-automotive-skeleton PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(iox-cpp-automotive-skeleton PRIVATE ${PROJECT_SOURCE_DIR})
 
 add_executable(iox-cpp-automotive-proxy ./iox_automotive_proxy.cpp ./minimal_proxy.cpp)
 target_link_libraries(iox-cpp-automotive-proxy
@@ -51,7 +51,7 @@ if(USE_UDS)
   target_compile_definitions(iox-cpp-automotive-proxy PUBLIC -DUSE_UDS)
 endif(USE_UDS)
 
-target_include_directories(iox-cpp-automotive-proxy PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(iox-cpp-automotive-proxy PRIVATE ${PROJECT_SOURCE_DIR})
 
 set_target_properties(iox-cpp-automotive-proxy
                       iox-cpp-automotive-skeleton
