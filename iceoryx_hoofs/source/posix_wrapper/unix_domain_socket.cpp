@@ -306,7 +306,8 @@ UnixDomainSocket::timedReceive(const units::Duration& timeout) const noexcept
             return cxx::error<IpcChannelError>(convertErrnoToIpcChannelError(recvCall.get_error().errnum));
         }
         // Minus one, because we know that the last Byte is a '\0' due to std::string usage
-        return cxx::success<std::string>(std::string(message, recvCall.value().value - 1));
+        return cxx::success<std::string>(
+            std::string(message, static_cast<std::string::size_type>(recvCall.value().value) - 1));
     }
 }
 
