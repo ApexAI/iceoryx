@@ -79,23 +79,23 @@ class EventSubscriberUds
 
         // Deserialize the counter
         sample.counter =
-            (static_cast<uint32_t>(tempBuffer[0]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[1]) & 0xFF) << 16
-            | (static_cast<uint32_t>(tempBuffer[2]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[3]) & 0xFF);
+            (static_cast<uint32_t>(tempBuffer[3]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[2]) & 0xFF) << 16
+            | (static_cast<uint32_t>(tempBuffer[1]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[0]) & 0xFF);
 
         // Deserialize the timestamp
         uint64_t sendTimestamp =
-            (static_cast<uint64_t>(tempBuffer[4]) & 0xFF) << 56 | (static_cast<uint64_t>(tempBuffer[5]) & 0xFF) << 48
-            | (static_cast<uint64_t>(tempBuffer[6]) & 0xFF) << 40 | (static_cast<uint64_t>(tempBuffer[7]) & 0xFF) << 32
-            | (static_cast<uint64_t>(tempBuffer[8]) & 0xFF) << 24 | (static_cast<uint64_t>(tempBuffer[9]) & 0xFF) << 16
-            | (static_cast<uint64_t>(tempBuffer[10]) & 0xFF) << 8 | (static_cast<uint64_t>(tempBuffer[11]) & 0xFF);
+            (static_cast<uint64_t>(tempBuffer[11]) & 0xFF) << 56 | (static_cast<uint64_t>(tempBuffer[10]) & 0xFF) << 48
+            | (static_cast<uint64_t>(tempBuffer[9]) & 0xFF) << 40 | (static_cast<uint64_t>(tempBuffer[8]) & 0xFF) << 32
+            | (static_cast<uint64_t>(tempBuffer[7]) & 0xFF) << 24 | (static_cast<uint64_t>(tempBuffer[6]) & 0xFF) << 16
+            | (static_cast<uint64_t>(tempBuffer[5]) & 0xFF) << 8 | (static_cast<uint64_t>(tempBuffer[4]) & 0xFF);
         int64_t castedSendTimestamp = static_cast<int64_t>(sendTimestamp);
         sample.sendTimestamp = std::chrono::time_point<std::chrono::steady_clock>(
             std::chrono::duration<int64_t, std::nano>(castedSendTimestamp));
 
         // Deserialize subPackets
         uint32_t subPackets =
-            (static_cast<uint32_t>(tempBuffer[12]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[13]) & 0xFF) << 16
-            | (static_cast<uint32_t>(tempBuffer[14]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[15]) & 0xFF);
+            (static_cast<uint32_t>(tempBuffer[15]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[14]) & 0xFF) << 16
+            | (static_cast<uint32_t>(tempBuffer[13]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[12]) & 0xFF);
         sample.subPackets = subPackets;
 
         // If more than 4095 Bytes were send in consecutive messages, receive them now

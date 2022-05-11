@@ -66,23 +66,13 @@ class EventPublisherUds
 
     void Send(std::unique_ptr<SampleType> userSamplePtr) noexcept
     {
-        /// @todo #1332 replace push_back with append(charArray, count)
         std::string tempBuffer;
 
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0xFF000000) >> 24));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x00FF0000) >> 16));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x0000FF00) >> 8));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->counter & 0x000000FF)));
+        tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->counter), 4);
 
         auto sendTimeStampNs = userSamplePtr->sendTimestamp.time_since_epoch().count();
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0xFF00000000000000) >> 56));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x00FF000000000000) >> 48));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x0000FF0000000000) >> 40));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x000000FF00000000) >> 32));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x00000000FF000000) >> 24));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x0000000000FF0000) >> 16));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x000000000000FF00) >> 8));
-        tempBuffer.push_back(static_cast<uint8_t>((sendTimeStampNs & 0x00000000000000FF)));
+
+        tempBuffer.append(reinterpret_cast<char*>(&sendTimeStampNs), 8);
 
         constexpr uint8_t BYTES_OF_SUBPACKETS_INTEGER{4};
         uint32_t offset = static_cast<uint32_t>(tempBuffer.size()) + BYTES_OF_SUBPACKETS_INTEGER;
@@ -93,10 +83,7 @@ class EventPublisherUds
             userSamplePtr->subPackets += 1;
         }
 
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->subPackets & 0xFF000000) >> 24));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->subPackets & 0x00FF0000) >> 16));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->subPackets & 0x0000FF00) >> 8));
-        tempBuffer.push_back(static_cast<uint8_t>((userSamplePtr->subPackets & 0x000000FF)));
+        tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->subPackets), 4);
 
         uint32_t k{0};
         uint64_t bytesToSend{userSamplePtr->payloadSizeInBytes};
