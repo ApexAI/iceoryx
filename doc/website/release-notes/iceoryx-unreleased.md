@@ -14,6 +14,7 @@
 - Add insert method for `iox::cxx::string` [\#208](https://github.com/eclipse-iceoryx/iceoryx/issues/208)
 - Extend compare method of `iox::cxx::string` to compare additionally with std::string and char array [\#208](https://github.com/eclipse-iceoryx/iceoryx/issues/208)
 - Add compare method for `iox::cxx::string` and chars [\#208](https://github.com/eclipse-iceoryx/iceoryx/issues/208)
+- Add `automotive_soa` example [\#1332](https://github.com/eclipse-iceoryx/iceoryx/issues/1332)
 
 **Bugfixes:**
 
