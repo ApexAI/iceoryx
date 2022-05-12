@@ -50,12 +50,12 @@ void EventSubscriberUds<T>::Unsubscribe() noexcept
 
 template <typename T>
 template <typename Callable>
-owl::core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& callable,
-                                                                      size_t maxNumberOfSamples) noexcept
+core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& callable,
+                                                                 size_t maxNumberOfSamples) noexcept
 {
     IOX_DISCARD_RESULT(maxNumberOfSamples);
 
-    owl::core::Result<size_t> numberOfSamples{1};
+    core::Result<size_t> numberOfSamples{1};
 
     auto samplePtr = std::make_unique<SampleType>();
     SampleType& sample = *samplePtr;

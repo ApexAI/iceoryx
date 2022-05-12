@@ -43,8 +43,8 @@ class EventSubscriberUds
     void Unsubscribe() noexcept;
 
     template <typename Callable>
-    owl::core::Result<size_t> GetNewSamples(Callable&& callable,
-                                            size_t maxNumberOfSamples = std::numeric_limits<size_t>::max()) noexcept;
+    core::Result<size_t> GetNewSamples(Callable&& callable,
+                                       size_t maxNumberOfSamples = std::numeric_limits<size_t>::max()) noexcept;
 
     void SetReceiveHandler(EventReceiveHandler handler);
     void UnsetReceiveHandler() noexcept;
