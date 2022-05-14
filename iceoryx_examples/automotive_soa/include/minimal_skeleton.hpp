@@ -33,27 +33,16 @@ class MinimalSkeleton
   public:
     static constexpr char m_serviceIdentifier[] = "MinimalSkeleton";
 
-    MinimalSkeleton(owl::core::String& instanceIdentifier)
-        : m_instanceIdentifier(instanceIdentifier)
-    {
-    }
+    MinimalSkeleton(owl::core::String& instanceIdentifier) noexcept;
+    ~MinimalSkeleton() noexcept;
+
     MinimalSkeleton(const MinimalSkeleton&) = delete;
+    MinimalSkeleton(MinimalSkeleton&&) = delete;
     MinimalSkeleton& operator=(const MinimalSkeleton&) = delete;
+    MinimalSkeleton& operator=(MinimalSkeleton&&) = delete;
 
-    ~MinimalSkeleton()
-    {
-        StopOfferService();
-    }
-
-    void OfferService() noexcept
-    {
-        m_event.Offer();
-    }
-
-    void StopOfferService() noexcept
-    {
-        m_event.StopOffer();
-    }
+    void OfferService() noexcept;
+    void StopOfferService() noexcept;
 
     const owl::core::String m_instanceIdentifier;
 #ifdef USE_UDS
