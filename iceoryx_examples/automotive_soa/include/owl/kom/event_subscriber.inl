@@ -69,6 +69,7 @@ inline core::Result<size_t> EventSubscriber<T>::GetNewSamples(Callable&& callabl
     return numberOfSamples;
 }
 
+//! [EventSubscriber setReceiveHandler]
 template <typename T>
 inline void EventSubscriber<T>::SetReceiveHandler(EventReceiveHandler handler) noexcept
 {
@@ -83,6 +84,7 @@ inline void EventSubscriber<T>::SetReceiveHandler(EventReceiveHandler handler) n
         });
     m_receiveHandler.emplace(handler);
 }
+//! [EventSubscriber setReceiveHandler]
 
 template <typename T>
 inline void EventSubscriber<T>::UnsetReceiveHandler() noexcept
@@ -99,12 +101,15 @@ inline bool EventSubscriber<T>::HasReceiveHandler() noexcept
     return m_receiveHandler.has_value();
 }
 
+//! [EventSubscriber invoke callback]
 template <typename T>
 inline void EventSubscriber<T>::onSampleReceivedCallback(iox::popo::Subscriber<T>*, EventSubscriber* self) noexcept
 {
     std::lock_guard<iox::posix::mutex> guard(self->m_mutex);
     self->m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
 }
+//! [EventSubscriber invoke callback]
+
 } // namespace kom
 } // namespace owl
 
