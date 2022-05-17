@@ -22,17 +22,20 @@ The example shows three different ways of communication between a skeleton and a
 
 ## Code walkthrough
 
+!!! note
+    The example should be built with the 1:n communication option (`ONE_TO_MANY_ONLY`).
+
 The following sections discuss the different classes in detail:
 
 * `MinimalSkeleton` and `MinimalProxy`
-  * Typically generated from a meta model
+    * Typically generated from a meta model
 * `Runtime`
 * `EventPublisher` and `EventSubscriber`
-  * Transfering arbitrary types
+    * Transfering arbitrary types
 * `FieldPublisher` and `FieldSubscriber`
-* Transfering arbitrary types, which always have a value and can be changed from subscriber side
+    * Transfering arbitrary types, which always have a value and can be changed from subscriber side
 * `MethodServer` and `MethodClient`
-  * Calling methods from the client on the server
+    * Calling methods from the client on the server
 
 ### Skeleton `main()`
 

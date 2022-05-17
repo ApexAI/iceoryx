@@ -35,7 +35,9 @@ inline EventSubscriber<T>::EventSubscriber(const core::String& service,
 template <typename T>
 inline void EventSubscriber<T>::Subscribe(std::size_t) noexcept
 {
-    /// @todo #1332 maxSampleCount shall not be ignored, implement getOptions() for user ports?
+    // maxSampleCount is ignored, because it is an argument to the c'tor of m_subscriber as part of SubscriberOptions.
+    // Utilizing late initalization by wrapping m_subscriber in an cxx::optional and calling the c'tor here would be an
+    // option
     m_subscriber.subscribe();
 }
 
