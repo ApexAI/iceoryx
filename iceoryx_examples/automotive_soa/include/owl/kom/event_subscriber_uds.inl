@@ -113,7 +113,7 @@ template <typename T>
 inline void EventSubscriberUds<T>::SetReceiveHandler(EventReceiveHandler handler)
 {
     std::lock_guard<iox::posix::mutex> guard(m_mutex);
-    if (HasReceiverHandler())
+    if (HasReceiveHandler())
     {
         std::cout << "Re-attaching a receiver handler is not supported with UNIX domain sockets!" << std::endl;
         return;
@@ -135,7 +135,7 @@ inline void EventSubscriberUds<T>::UnsetReceiveHandler() noexcept
 }
 
 template <typename T>
-inline bool EventSubscriberUds<T>::HasReceiverHandler() noexcept
+inline bool EventSubscriberUds<T>::HasReceiveHandler() noexcept
 {
     std::lock_guard<iox::posix::mutex> guard(m_mutex);
     return m_receiveHandler.has_value();

@@ -66,11 +66,9 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr) noexc
     constexpr uint8_t BYTES_OF_SUBPACKETS_INTEGER{4};
     uint32_t offset = static_cast<uint32_t>(tempBuffer.size()) + BYTES_OF_SUBPACKETS_INTEGER;
     uint32_t totalSize = userSamplePtr->payloadSizeInBytes + offset;
-    userSamplePtr->subPackets = totalSize / static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE);
-    if (totalSize % static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE) > 0)
-    {
-        userSamplePtr->subPackets += 1;
-    }
+
+    constexpr auto maxSize = static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE);
+    userSamplePtr->subPackets = (totalSize + maxSize - 1) / maxSize;
 
     tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->subPackets), 4);
 
@@ -89,7 +87,7 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr) noexc
     }
     for (uint32_t j = 0U; j < messageSize; j++)
     {
-        tempBuffer.push_back(userSamplePtr->data[k++]);
+        tempBuffer.append(userSamplePtr->data[k++], 1);
     }
     m_uds.send(tempBuffer).or_else([](auto&) {
         std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
@@ -110,7 +108,7 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr) noexc
         }
         for (uint32_t j = 0U; j < messageSize; j++)
         {
-            tempBuffer.push_back(userSamplePtr->data[k++]);
+            tempBuffer.append(userSamplePtr->data[k++], 1);
         }
         m_uds.send(tempBuffer).or_else([](auto&) {
             std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;

@@ -48,7 +48,7 @@ class EventSubscriberUds
 
     void SetReceiveHandler(EventReceiveHandler handler);
     void UnsetReceiveHandler() noexcept;
-    bool HasReceiverHandler() noexcept;
+    bool HasReceiveHandler() noexcept;
 
   private:
     iox::cxx::optional<iox::cxx::function<void()>> m_receiveHandler;
