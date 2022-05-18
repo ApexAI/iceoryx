@@ -52,8 +52,8 @@ class EventSubscriberUds
 
   private:
     iox::cxx::optional<iox::cxx::function<void()>> m_receiveHandler;
-    static constexpr bool isRecursive{true};
-    iox::posix::mutex m_mutex{isRecursive};
+    static constexpr bool IS_RECURSIVE{true};
+    iox::posix::mutex m_mutex{IS_RECURSIVE};
     iox::posix::UnixDomainSocket m_uds;
 };
 
