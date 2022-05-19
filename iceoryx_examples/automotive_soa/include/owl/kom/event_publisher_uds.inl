@@ -59,11 +59,11 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr)
 
     std::string tempBuffer;
 
-    tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->counter), 4);
+    tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->counter), sizeof(userSamplePtr->counter));
 
     auto sendTimeStampNs = userSamplePtr->sendTimestamp.time_since_epoch().count();
 
-    tempBuffer.append(reinterpret_cast<char*>(&sendTimeStampNs), 8);
+    tempBuffer.append(reinterpret_cast<char*>(&sendTimeStampNs), sizeof(sendTimeStampNs));
 
     constexpr uint8_t BYTES_OF_SUBPACKETS_INTEGER{4};
     uint32_t offset = static_cast<uint32_t>(tempBuffer.size()) + BYTES_OF_SUBPACKETS_INTEGER;
@@ -72,7 +72,7 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr)
     constexpr auto maxSize = static_cast<uint32_t>(iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE);
     userSamplePtr->subPackets = (totalSize + maxSize - 1) / maxSize;
 
-    tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->subPackets), 4);
+    tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->subPackets), sizeof(userSamplePtr->subPackets));
 
     uint32_t k{0};
     uint64_t bytesToSend{userSamplePtr->payloadSizeInBytes};
