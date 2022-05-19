@@ -72,31 +72,28 @@ core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& call
         return 0;
     }
 
+    const char* readPtr = tempBuffer.c_str();
+
     // Deserialize the counter
-    sample.counter =
-        (static_cast<uint32_t>(tempBuffer[3]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[2]) & 0xFF) << 16
-        | (static_cast<uint32_t>(tempBuffer[1]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[0]) & 0xFF);
+    std::memcpy(&sample.counter, readPtr, sizeof(sample.counter));
+    readPtr += sizeof(sample.counter);
 
     // Deserialize the timestamp
-    uint64_t sendTimestamp =
-        (static_cast<uint64_t>(tempBuffer[11]) & 0xFF) << 56 | (static_cast<uint64_t>(tempBuffer[10]) & 0xFF) << 48
-        | (static_cast<uint64_t>(tempBuffer[9]) & 0xFF) << 40 | (static_cast<uint64_t>(tempBuffer[8]) & 0xFF) << 32
-        | (static_cast<uint64_t>(tempBuffer[7]) & 0xFF) << 24 | (static_cast<uint64_t>(tempBuffer[6]) & 0xFF) << 16
-        | (static_cast<uint64_t>(tempBuffer[5]) & 0xFF) << 8 | (static_cast<uint64_t>(tempBuffer[4]) & 0xFF);
+    uint64_t sendTimestamp;
+    std::memcpy(&sendTimestamp, readPtr, sizeof(sendTimestamp));
+    readPtr += sizeof(sendTimestamp);
+
     int64_t castedSendTimestamp = static_cast<int64_t>(sendTimestamp);
     sample.sendTimestamp = std::chrono::time_point<std::chrono::steady_clock>(
         std::chrono::duration<int64_t, std::nano>(castedSendTimestamp));
 
     // Deserialize subPackets
-    uint32_t subPackets =
-        (static_cast<uint32_t>(tempBuffer[15]) & 0xFF) << 24 | (static_cast<uint32_t>(tempBuffer[14]) & 0xFF) << 16
-        | (static_cast<uint32_t>(tempBuffer[13]) & 0xFF) << 8 | (static_cast<uint32_t>(tempBuffer[12]) & 0xFF);
-    sample.subPackets = subPackets;
+    std::memcpy(&sample.subPackets, readPtr, sizeof(sample.subPackets));
 
     // If more than 4095 Bytes were send in consecutive messages, receive them now
-    if (subPackets > 1)
+    if (sample.subPackets > 1)
     {
-        for (uint32_t i = 0U; i < subPackets - 1; ++i)
+        for (uint32_t i = 0U; i < sample.subPackets - 1; ++i)
         {
             m_uds.receive().and_then([&](auto& msg) { tempBuffer.append(msg); }).or_else([](auto&) {
                 std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
@@ -104,7 +101,8 @@ core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& call
         }
     }
 
-    // Complete fragmented message was received, now we call the user-defined callable
+    // Complete fragmented message was received, no need to copy the data[] of the message to the sample as it is not used in
+    // the example, now we call the user-defined callable
     callable(samplePtr);
     return numberOfSamples;
 }
