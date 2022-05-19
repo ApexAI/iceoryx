@@ -33,6 +33,8 @@ class EventPublisherUds
   public:
     using SampleType = T;
 
+    static_assert(is_supported_topic<T>::value, "Topic must have all required members!");
+
     EventPublisherUds(const core::String& service, const core::String& instance, const core::String& event) noexcept;
     ~EventPublisherUds() noexcept = default;
 
@@ -41,9 +43,12 @@ class EventPublisherUds
     EventPublisherUds& operator=(const EventPublisherUds&) = delete;
     EventPublisherUds& operator=(EventPublisherUds&&) = delete;
 
-    std::unique_ptr<SampleType> Allocate() noexcept;
+    static constexpr uint64_t HISTORY_CAPACITY{1U};
+    static constexpr bool OFFERED_ON_CREATE{true};
 
-    void Send(std::unique_ptr<SampleType> userSamplePtr) noexcept;
+    std::unique_ptr<SampleType> Allocate();
+
+    void Send(std::unique_ptr<SampleType> userSamplePtr);
 
     void Offer() noexcept;
     void StopOffer() noexcept;

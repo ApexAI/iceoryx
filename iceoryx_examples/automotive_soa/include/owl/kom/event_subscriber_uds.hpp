@@ -37,6 +37,10 @@ class EventSubscriberUds
 {
   public:
     using SampleType = T;
+
+    static_assert(is_supported_topic<T>::value,
+                  "Topic must have specific members, look at TimestampTopic1Byte as an example!");
+
     EventSubscriberUds(const core::String&, const core::String& instance, const core::String&) noexcept;
 
     void Subscribe(std::size_t) noexcept;
@@ -44,7 +48,7 @@ class EventSubscriberUds
 
     template <typename Callable>
     core::Result<size_t> GetNewSamples(Callable&& callable,
-                                       size_t maxNumberOfSamples = std::numeric_limits<size_t>::max()) noexcept;
+                                       size_t maxNumberOfSamples = std::numeric_limits<size_t>::max());
 
     void SetReceiveHandler(EventReceiveHandler handler);
     void UnsetReceiveHandler() noexcept;

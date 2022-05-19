@@ -50,8 +50,7 @@ void EventSubscriberUds<T>::Unsubscribe() noexcept
 
 template <typename T>
 template <typename Callable>
-core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& callable,
-                                                                 size_t maxNumberOfSamples) noexcept
+core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& callable, size_t maxNumberOfSamples)
 {
     IOX_DISCARD_RESULT(maxNumberOfSamples);
 
@@ -101,8 +100,8 @@ core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& call
         }
     }
 
-    // Complete fragmented message was received, no need to copy the data[] of the message to the sample as it is not used in
-    // the example, now we call the user-defined callable
+    // Complete fragmented message was received, no need to copy the data[] of the message to the sample as it is not
+    // used in the example, now we call the user-defined callable
     callable(samplePtr);
     return numberOfSamples;
 }

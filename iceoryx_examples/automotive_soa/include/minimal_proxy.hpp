@@ -50,7 +50,7 @@ class MinimalProxy
     static owl::kom::ServiceHandleContainer<owl::kom::ProxyHandleType>
     FindService(owl::kom::InstanceIdentifier& instanceIdentifier) noexcept;
 
-    const owl::core::String m_instanceIdentifier;
+    const owl::kom::InstanceIdentifier m_instanceIdentifier;
 #ifdef USE_UDS
     owl::kom::EventSubscriberUds<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
 #else

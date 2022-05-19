@@ -27,24 +27,20 @@ template <typename T>
 inline EventPublisherUds<T>::EventPublisherUds(const core::String& service,
                                                const core::String& instance,
                                                const core::String& event) noexcept
-    : m_publisher({service, instance, event}, {1U, iox::NodeName_t(), true})
+    : m_publisher({service, instance, event}, {HISTORY_CAPACITY, iox::NodeName_t(), OFFERED_ON_CREATE})
     , m_instanceId(instance)
 {
 }
 
 template <typename T>
-inline std::unique_ptr<T> EventPublisherUds<T>::Allocate() noexcept
+inline std::unique_ptr<T> EventPublisherUds<T>::Allocate()
 {
     // The proxy needs some time to discover the service and create the EventSubscriberUds with the UDS server,
     // hence the creation of the UDS client is done here
     if (!m_calledForTheFirstTime)
     {
-        m_uds = std::move(iox::posix::UnixDomainSocket::create(m_instanceId, iox::posix::IpcChannelSide::CLIENT)
-                              .or_else([](auto&) {
-                                  std::cout << "Failed to create UNIX domain socket!" << std::endl;
-                                  std::terminate();
-                              })
-                              .value());
+        m_uds = iox::posix::UnixDomainSocket::create(m_instanceId, iox::posix::IpcChannelSide::CLIENT)
+                    .expect("Failed to create UNIX domain socket!");
         m_calledForTheFirstTime = true;
     }
 
@@ -53,8 +49,14 @@ inline std::unique_ptr<T> EventPublisherUds<T>::Allocate() noexcept
 }
 
 template <typename T>
-void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr) noexcept
+void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr)
 {
+    if (!userSamplePtr)
+    {
+        std::cerr << "Provided empty sample pointer!" << std::endl;
+        return;
+    }
+
     std::string tempBuffer;
 
     tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->counter), 4);
