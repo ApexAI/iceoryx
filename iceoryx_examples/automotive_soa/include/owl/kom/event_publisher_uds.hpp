@@ -33,7 +33,8 @@ class EventPublisher<T, EventTransmission::UDS>
   public:
     using SampleType = T;
 
-    static_assert(is_supported_topic<T>::value, "Topic must have all required members!");
+    static_assert(is_supported_topic<T>::value,
+                  "Topic must have specific members, look at TimestampTopic1Byte as an example!");
 
     EventPublisher(const core::String& service, const core::String& instance, const core::String& event) noexcept;
     ~EventPublisher() noexcept = default;
@@ -57,7 +58,6 @@ class EventPublisher<T, EventTransmission::UDS>
     /// @brief Not used, just for the service discovery to trigger the 'StartFindService' callback
     iox::popo::Publisher<SampleType> m_publisher;
     iox::posix::UnixDomainSocket m_uds;
-    bool m_calledForTheFirstTime{false};
     core::String m_instanceId;
 };
 } // namespace kom

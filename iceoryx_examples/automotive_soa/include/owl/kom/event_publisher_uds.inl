@@ -35,13 +35,12 @@ inline EventPublisher<T, EventTransmission::UDS>::EventPublisher(const core::Str
 template <typename T>
 inline std::unique_ptr<T> EventPublisher<T, EventTransmission::UDS>::Allocate()
 {
-    // The proxy needs some time to discover the service and create the EventSubscriberUds with the UDS server,
+    // The proxy needs some time to discover the service and create the EventSubscriber with the UDS server,
     // hence the creation of the UDS client is done here
-    if (!m_calledForTheFirstTime)
+    if (!m_uds.isInitialized())
     {
         m_uds = iox::posix::UnixDomainSocket::create(m_instanceId, iox::posix::IpcChannelSide::CLIENT)
                     .expect("Failed to create UNIX domain socket!");
-        m_calledForTheFirstTime = true;
     }
 
     // Allocate the memory on the heap
@@ -85,17 +84,22 @@ void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType>
     }
     else
     {
+        iox::cxx::Expects(offset < iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE);
         messageSize = iox::posix::UnixDomainSocket::MAX_MESSAGE_SIZE - offset;
     }
     for (uint32_t j = 0U; j < messageSize; j++)
     {
         tempBuffer.append(userSamplePtr->data[k++], 1);
     }
-    m_uds.send(tempBuffer).or_else([](auto&) {
-        std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
-    });
-    tempBuffer.clear();
-    bytesToSend -= messageSize;
+    m_uds.send(tempBuffer)
+        .and_then([&]() {
+            tempBuffer.clear();
+            bytesToSend -= messageSize;
+        })
+        .or_else([](auto&) {
+            std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
+            std::terminate();
+        });
 
     // Following subPackets are send in a loop
     for (uint32_t i = 0U; i < userSamplePtr->subPackets - 1; i++)
@@ -112,11 +116,15 @@ void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType>
         {
             tempBuffer.append(userSamplePtr->data[k++], 1);
         }
-        m_uds.send(tempBuffer).or_else([](auto&) {
-            std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
-        });
-        tempBuffer.clear();
-        bytesToSend -= messageSize;
+        m_uds.send(tempBuffer)
+            .and_then([&]() {
+                tempBuffer.clear();
+                bytesToSend -= messageSize;
+            })
+            .or_else([](auto&) {
+                std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
+                std::terminate();
+            });
     }
 }
 

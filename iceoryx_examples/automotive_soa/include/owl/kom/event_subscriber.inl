@@ -25,8 +25,8 @@ namespace kom
 {
 template <typename T>
 inline EventSubscriber<T, EventTransmission::IOX>::EventSubscriber(const core::String& service,
-                                                              const core::String& instance,
-                                                              const core::String& event) noexcept
+                                                                   const core::String& instance,
+                                                                   const core::String& event) noexcept
     : m_subscriber({service, instance, event},
                    {QUEUE_CAPACITY, HISTORY_REQUEST, iox::NodeName_t(), NOT_OFFERED_ON_CREATE})
 {
@@ -49,8 +49,8 @@ inline void EventSubscriber<T, EventTransmission::IOX>::Unsubscribe() noexcept
 
 template <typename T>
 template <typename Callable>
-inline core::Result<size_t> EventSubscriber<T, EventTransmission::IOX>::GetNewSamples(Callable&& callable,
-                                                                                 size_t maxNumberOfSamples) noexcept
+inline core::Result<size_t>
+EventSubscriber<T, EventTransmission::IOX>::GetNewSamples(Callable&& callable, size_t maxNumberOfSamples) noexcept
 {
     IOX_DISCARD_RESULT(maxNumberOfSamples);
 
@@ -107,7 +107,7 @@ inline bool EventSubscriber<T, EventTransmission::IOX>::HasReceiveHandler() noex
 //! [EventSubscriber invoke callback]
 template <typename T>
 inline void EventSubscriber<T, EventTransmission::IOX>::onSampleReceivedCallback(iox::popo::Subscriber<T>*,
-                                                                            EventSubscriber* self) noexcept
+                                                                                 EventSubscriber* self) noexcept
 {
     std::lock_guard<iox::posix::mutex> guard(self->m_mutex);
     self->m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
