@@ -24,15 +24,15 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventPublisher<T>::EventPublisher(const core::String& service,
-                                         const core::String& instance,
-                                         const core::String& event) noexcept
+inline EventPublisher<T, EventTransmission::IOX>::EventPublisher(const core::String& service,
+                                                                 const core::String& instance,
+                                                                 const core::String& event) noexcept
     : m_publisher({service, instance, event}, {HISTORY_CAPACITY, iox::NodeName_t(), NOT_OFFERED_ON_CREATE})
 {
 }
 
 template <typename T>
-inline void EventPublisher<T>::Send(const SampleType& userSample) noexcept
+inline void EventPublisher<T, EventTransmission::IOX>::Send(const SampleType& userSample) noexcept
 {
     auto maybeSample = m_publisher.loan();
 
@@ -48,13 +48,13 @@ inline void EventPublisher<T>::Send(const SampleType& userSample) noexcept
 }
 
 template <typename T>
-inline void EventPublisher<T>::Send(SampleAllocateePtr<T> userSamplePtr) noexcept
+inline void EventPublisher<T, EventTransmission::IOX>::Send(SampleAllocateePtr<T> userSamplePtr) noexcept
 {
     userSamplePtr.value().publish();
 }
 
 template <typename T>
-inline SampleAllocateePtr<T> EventPublisher<T>::Allocate() noexcept
+inline SampleAllocateePtr<T> EventPublisher<T, EventTransmission::IOX>::Allocate() noexcept
 {
     auto maybeSample = m_publisher.loan();
 
@@ -67,13 +67,13 @@ inline SampleAllocateePtr<T> EventPublisher<T>::Allocate() noexcept
 }
 
 template <typename T>
-inline void EventPublisher<T>::Offer() noexcept
+inline void EventPublisher<T, EventTransmission::IOX>::Offer() noexcept
 {
     m_publisher.offer();
 }
 
 template <typename T>
-inline void EventPublisher<T>::StopOffer() noexcept
+inline void EventPublisher<T, EventTransmission::IOX>::StopOffer() noexcept
 {
     m_publisher.stopOffer();
 }

@@ -19,11 +19,9 @@
 
 #include "topic.hpp"
 
-#ifdef USE_UDS
-#include "owl/kom/event_subscriber_uds.hpp"
-#else
 #include "owl/kom/event_subscriber.hpp"
-#endif
+// Used only for benchmarking iceoryx against UNIX domain sockets
+#include "owl/kom/event_subscriber_uds.hpp"
 #include "owl/kom/field_subscriber.hpp"
 #include "owl/kom/method_client.hpp"
 #include "owl/runtime.hpp"
@@ -51,11 +49,8 @@ class MinimalProxy
     FindService(owl::kom::InstanceIdentifier& instanceIdentifier) noexcept;
 
     const owl::kom::InstanceIdentifier m_instanceIdentifier;
-#ifdef USE_UDS
-    owl::kom::EventSubscriberUds<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
-#else
-    owl::kom::EventSubscriber<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
-#endif
+    owl::kom::EventSubscriber<TimestampTopic1Byte, EVENT_IPC_MECHANISM> m_event{
+        m_serviceIdentifier, m_instanceIdentifier, "Event"};
     owl::kom::FieldSubscriber<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field"};
     owl::kom::MethodClient computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};
 };

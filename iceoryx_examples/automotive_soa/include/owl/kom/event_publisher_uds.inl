@@ -24,16 +24,16 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventPublisherUds<T>::EventPublisherUds(const core::String& service,
-                                               const core::String& instance,
-                                               const core::String& event) noexcept
+inline EventPublisher<T, EventTransmission::UDS>::EventPublisher(const core::String& service,
+                                                                 const core::String& instance,
+                                                                 const core::String& event) noexcept
     : m_publisher({service, instance, event}, {HISTORY_CAPACITY, iox::NodeName_t(), OFFERED_ON_CREATE})
     , m_instanceId(instance)
 {
 }
 
 template <typename T>
-inline std::unique_ptr<T> EventPublisherUds<T>::Allocate()
+inline std::unique_ptr<T> EventPublisher<T, EventTransmission::UDS>::Allocate()
 {
     // The proxy needs some time to discover the service and create the EventSubscriberUds with the UDS server,
     // hence the creation of the UDS client is done here
@@ -49,7 +49,7 @@ inline std::unique_ptr<T> EventPublisherUds<T>::Allocate()
 }
 
 template <typename T>
-void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr)
+void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType> userSamplePtr)
 {
     if (!userSamplePtr)
     {
@@ -121,13 +121,13 @@ void EventPublisherUds<T>::Send(std::unique_ptr<SampleType> userSamplePtr)
 }
 
 template <typename T>
-inline void EventPublisherUds<T>::Offer() noexcept
+inline void EventPublisher<T, EventTransmission::UDS>::Offer() noexcept
 {
     m_publisher.offer();
 }
 
 template <typename T>
-inline void EventPublisherUds<T>::StopOffer() noexcept
+inline void EventPublisher<T, EventTransmission::UDS>::StopOffer() noexcept
 {
     m_publisher.stopOffer();
 }

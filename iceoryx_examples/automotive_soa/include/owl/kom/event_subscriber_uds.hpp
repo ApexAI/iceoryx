@@ -33,7 +33,7 @@ namespace kom
 {
 /// @brief Class solely for benchmarking iceoryx against UNIX domain sockets
 template <typename T>
-class EventSubscriberUds
+class EventSubscriber<T, EventTransmission::UDS>
 {
   public:
     using SampleType = T;
@@ -41,7 +41,7 @@ class EventSubscriberUds
     static_assert(is_supported_topic<T>::value,
                   "Topic must have specific members, look at TimestampTopic1Byte as an example!");
 
-    EventSubscriberUds(const core::String&, const core::String& instance, const core::String&) noexcept;
+    EventSubscriber(const core::String&, const core::String& instance, const core::String&) noexcept;
 
     void Subscribe(std::size_t) noexcept;
     void Unsubscribe() noexcept;

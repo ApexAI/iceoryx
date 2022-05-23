@@ -19,11 +19,9 @@
 
 #include "topic.hpp"
 
-#ifdef USE_UDS
-#include "owl/kom/event_publisher_uds.hpp"
-#else
 #include "owl/kom/event_publisher.hpp"
-#endif
+// Used only for benchmarking iceoryx against UNIX domain sockets
+#include "owl/kom/event_publisher_uds.hpp"
 #include "owl/kom/field_publisher.hpp"
 #include "owl/kom/method_server.hpp"
 #include "owl/types.hpp"
@@ -45,11 +43,8 @@ class MinimalSkeleton
     void StopOfferService() noexcept;
 
     const owl::kom::InstanceIdentifier m_instanceIdentifier;
-#ifdef USE_UDS
-    owl::kom::EventPublisherUds<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
-#else
-    owl::kom::EventPublisher<TimestampTopic1Byte> m_event{m_serviceIdentifier, m_instanceIdentifier, "Event"};
-#endif
+    owl::kom::EventPublisher<TimestampTopic1Byte, EVENT_IPC_MECHANISM> m_event{
+        m_serviceIdentifier, m_instanceIdentifier, "Event"};
     Topic initalFieldValue{4242};
     owl::kom::FieldPublisher<Topic> m_field{m_serviceIdentifier, m_instanceIdentifier, "Field", initalFieldValue};
     owl::kom::MethodServer computeSum{m_serviceIdentifier, m_instanceIdentifier, "Method"};

@@ -27,8 +27,12 @@ namespace owl
 {
 namespace kom
 {
+
+template <typename T, EventTransmission>
+class EventPublisher;
+
 template <typename T>
-class EventPublisher
+class EventPublisher<T, EventTransmission::IOX>
 {
   public:
     using SampleType = T;

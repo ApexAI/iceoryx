@@ -37,8 +37,10 @@ target_link_libraries(iox-cpp-automotive-skeleton
 )
 target_compile_options(iox-cpp-automotive-skeleton PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
 
-if(USE_UDS)
-  target_compile_definitions(iox-cpp-automotive-skeleton PUBLIC -DUSE_UDS)
+if(NOT USE_UDS)
+  target_compile_definitions(iox-cpp-automotive-skeleton PUBLIC USED_IPC_MECHANISM_FOR_EVENTS=EventTransmission::IOX)
+else()
+  target_compile_definitions(iox-cpp-automotive-skeleton PUBLIC USED_IPC_MECHANISM_FOR_EVENTS=EventTransmission::UDS)
 endif(USE_UDS)
 
 target_include_directories(iox-cpp-automotive-skeleton PRIVATE include)
@@ -53,8 +55,10 @@ target_link_libraries(iox-cpp-automotive-proxy
 )
 target_compile_options(iox-cpp-automotive-proxy PRIVATE ${ICEORYX_WARNINGS} ${ICEORYX_SANITIZER_FLAGS})
 
-if(USE_UDS)
-  target_compile_definitions(iox-cpp-automotive-proxy PUBLIC -DUSE_UDS)
+if(NOT USE_UDS)
+  target_compile_definitions(iox-cpp-automotive-proxy PUBLIC USED_IPC_MECHANISM_FOR_EVENTS=EventTransmission::IOX)
+else()
+  target_compile_definitions(iox-cpp-automotive-proxy PUBLIC USED_IPC_MECHANISM_FOR_EVENTS=EventTransmission::UDS)
 endif(USE_UDS)
 
 target_include_directories(iox-cpp-automotive-proxy PRIVATE include)

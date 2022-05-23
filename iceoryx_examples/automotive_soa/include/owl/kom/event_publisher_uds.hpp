@@ -28,20 +28,20 @@ namespace kom
 {
 /// @brief Class solely for benchmarking iceoryx against UNIX domain sockets
 template <typename T>
-class EventPublisherUds
+class EventPublisher<T, EventTransmission::UDS>
 {
   public:
     using SampleType = T;
 
     static_assert(is_supported_topic<T>::value, "Topic must have all required members!");
 
-    EventPublisherUds(const core::String& service, const core::String& instance, const core::String& event) noexcept;
-    ~EventPublisherUds() noexcept = default;
+    EventPublisher(const core::String& service, const core::String& instance, const core::String& event) noexcept;
+    ~EventPublisher() noexcept = default;
 
-    EventPublisherUds(const EventPublisherUds&) = delete;
-    EventPublisherUds(EventPublisherUds&&) = delete;
-    EventPublisherUds& operator=(const EventPublisherUds&) = delete;
-    EventPublisherUds& operator=(EventPublisherUds&&) = delete;
+    EventPublisher(const EventPublisher&) = delete;
+    EventPublisher(EventPublisher&&) = delete;
+    EventPublisher& operator=(const EventPublisher&) = delete;
+    EventPublisher& operator=(EventPublisher&&) = delete;
 
     static constexpr uint64_t HISTORY_CAPACITY{1U};
     static constexpr bool OFFERED_ON_CREATE{true};

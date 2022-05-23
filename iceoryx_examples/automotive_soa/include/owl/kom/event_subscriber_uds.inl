@@ -24,9 +24,9 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventSubscriberUds<T>::EventSubscriberUds(const core::String&,
-                                                 const core::String& instance,
-                                                 const core::String&) noexcept
+inline EventSubscriber<T, EventTransmission::UDS>::EventSubscriber(const core::String&,
+                                                                   const core::String& instance,
+                                                                   const core::String&) noexcept
     : m_uds(std::move(iox::posix::UnixDomainSocket::create(instance, iox::posix::IpcChannelSide::SERVER)
                           .or_else([](auto&) {
                               std::cout << "Failed to create UNIX domain socket!" << std::endl;
@@ -37,20 +37,21 @@ inline EventSubscriberUds<T>::EventSubscriberUds(const core::String&,
 }
 
 template <typename T>
-inline void EventSubscriberUds<T>::Subscribe(std::size_t) noexcept
+inline void EventSubscriber<T, EventTransmission::UDS>::Subscribe(std::size_t) noexcept
 {
     // Subscribe not supported with UDS
 }
 
 template <typename T>
-void EventSubscriberUds<T>::Unsubscribe() noexcept
+void EventSubscriber<T, EventTransmission::UDS>::Unsubscribe() noexcept
 {
     // Unsubscribe not supported with UDS
 }
 
 template <typename T>
 template <typename Callable>
-core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& callable, size_t maxNumberOfSamples)
+core::Result<size_t> inline EventSubscriber<T, EventTransmission::UDS>::GetNewSamples(Callable&& callable,
+                                                                                      size_t maxNumberOfSamples)
 {
     IOX_DISCARD_RESULT(maxNumberOfSamples);
 
@@ -107,7 +108,7 @@ core::Result<size_t> inline EventSubscriberUds<T>::GetNewSamples(Callable&& call
 }
 
 template <typename T>
-inline void EventSubscriberUds<T>::SetReceiveHandler(EventReceiveHandler handler)
+inline void EventSubscriber<T, EventTransmission::UDS>::SetReceiveHandler(EventReceiveHandler handler)
 {
     std::lock_guard<iox::posix::mutex> guard(m_mutex);
     if (HasReceiveHandler())
@@ -126,13 +127,13 @@ inline void EventSubscriberUds<T>::SetReceiveHandler(EventReceiveHandler handler
 }
 
 template <typename T>
-inline void EventSubscriberUds<T>::UnsetReceiveHandler() noexcept
+inline void EventSubscriber<T, EventTransmission::UDS>::UnsetReceiveHandler() noexcept
 {
     std::cout << "Unsetting the receive handler is not supported with UNIX domain sockets!" << std::endl;
 }
 
 template <typename T>
-inline bool EventSubscriberUds<T>::HasReceiveHandler() noexcept
+inline bool EventSubscriber<T, EventTransmission::UDS>::HasReceiveHandler() noexcept
 {
     std::lock_guard<iox::posix::mutex> guard(m_mutex);
     return m_receiveHandler.has_value();
