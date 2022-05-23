@@ -118,6 +118,11 @@ inline void EventSubscriber<T, EventTransmission::UDS>::SetReceiveHandler(EventR
         std::cout << "Re-attaching a receiver handler is not supported with UNIX domain sockets!" << std::endl;
         return;
     }
+    if (!handler)
+    {
+        std::cerr << "Can't attach empty receive handler!" << std::endl;
+        return;
+    }
     m_receiveHandler.emplace(handler);
 }
 

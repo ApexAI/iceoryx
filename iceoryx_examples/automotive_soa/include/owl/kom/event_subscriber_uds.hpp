@@ -66,7 +66,14 @@ class EventSubscriber<T, EventTransmission::UDS>
         while (m_run)
         {
             // We call the user callback in an endless loop and wait till having received a complete message
-            m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
+            m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) {
+                if (!userCallable)
+                {
+                    std::cerr << "Tried to call an empty receive handler!" << std::endl;
+                    return;
+                }
+                userCallable();
+            });
         }
     }};
 };
