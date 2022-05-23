@@ -31,7 +31,7 @@ namespace kom
 template <typename T, EventTransmission>
 class EventSubscriber;
 
-/// @note Once a receive handler has been set, calling the following methods not be thread-safe:
+/// @note Once a receive handler has been set, calling the following methods is not thread-safe:
 ///           - Subscribe()
 ///           - Unsubscribe()
 ///           - GetNewSamples()
