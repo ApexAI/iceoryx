@@ -27,12 +27,8 @@ template <typename T>
 inline EventSubscriber<T, EventTransmission::UDS>::EventSubscriber(const core::String&,
                                                                    const core::String& instance,
                                                                    const core::String&) noexcept
-    : m_uds(std::move(iox::posix::UnixDomainSocket::create(instance, iox::posix::IpcChannelSide::SERVER)
-                          .or_else([](auto&) {
-                              std::cout << "Failed to create UNIX domain socket!" << std::endl;
-                              std::terminate();
-                          })
-                          .value()))
+    : m_uds(iox::posix::UnixDomainSocket::create(instance, iox::posix::IpcChannelSide::SERVER)
+                .expect("Failed to create UNIX domain socket!"))
 {
 }
 
@@ -67,7 +63,7 @@ core::Result<size_t> inline EventSubscriber<T, EventTransmission::UDS>::GetNewSa
         std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
     });
 
-    if (tempBuffer.size() == 0)
+    if (tempBuffer.size() < 15)
     {
         return 0;
     }
@@ -79,13 +75,12 @@ core::Result<size_t> inline EventSubscriber<T, EventTransmission::UDS>::GetNewSa
     readPtr += sizeof(sample.counter);
 
     // Deserialize the timestamp
-    uint64_t sendTimestamp;
+    int64_t sendTimestamp;
     std::memcpy(&sendTimestamp, readPtr, sizeof(sendTimestamp));
     readPtr += sizeof(sendTimestamp);
 
-    int64_t castedSendTimestamp = static_cast<int64_t>(sendTimestamp);
-    sample.sendTimestamp = std::chrono::time_point<std::chrono::steady_clock>(
-        std::chrono::duration<int64_t, std::nano>(castedSendTimestamp));
+    sample.sendTimestamp =
+        std::chrono::time_point<std::chrono::steady_clock>(std::chrono::duration<int64_t, std::nano>(sendTimestamp));
 
     // Deserialize subPackets
     std::memcpy(&sample.subPackets, readPtr, sizeof(sample.subPackets));
