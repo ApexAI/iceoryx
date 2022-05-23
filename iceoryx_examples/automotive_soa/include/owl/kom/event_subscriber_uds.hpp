@@ -43,6 +43,8 @@ class EventSubscriber<T, EventTransmission::UDS>
 
     EventSubscriber(const core::String&, const core::String& instance, const core::String&) noexcept;
 
+    ~EventSubscriber() noexcept;
+
     void Subscribe(std::size_t) noexcept;
     void Unsubscribe() noexcept;
 
@@ -59,8 +61,15 @@ class EventSubscriber<T, EventTransmission::UDS>
     static constexpr bool IS_RECURSIVE{true};
     iox::posix::mutex m_mutex{IS_RECURSIVE};
     iox::posix::UnixDomainSocket m_uds;
+    std::atomic_bool m_run{true};
+    std::thread m_thread{[&]() {
+        while (m_run)
+        {
+            // We call the user callback in an endless loop and wait till having received a complete message
+            m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
+        }
+    }};
 };
-
 } // namespace kom
 } // namespace owl
 

@@ -33,6 +33,13 @@ inline EventSubscriber<T, EventTransmission::UDS>::EventSubscriber(const core::S
 }
 
 template <typename T>
+inline EventSubscriber<T, EventTransmission::UDS>::~EventSubscriber() noexcept
+{
+    m_run = false;
+    m_thread.join();
+}
+
+template <typename T>
 inline void EventSubscriber<T, EventTransmission::UDS>::Subscribe(std::size_t) noexcept
 {
     // Subscribe not supported with UDS
@@ -59,9 +66,9 @@ core::Result<size_t> inline EventSubscriber<T, EventTransmission::UDS>::GetNewSa
     std::string tempBuffer;
 
     // Receive the first (up to) 4095 Bytes
-    m_uds.receive().and_then([&](auto& msg) { tempBuffer.append(msg); }).or_else([](auto&) {
-        std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
-    });
+    m_uds.timedReceive(iox::units::Duration::fromSeconds(1))
+        .and_then([&](auto& msg) { tempBuffer.append(msg); })
+        .or_else([](auto&) { std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl; });
 
     if (tempBuffer.size() < 15)
     {
@@ -90,9 +97,9 @@ core::Result<size_t> inline EventSubscriber<T, EventTransmission::UDS>::GetNewSa
     {
         for (uint32_t i = 0U; i < sample.subPackets - 1; ++i)
         {
-            m_uds.receive().and_then([&](auto& msg) { tempBuffer.append(msg); }).or_else([](auto&) {
-                std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl;
-            });
+            m_uds.timedReceive(iox::units::Duration::fromSeconds(1))
+                .and_then([&](auto& msg) { tempBuffer.append(msg); })
+                .or_else([](auto&) { std::cerr << "Error occurred while receiving UNIX domain socket!" << std::endl; });
         }
     }
 
@@ -112,14 +119,8 @@ inline void EventSubscriber<T, EventTransmission::UDS>::SetReceiveHandler(EventR
         return;
     }
     m_receiveHandler.emplace(handler);
-    std::thread([&]() {
-        while (true)
-        {
-            // We call the user callback in an endless loop and wait till having received a complete message
-            m_receiveHandler.and_then([](iox::cxx::function<void()>& userCallable) { userCallable(); });
-        }
-    }).detach();
 }
+
 
 template <typename T>
 inline void EventSubscriber<T, EventTransmission::UDS>::UnsetReceiveHandler() noexcept
