@@ -27,7 +27,6 @@ namespace owl
 {
 namespace kom
 {
-
 template <typename T, EventTransmission>
 class EventSubscriber;
 
