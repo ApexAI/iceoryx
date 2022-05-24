@@ -34,6 +34,11 @@ inline EventSubscriber<T, EventTransmission::IOX>::EventSubscriber(const core::S
 template <typename T>
 inline void EventSubscriber<T, EventTransmission::IOX>::Subscribe(std::size_t queueCapacity) noexcept
 {
+    if (HasReceiveHandler())
+    {
+        UnsetReceiveHandler();
+    }
+
     m_subscriber.emplace(
         m_serviceDescription,
         iox::popo::SubscriberOptions{queueCapacity, HISTORY_REQUEST, iox::NodeName_t(), NOT_OFFERED_ON_CREATE});
@@ -47,7 +52,14 @@ inline void EventSubscriber<T, EventTransmission::IOX>::Unsubscribe() noexcept
     {
         return;
     }
+
+    if (HasReceiveHandler())
+    {
+        UnsetReceiveHandler();
+    }
+
     m_subscriber.value().unsubscribe();
+    m_subscriber.reset();
 }
 
 template <typename T>
@@ -93,6 +105,7 @@ inline void EventSubscriber<T, EventTransmission::IOX>::SetReceiveHandler(EventR
     }
     if (!m_subscriber.has_value())
     {
+        std::cerr << "Call Subscribe() before setting a receive handler!" << std::endl;
         return;
     }
 

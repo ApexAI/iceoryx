@@ -45,7 +45,9 @@ class EventSubscriber<T, EventTransmission::IOX>
 
     EventSubscriber(const core::String& service, const core::String& instance, const core::String& event) noexcept;
 
+    /// @note Will disable the receive handler if active
     void Subscribe(std::size_t) noexcept;
+    /// @note Will disable the receive handler if active
     void Unsubscribe() noexcept;
 
     template <typename Callable>
