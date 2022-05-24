@@ -27,24 +27,27 @@ template <typename T>
 inline EventSubscriber<T, EventTransmission::IOX>::EventSubscriber(const core::String& service,
                                                                    const core::String& instance,
                                                                    const core::String& event) noexcept
-    : m_subscriber({service, instance, event},
-                   {QUEUE_CAPACITY, HISTORY_REQUEST, iox::NodeName_t(), NOT_OFFERED_ON_CREATE})
+    : m_serviceDescription(service, instance, event)
 {
 }
 
 template <typename T>
-inline void EventSubscriber<T, EventTransmission::IOX>::Subscribe(std::size_t) noexcept
+inline void EventSubscriber<T, EventTransmission::IOX>::Subscribe(std::size_t queueCapacity) noexcept
 {
-    // maxSampleCount is ignored, because it is an argument to the c'tor of m_subscriber as part of SubscriberOptions.
-    // Utilizing late initalization by wrapping m_subscriber in an cxx::optional and calling the c'tor here would be an
-    // option
-    m_subscriber.subscribe();
+    m_subscriber.emplace(
+        m_serviceDescription,
+        iox::popo::SubscriberOptions{queueCapacity, HISTORY_REQUEST, iox::NodeName_t(), NOT_OFFERED_ON_CREATE});
+    m_subscriber.value().subscribe();
 }
 
 template <typename T>
 inline void EventSubscriber<T, EventTransmission::IOX>::Unsubscribe() noexcept
 {
-    m_subscriber.unsubscribe();
+    if (!m_subscriber.has_value())
+    {
+        return;
+    }
+    m_subscriber.value().unsubscribe();
 }
 
 template <typename T>
@@ -54,9 +57,15 @@ EventSubscriber<T, EventTransmission::IOX>::GetNewSamples(Callable&& callable, s
 {
     core::Result<size_t> numberOfSamples{0};
 
+    if (!m_subscriber.has_value())
+    {
+        return numberOfSamples;
+    }
+
     // Hint: Depending on the type of callable, it needs to be checked for null or restricting to lambdas
 
-    while (m_subscriber.take()
+    while (m_subscriber.value()
+               .take()
                .and_then([&](const auto& sample) {
                    callable(sample.get());
                    numberOfSamples++;
@@ -82,8 +91,13 @@ inline void EventSubscriber<T, EventTransmission::IOX>::SetReceiveHandler(EventR
         std::cerr << "Can't attach empty receive handler!" << std::endl;
         return;
     }
+    if (!m_subscriber.has_value())
+    {
+        return;
+    }
+
     m_listener
-        .attachEvent(m_subscriber,
+        .attachEvent(m_subscriber.value(),
                      iox::popo::SubscriberEvent::DATA_RECEIVED,
                      iox::popo::createNotificationCallback(onSampleReceivedCallback, *this))
         .expect("Unable to attach subscriber!");
@@ -95,7 +109,12 @@ inline void EventSubscriber<T, EventTransmission::IOX>::SetReceiveHandler(EventR
 template <typename T>
 inline void EventSubscriber<T, EventTransmission::IOX>::UnsetReceiveHandler() noexcept
 {
-    m_listener.detachEvent(m_subscriber, iox::popo::SubscriberEvent::DATA_RECEIVED);
+    if (!m_subscriber.has_value())
+    {
+        return;
+    }
+
+    m_listener.detachEvent(m_subscriber.value(), iox::popo::SubscriberEvent::DATA_RECEIVED);
     std::lock_guard<iox::posix::mutex> guard(m_mutex);
     m_receiveHandler.reset();
 }
