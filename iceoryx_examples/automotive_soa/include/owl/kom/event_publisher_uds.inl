@@ -48,14 +48,14 @@ inline std::unique_ptr<T> EventPublisher<T, EventTransmission::UDS>::Allocate()
 }
 
 template <typename T>
-void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType> userSamplePtr)
+bool EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType> userSamplePtr)
 {
     if (!userSamplePtr)
     {
         std::cerr << "Provided empty sample pointer!" << std::endl;
-        return;
+        return false;
     }
-
+    bool returnValue{true};
     std::string tempBuffer;
 
     tempBuffer.append(reinterpret_cast<char*>(&userSamplePtr->counter), sizeof(userSamplePtr->counter));
@@ -96,9 +96,9 @@ void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType>
             tempBuffer.clear();
             bytesToSend -= messageSize;
         })
-        .or_else([](auto&) {
+        .or_else([&](auto&) {
             std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
-            std::terminate();
+            returnValue = false;
         });
 
     // Following subPackets are send in a loop
@@ -121,11 +121,12 @@ void EventPublisher<T, EventTransmission::UDS>::Send(std::unique_ptr<SampleType>
                 tempBuffer.clear();
                 bytesToSend -= messageSize;
             })
-            .or_else([](auto&) {
+            .or_else([&](auto&) {
                 std::cerr << "Error occurred while sending on UNIX domain socket!" << std::endl;
-                std::terminate();
+                returnValue = false;
             });
     }
+    return returnValue;
 }
 
 template <typename T>

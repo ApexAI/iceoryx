@@ -51,7 +51,7 @@ class EventPublisher<T, EventTransmission::UDS>
 
     std::unique_ptr<SampleType> Allocate();
 
-    void Send(std::unique_ptr<SampleType> userSamplePtr);
+    bool Send(std::unique_ptr<SampleType> userSamplePtr);
 
     void Offer() noexcept;
     void StopOffer() noexcept;
