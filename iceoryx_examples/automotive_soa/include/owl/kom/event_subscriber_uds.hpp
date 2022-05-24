@@ -41,7 +41,7 @@ class EventSubscriber<T, EventTransmission::UDS>
     static_assert(is_supported_topic<T>::value,
                   "Topic must have specific members, look at TimestampTopic1Byte as an example!");
 
-    EventSubscriber(const core::String&, const core::String& instance, const core::String&) noexcept;
+    EventSubscriber(const ServiceIdentifier&, const InstanceIdentifier& instance, const EventIdentifier&) noexcept;
 
     ~EventSubscriber() noexcept;
 

@@ -54,8 +54,12 @@ namespace kom
 template <typename T>
 using SamplePtr = iox::cxx::optional<iox::popo::Sample<const T>>;
 
-using InstanceIdentifier = core::String;
 using ServiceIdentifier = core::String;
+using InstanceIdentifier = core::String;
+
+using EventIdentifier = core::String;
+using FieldIdentifier = core::String;
+using MethodIdentifier = core::String;
 
 struct FindServiceHandle
 {

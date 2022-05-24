@@ -24,9 +24,9 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventSubscriber<T, EventTransmission::UDS>::EventSubscriber(const core::String&,
-                                                                   const core::String& instance,
-                                                                   const core::String&) noexcept
+inline EventSubscriber<T, EventTransmission::UDS>::EventSubscriber(const ServiceIdentifier&,
+                                                                   const InstanceIdentifier& instance,
+                                                                   const EventIdentifier&) noexcept
     : m_uds(iox::posix::UnixDomainSocket::create(instance, iox::posix::IpcChannelSide::SERVER)
                 .expect("Failed to create UNIX domain socket!"))
 {

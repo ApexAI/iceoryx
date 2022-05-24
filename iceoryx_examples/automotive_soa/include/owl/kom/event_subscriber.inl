@@ -24,9 +24,9 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventSubscriber<T, EventTransmission::IOX>::EventSubscriber(const core::String& service,
-                                                                   const core::String& instance,
-                                                                   const core::String& event) noexcept
+inline EventSubscriber<T, EventTransmission::IOX>::EventSubscriber(const ServiceIdentifier& service,
+                                                                   const InstanceIdentifier& instance,
+                                                                   const EventIdentifier& event) noexcept
     : m_serviceDescription(service, instance, event)
 {
 }
@@ -131,7 +131,7 @@ inline void EventSubscriber<T, EventTransmission::IOX>::UnsetReceiveHandler() no
 }
 
 template <typename T>
-inline bool EventSubscriber<T, EventTransmission::IOX>::HasReceiveHandler() noexcept
+inline bool EventSubscriber<T, EventTransmission::IOX>::HasReceiveHandler() const noexcept
 {
     auto receiveHandlerGuard = m_receiveHandler.getScopeGuard();
     return receiveHandlerGuard->has_value() && receiveHandlerGuard->value();

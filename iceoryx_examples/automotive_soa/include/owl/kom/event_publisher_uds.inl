@@ -24,9 +24,9 @@ namespace owl
 namespace kom
 {
 template <typename T>
-inline EventPublisher<T, EventTransmission::UDS>::EventPublisher(const core::String& service,
-                                                                 const core::String& instance,
-                                                                 const core::String& event) noexcept
+inline EventPublisher<T, EventTransmission::UDS>::EventPublisher(const ServiceIdentifier& service,
+                                                                 const InstanceIdentifier& instance,
+                                                                 const EventIdentifier& event) noexcept
     : m_publisher({service, instance, event}, {HISTORY_CAPACITY, iox::NodeName_t(), OFFERED_ON_CREATE})
     , m_instanceId(instance)
 {
