@@ -305,7 +305,7 @@ UnixDomainSocket::timedReceive(const units::Duration& timeout) const noexcept
         {
             return cxx::error<IpcChannelError>(convertErrnoToIpcChannelError(recvCall.get_error().errnum));
         }
-        return cxx::success<std::string>(std::string(message));
+        return cxx::success<std::string>(std::string(message, , recvCall.value().value)));
     }
 }
 
