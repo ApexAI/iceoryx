@@ -36,7 +36,7 @@ inline VariantQueue<ValueType, Capacity>::VariantQueue(const VariantQueueTypes t
     }
     case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
     {
-        m_fifo.template emplace<concurrent::SoFi<ValueType, Capacity>>();
+        m_fifo.template emplace<concurrent::MutexQueue<ValueType, Capacity>>();
         break;
     }
     case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
@@ -64,12 +64,9 @@ optional<ValueType> VariantQueue<ValueType, Capacity>::push(const ValueType& val
     }
     case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
     {
-        ValueType overriddenValue;
-        auto hadSpace =
-            m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-                ->push(value, overriddenValue);
-
-        return (hadSpace) ? cxx::nullopt : cxx::make_optional<ValueType>(overriddenValue);
+        return m_fifo
+            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+            ->push(value);
     }
     case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
     {
@@ -103,12 +100,9 @@ inline optional<ValueType> VariantQueue<ValueType, Capacity>::pop() noexcept
     }
     case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
     {
-        ValueType returnType;
-        auto hasReturnType =
-            m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-                ->pop(returnType);
-
-        return (hasReturnType) ? make_optional<ValueType>(returnType) : cxx::nullopt;
+        return m_fifo
+            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+            ->pop();
     }
     case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
     case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
@@ -197,9 +191,8 @@ inline bool VariantQueue<ValueType, Capacity>::setCapacity(const uint64_t newCap
     }
     case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
     {
-        m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->setCapacity(newCapacity);
-        return true;
+        assert(false);
+        return false;
     }
     case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
     case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
