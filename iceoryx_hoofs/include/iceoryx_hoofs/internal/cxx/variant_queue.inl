@@ -27,215 +27,50 @@ template <typename ValueType, uint64_t Capacity>
 inline VariantQueue<ValueType, Capacity>::VariantQueue(const VariantQueueTypes type) noexcept
     : m_type(type)
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        m_fifo.template emplace<concurrent::FiFo<ValueType, Capacity>>();
-        break;
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        m_fifo.template emplace<concurrent::MutexQueue<ValueType, Capacity>>();
-        break;
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-        IOX_FALLTHROUGH;
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        m_fifo.template emplace<concurrent::ResizeableLockFreeQueue<ValueType, Capacity>>();
-        break;
-    }
-    }
+    m_fifo.template emplace<concurrent::MutexQueue<ValueType, Capacity>>();
 }
 
 template <typename ValueType, uint64_t Capacity>
 optional<ValueType> VariantQueue<ValueType, Capacity>::push(const ValueType& value) noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        auto hadSpace =
-            m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_SingleProducerSingleConsumer)>()
-                ->push(value);
-
-        return (hadSpace) ? cxx::nullopt : cxx::make_optional<ValueType>(value);
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->push(value);
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    {
-        auto hadSpace =
-            m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-                ->tryPush(value);
-
-        return (hadSpace) ? cxx::nullopt : cxx::make_optional<ValueType>(value);
-    }
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->push(value);
-    }
-    }
-
-    return cxx::nullopt;
+    return m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+        ->push(value);
 }
 
 template <typename ValueType, uint64_t Capacity>
 inline optional<ValueType> VariantQueue<ValueType, Capacity>::pop() noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_SingleProducerSingleConsumer)>()
-            ->pop();
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->pop();
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->pop();
-    }
-    }
-
-    return cxx::nullopt;
+    return m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+        ->pop();
 }
 
 template <typename ValueType, uint64_t Capacity>
 inline bool VariantQueue<ValueType, Capacity>::empty() const noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_SingleProducerSingleConsumer)>()
-            ->empty();
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->empty();
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->empty();
-    }
-    }
-
-    return true;
+    return m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+        ->empty();
 }
 
 template <typename ValueType, uint64_t Capacity>
 inline uint64_t VariantQueue<ValueType, Capacity>::size() noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_SingleProducerSingleConsumer)>()
-            ->size();
-        break;
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->size();
-        break;
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->size();
-        break;
-    }
-    }
-
-    return 0U;
+    return m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+        ->size();
 }
 
 
 template <typename ValueType, uint64_t Capacity>
-inline bool VariantQueue<ValueType, Capacity>::setCapacity(const uint64_t newCapacity) noexcept
+inline bool VariantQueue<ValueType, Capacity>::setCapacity(const uint64_t) noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        /// @todo must be implemented for FiFo
-        assert(false);
-        return false;
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        assert(false);
-        return false;
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        // we may discard elements in the queue if the size is reduced and the fifo contains too many elements
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->setCapacity(newCapacity);
-    }
-    }
+    assert(false);
     return false;
 }
 
 template <typename ValueType, uint64_t Capacity>
 inline uint64_t VariantQueue<ValueType, Capacity>::capacity() const noexcept
 {
-    switch (m_type)
-    {
-    case VariantQueueTypes::FiFo_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_SingleProducerSingleConsumer)>()
-            ->capacity();
-        break;
-    }
-    case VariantQueueTypes::SoFi_SingleProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
-            ->capacity();
-        break;
-    }
-    case VariantQueueTypes::FiFo_MultiProducerSingleConsumer:
-    case VariantQueueTypes::SoFi_MultiProducerSingleConsumer:
-    {
-        return m_fifo
-            .template get_at_index<static_cast<uint64_t>(VariantQueueTypes::FiFo_MultiProducerSingleConsumer)>()
-            ->capacity();
-        break;
-    }
-    }
-
-    return 0U;
+    return m_fifo.template get_at_index<static_cast<uint64_t>(VariantQueueTypes::SoFi_SingleProducerSingleConsumer)>()
+        ->capacity();
 }
 
 template <typename ValueType, uint64_t Capacity>
