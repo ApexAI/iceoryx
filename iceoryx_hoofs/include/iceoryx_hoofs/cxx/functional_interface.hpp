@@ -54,6 +54,40 @@ struct HasGetErrorMethod<Derived, cxx::void_t<decltype(std::declval<Derived>().g
 {
 };
 
+////////////////
+/// BEGIN IOX_TRY
+////////////////
+
+#define IOX_CONCATENATE(s1, s2) s1##s2
+#define IOX_GET_TRY_VARIANT(_1, _2, TRY_VARIANT, ...) TRY_VARIANT
+#define IOX_TRY_WITH_VARNAME(statement, variableName)                                                                  \
+    statement;                                                                                                         \
+    if (!(variableName))                                                                                               \
+    {                                                                                                                  \
+        return variableName;                                                                                           \
+    }
+
+#define IOX_TRY_WITHOUT_VARNAME(statement)                                                                             \
+    auto IOX_CONCATENATE(result, __LINE__) = statement;                                                                \
+    if (!IOX_CONCATENATE(result, __LINE__))                                                                            \
+    {                                                                                                                  \
+        return IOX_CONCATENATE(result, __LINE__);                                                                      \
+    }
+
+/// @brief Either assigns the statement. When the bool conversion operator returns false it returns the assigned
+///        variable.
+/// @param[in] statement the statement which should be evaluated
+/// @param[in] variableName optional argument, the return value of the statement is stored in that variable so that it
+///            can be accessed later.
+#define IOX_TRY(...)                                                                                                   \
+    IOX_GET_TRY_VARIANT(                                                                                               \
+        __VA_ARGS__, IOX_TRY_WITH_VARNAME, IOX_TRY_WITHOUT_VARNAME, PLACEHOLDER_TO_AVOID_EMPTY_VA_ARGS)                \
+    (__VA_ARGS__)
+
+//////////////
+/// END
+//////////////
+
 template <typename Derived>
 struct Expect
 {
