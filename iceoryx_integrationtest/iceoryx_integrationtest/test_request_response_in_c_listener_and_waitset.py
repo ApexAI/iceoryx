@@ -60,12 +60,11 @@ def generate_test_description():
         sigterm_timeout='20')
 
     return launch.LaunchDescription([
+        roudi_process,
         process_list[0],
         process_list[1],
-        roudi_process,
         launch_testing.actions.ReadyToTest()
-    ]), {'iox-c-request-response-server-listener': process_list[0], 'iox-c-request-response-client-waitset': process_list[1],
-         'roudi_process': roudi_process}
+    ]), {'roudi_process': roudi_process, 'iox-c-request-response-server-listener': process_list[0], 'iox-c-request-response-client-waitset': process_list[1] }
 
 # These tests will run concurrently with the dut process. After this test is done,
 # the launch system will shut down RouDi
