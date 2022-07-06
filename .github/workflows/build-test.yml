@@ -110,12 +110,13 @@ jobs:
       - run: ./tools/ci/build-test-macos-with-sanitizers.sh
 
   # gcc 5.4 is compiler used in QNX 7.0
-  build-test-ubuntu-with-gcc54:
-    runs-on: ubuntu-18.04
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/build-test-ubuntu-with-gcc54.sh
+  # iox-#1196 commented for faster integration, uncomment before merge to master
+  # build-test-ubuntu-with-gcc54:
+  #   runs-on: ubuntu-18.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/build-test-ubuntu-with-gcc54.sh
 
   coverage-and-docs:
     runs-on: ubuntu-20.04

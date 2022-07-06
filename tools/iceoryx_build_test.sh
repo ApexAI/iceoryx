@@ -115,7 +115,8 @@ while (( "$#" )); do
         ;;
     "dds-gateway")
         echo " [i] Including DDS gateway in build"
-        DDS_GATEWAY_FLAG="ON"
+        ## iox-#1196 always set to off for faster integration, switch to on before master merge
+        DDS_GATEWAY_FLAG="OFF"
         shift 1
         ;;
     "binding-c")
@@ -154,7 +155,8 @@ while (( "$#" )); do
         ;;
     "out-of-tree")
         echo " [i] Out-of-tree build"
-        OUT_OF_TREE_FLAG="ON"
+        ## iox-#1196 always set to off for faster integration, switch to on before master merge
+        OUT_OF_TREE_FLAG="OFF"
         shift 1
         ;;
     "one-to-many-only")
