@@ -21,7 +21,7 @@
 # instead of making the whole source folder public for internal dependency resolution
 
 iox_add_library(
-    STATIC
+    SHARED
     TARGET                  ${PROJECT_NAME}_testing
     NAMESPACE               iceoryx_hoofs_testing
     PROJECT_PREFIX          ${PREFIX}

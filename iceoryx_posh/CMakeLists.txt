@@ -288,7 +288,7 @@ install(
 
 # install deployment file to make posh config accessible by other packages
 install(
-    FILES 
+    FILES
         cmake/IceoryxPoshDeployment.cmake
     DESTINATION ${DESTINATION_CONFIGDIR}
 )
@@ -303,7 +303,7 @@ if(ROUDI_ENVIRONMENT OR BUILD_TEST)
     ######### posh roudi environment ##########
     #
     iox_add_library(
-        STATIC
+        SHARED
         TARGET                  iceoryx_posh_testing
         NAMESPACE               iceoryx_posh_testing
         PROJECT_PREFIX          ${PREFIX}
