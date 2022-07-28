@@ -39,6 +39,8 @@ $(clang --version)"
 msg "building sources"
 ./tools/iceoryx_build_test.sh build-strict build-all out-of-tree build-shared test-add-user
 
+./build/install/prefix/bin/test_stress_sofi
+
 msg "building debian package"
 ./tools/iceoryx_build_test.sh package
 
