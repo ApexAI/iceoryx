@@ -138,7 +138,7 @@ jobs:
           # Build everything including stresstests
           bazel build //...
           # We exclude the sofi stresstest in CI since we cannot set the CPU Affinity in the GitHub Action Runners
-          bazel test //... --deleted_packages=iceoryx_hoofs/test/stresstests --test_output=all --jobs 1
+          bazel test //... --deleted_packages=iceoryx_hoofs/test/stresstests --test_output=all --test_arg=--gtest_filter=-Thread_test*
 
   # coverage-and-docs:
   #   runs-on: ubuntu-20.04
