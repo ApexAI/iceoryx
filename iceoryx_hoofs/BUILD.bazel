@@ -27,13 +27,20 @@ cc_library(
         "//iceoryx_hoofs/platform:linux-clang": [
             "-latomic",
             "-lacl",
+            "-lpthread",
         ],
-        "//iceoryx_hoofs/platform:linux-gcc": ["-lacl"],
+        "//iceoryx_hoofs/platform:linux-gcc": [
+            "-lacl",
+            "-lpthread",
+        ],
         "//iceoryx_hoofs/platform:mac": [],
         "//iceoryx_hoofs/platform:qnx": [],
         "//iceoryx_hoofs/platform:unix": [],
         "//iceoryx_hoofs/platform:win": [],
-        "//conditions:default": ["-lacl"],
+        "//conditions:default": [
+            "-lacl",
+            "-lpthread",
+        ],
     }),
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
