@@ -26,111 +26,111 @@ jobs:
               false
           fi
 
-  build-test-ubuntu:
-    runs-on: ubuntu-20.04
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 9
-          platform: x64
-      - uses: jwlawson/actions-setup-cmake@v1.12
-        with:
-          cmake-version: '3.16.3' # version used in Ubuntu 20.04 LTS
-      - run: ./tools/ci/build-test-ubuntu.sh
+  # build-test-ubuntu:
+  #   runs-on: ubuntu-20.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: egor-tensin/setup-gcc@v1
+  #       with:
+  #         version: 9
+  #         platform: x64
+  #     - uses: jwlawson/actions-setup-cmake@v1.12
+  #       with:
+  #         cmake-version: '3.16.3' # version used in Ubuntu 20.04 LTS
+  #     - run: ./tools/ci/build-test-ubuntu.sh
 
-  # uses macos to run freebsd in a virtualbox
-  build-test-unix-with-freebsd:
-    # prevent stuck jobs consuming macos runners for 6 hours
-    timeout-minutes: 60
-    needs: pre-flight-check
-    runs-on: macos-12
-    steps:
-    - uses: actions/checkout@v3
-    - name: Unix (FreeBSD) test
-      id: Test
-      uses: vmactions/freebsd-vm@v0.1.6
-      with:
-        usesh: true
-        mem: 4096
-        prepare: pkg install -y cmake git ncurses bash wget bison
-        run: |
-         git config --global --add safe.directory /Users/runner/work/iceoryx/iceoryx
-         ./tools/ci/build-test-freebsd.sh
+  # # uses macos to run freebsd in a virtualbox
+  # build-test-unix-with-freebsd:
+  #   # prevent stuck jobs consuming macos runners for 6 hours
+  #   timeout-minutes: 60
+  #   needs: pre-flight-check
+  #   runs-on: macos-12
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Unix (FreeBSD) test
+  #     id: Test
+  #     uses: vmactions/freebsd-vm@v0.1.6
+  #     with:
+  #       usesh: true
+  #       mem: 4096
+  #       prepare: pkg install -y cmake git ncurses bash wget bison
+  #       run: |
+  #        git config --global --add safe.directory /Users/runner/work/iceoryx/iceoryx
+  #        ./tools/ci/build-test-freebsd.sh
 
-  build-test-windows:
-    runs-on: windows-2019
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/build-test-windows.ps1
-        shell: powershell
+  # build-test-windows:
+  #   runs-on: windows-2019
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/build-test-windows.ps1
+  #       shell: powershell
 
-  run-integration-test:
-    runs-on: ubuntu-20.04
-    needs: pre-flight-check
-    steps:
-      - name: Setup ROS
-        uses: ros-tooling/setup-ros@v0.3
-        with:
-          required-ros-distributions: foxy
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/run-integration-test.sh
+  # run-integration-test:
+  #   runs-on: ubuntu-20.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - name: Setup ROS
+  #       uses: ros-tooling/setup-ros@v0.3
+  #       with:
+  #         required-ros-distributions: foxy
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/run-integration-test.sh
 
-  build-test-ubuntu-with-sanitizers-gcc-latest:
-    runs-on: ubuntu-20.04
-    needs: pre-flight-check
-    steps:
-      - uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 11
-          platform: x64
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/build-test-ubuntu-with-sanitizers.sh gcc
+  # build-test-ubuntu-with-sanitizers-gcc-latest:
+  #   runs-on: ubuntu-20.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: egor-tensin/setup-gcc@v1
+  #       with:
+  #         version: 11
+  #         platform: x64
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/build-test-ubuntu-with-sanitizers.sh gcc
 
-  build-test-ubuntu-with-sanitizers-clang-latest:
-    runs-on: ubuntu-latest
-    needs: pre-flight-check
-    steps:
-      - name: install newest clang version
-        run: |
-         wget https://apt.llvm.org/llvm.sh
-         chmod +x llvm.sh
-         sudo ./llvm.sh 15 all ## uses clang version 15
-         sudo rm /usr/bin/clang
-         sudo rm /usr/bin/clang++
-         sudo ln -s /usr/bin/clang-15 /usr/bin/clang
-         sudo ln -s /usr/bin/clang++-15 /usr/bin/clang++
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: build with sanitizers
-        run: ./tools/ci/build-test-ubuntu-with-sanitizers.sh clang
+  # build-test-ubuntu-with-sanitizers-clang-latest:
+  #   runs-on: ubuntu-latest
+  #   needs: pre-flight-check
+  #   steps:
+  #     - name: install newest clang version
+  #       run: |
+  #        wget https://apt.llvm.org/llvm.sh
+  #        chmod +x llvm.sh
+  #        sudo ./llvm.sh 15 all ## uses clang version 15
+  #        sudo rm /usr/bin/clang
+  #        sudo rm /usr/bin/clang++
+  #        sudo ln -s /usr/bin/clang-15 /usr/bin/clang
+  #        sudo ln -s /usr/bin/clang++-15 /usr/bin/clang++
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: build with sanitizers
+  #       run: ./tools/ci/build-test-ubuntu-with-sanitizers.sh clang
 
-  build-test-macos-with-sanitizers:
-    runs-on: macos-latest
-    # prevent stuck jobs consuming macos runners for 6 hours
-    timeout-minutes: 60
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/build-test-macos-with-sanitizers.sh
+  # build-test-macos-with-sanitizers:
+  #   runs-on: macos-latest
+  #   # prevent stuck jobs consuming macos runners for 6 hours
+  #   timeout-minutes: 60
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/build-test-macos-with-sanitizers.sh
 
-  # gcc 5.4 is compiler used in QNX 7.0
-  build-test-ubuntu-with-gcc54:
-    runs-on: ubuntu-18.04
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/build-test-ubuntu-with-gcc54.sh
+  # # gcc 5.4 is compiler used in QNX 7.0
+  # build-test-ubuntu-with-gcc54:
+  #   runs-on: ubuntu-18.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/build-test-ubuntu-with-gcc54.sh
 
-  # Bazel sanitiy check
+  # Bazel sanity check
   build-test-ubuntu-bazel:
     runs-on: ubuntu-latest
     needs: pre-flight-check
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get update && sudo apt-get install -y libacl1-dev libncurses5-dev
+      - run: sudo apt-get update && sudo apt-get install -y libacl1-dev libncurses5-dev gcc g++
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Bazel Linting + Build + Test
         run: |
@@ -141,33 +141,33 @@ jobs:
           # We exclude the sofi stresstest in CI since we cannot set the CPU Affinity in the GitHub Action Runners
           bazel test //... --deleted_packages=iceoryx_hoofs/test/stresstests --test_output=all
 
-  coverage-and-docs:
-    runs-on: ubuntu-20.04
-    needs: pre-flight-check
-    steps:
-      - uses: actions/checkout@v3
-      - run: ./tools/ci/coverage-and-docs.sh
+  # coverage-and-docs:
+  #   runs-on: ubuntu-20.04
+  #   needs: pre-flight-check
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: ./tools/ci/coverage-and-docs.sh
 
-      - name: Archive generated doxygen
-        uses: actions/upload-artifact@v3
-        with:
-          name: iceoryx-pdf
-          path: |
-            ./build/doc/*.pdf
-          retention-days: 30
+  #     - name: Archive generated doxygen
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: iceoryx-pdf
+  #         path: |
+  #           ./build/doc/*.pdf
+  #         retention-days: 30
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./lcov_results/unittest/lcov/iceoryx_lcov_result_unit.info
-          name: iceoryx
-          flags: unittests
-          fail_ci_if_error: true
+  #     - name: Upload coverage to Codecov
+  #       uses: codecov/codecov-action@v3
+  #       with:
+  #         file: ./lcov_results/unittest/lcov/iceoryx_lcov_result_unit.info
+  #         name: iceoryx
+  #         flags: unittests
+  #         fail_ci_if_error: true
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./lcov_results/unittest_timing/lcov/iceoryx_lcov_result_unit-timing.info
-          name: iceoryx
-          flags: unittests_timing
-          fail_ci_if_error: true
+  #     - name: Upload coverage to Codecov
+  #       uses: codecov/codecov-action@v3
+  #       with:
+  #         file: ./lcov_results/unittest_timing/lcov/iceoryx_lcov_result_unit-timing.info
+  #         name: iceoryx
+  #         flags: unittests_timing
+  #         fail_ci_if_error: true
