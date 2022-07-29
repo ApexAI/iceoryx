@@ -20,12 +20,20 @@ cc_test(
     name = "test_stress_sofi",
     srcs = ["test_stress_sofi.cpp"],
     linkopts = select({
-        "//iceoryx_hoofs/platform:linux": ["-ldl"],
+        "//iceoryx_hoofs/platform:linux": [
+            "-ldl",
+            "-lpthread",
+            "-lrt",
+        ],
         "//iceoryx_hoofs/platform:mac": [],
         "//iceoryx_hoofs/platform:qnx": [],
         "//iceoryx_hoofs/platform:unix": [],
         "//iceoryx_hoofs/platform:win": [],
-        "//conditions:default": ["-ldl"],
+        "//conditions:default": [
+            "-ldl",
+            "-lpthread",
+            "-lrt",
+        ],
     }),
     tags = ["exclusive"],
     visibility = ["//visibility:private"],
