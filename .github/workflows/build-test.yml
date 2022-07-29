@@ -130,8 +130,7 @@ jobs:
     needs: pre-flight-check
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get update && sudo apt-get install -y libacl1-dev libncurses5-dev gcc g++
-      - uses: bazelbuild/setup-bazelisk@v2
+      - run: sudo apt-get update && sudo apt-get install -y libacl1-dev libncurses5-dev
       - name: Bazel Linting + Build + Test
         run: |
           # Run linter on complete bazel code
