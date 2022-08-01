@@ -9,10 +9,12 @@ runs:
         sudo apt-get install -y libacl1-dev libncurses5-dev
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh 15 all ## uses clang version 15
+        # Update to LLVM version 15 once it is available
+        # https://github.com/eclipse-iceoryx/iceoryx/issues/1196
+        sudo ./llvm.sh 14 all
         sudo rm /usr/bin/clang
         sudo rm /usr/bin/clang++
         sudo rm /usr/bin/clang-tidy
-        sudo ln -s /usr/bin/clang-15 /usr/bin/clang
-        sudo ln -s /usr/bin/clang++-15 /usr/bin/clang++
-        sudo ln -s /usr/bin/clang-tidy-15 /usr/bin/clang-tidy
+        sudo ln -s /usr/bin/clang-14 /usr/bin/clang
+        sudo ln -s /usr/bin/clang++-14 /usr/bin/clang++
+        sudo ln -s /usr/bin/clang-tidy-14 /usr/bin/clang-tidy
