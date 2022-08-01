@@ -5,16 +5,14 @@ runs:
     - name: Install iceoryx dependencies and clang-tidy
       shell: bash
       run: |
+        sudo wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main"
         sudo apt-get update
         sudo apt-get install -y libacl1-dev libncurses5-dev
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        # Update to LLVM version 15 once it is available
-        # https://github.com/eclipse-iceoryx/iceoryx/issues/1196
-        sudo ./llvm.sh 14 all
+        sudo apt-get install -y clang-format-16 clang-tidy-16 clang-tools-16 clang-16
         sudo rm /usr/bin/clang
         sudo rm /usr/bin/clang++
         sudo rm /usr/bin/clang-tidy
-        sudo ln -s /usr/bin/clang-14 /usr/bin/clang
-        sudo ln -s /usr/bin/clang++-14 /usr/bin/clang++
-        sudo ln -s /usr/bin/clang-tidy-14 /usr/bin/clang-tidy
+        sudo ln -s /usr/bin/clang-16 /usr/bin/clang
+        sudo ln -s /usr/bin/clang++-16 /usr/bin/clang++
+        sudo ln -s /usr/bin/clang-tidy-16 /usr/bin/clang-tidy
