@@ -15,103 +15,31 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "topic_data.hpp"
+#include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
+#include "iceoryx_hoofs/log/logging.hpp"
 
-//! [include publisher]
-#include "iceoryx_posh/popo/publisher.hpp"
-//! [include publisher]
-#include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
-#include "iceoryx_posh/runtime/posh_runtime.hpp"
-
-#include <iostream>
-
-constexpr char APP_NAME[] = "iox-cpp-publisher";
-
-void getRadarObject(RadarObject* const object, const double& val) noexcept
+uint64_t contentsOfThreadLocalStatic()
 {
-    *object = RadarObject(val, val, val);
+    thread_local static uint64_t blubb = 1234;
+    return blubb;
 }
 
 int main()
 {
-    iox::runtime::PoshRuntime::initRuntime(APP_NAME);
+    IOX_LOG(INFO) << "Test log output";
+    uint64_t before = contentsOfThreadLocalStatic();
 
-    //! [create publisher]
-    iox::popo::Publisher<RadarObject> publisher({"Radar", "FrontLeft", "Object"});
-    //! [create publisher]
+    auto shm = iox::posix::SharedMemoryObjectBuilder()
+                   .permissions(iox::cxx::perms::owner_all)
+                   .memorySizeInBytes(1024 * 1024 * 512)
+                   .accessMode(iox::posix::AccessMode::READ_WRITE)
+                   .openMode(iox::posix::OpenMode::PURGE_AND_CREATE)
+                   .name("blubb")
+                   .create()
+                   .expect("failed to create shm");
 
-    double ct = 0.0;
-    while (!iox::posix::hasTerminationRequested())
-    {
-        ++ct;
-        double sampleValue1 = ct + 89;
-        double sampleValue2 = ct + 144;
-        double sampleValue3 = ct + 233;
-        double sampleValue4 = ct + 377;
+    uint64_t after = contentsOfThreadLocalStatic();
 
-        //! [API Usage #1]
-        //  * Retrieve a typed sample from shared memory.
-        //  * Sample can be held until ready to publish.
-        //  * Data is default constructed during loan
-        publisher.loan()
-            .and_then([&](auto& sample) {
-                sample->x = sampleValue1;
-                sample->y = sampleValue1;
-                sample->z = sampleValue1;
-                sample.publish();
-            })
-            .or_else([](auto& error) {
-                // Do something with error
-                std::cerr << "Unable to loan sample, error: " << error << std::endl;
-            });
-        //! [API Usage #1]
-
-
-        //! [API Usage #2]
-        //  * Retrieve a typed sample from shared memory and construct data in-place
-        //  * Sample can be held until ready to publish.
-        //  * Data is constructed with the arguments provided.
-        publisher.loan(sampleValue2, sampleValue2, sampleValue2)
-            .and_then([](auto& sample) { sample.publish(); })
-            .or_else([](auto& error) {
-                // Do something with error
-                std::cerr << "Unable to loan sample, error: " << error << std::endl;
-            });
-        //! [API Usage #2]
-
-        //! [API Usage #3]
-        //  * Basic copy-and-publish. Useful for smaller data types.
-        auto object = RadarObject(sampleValue3, sampleValue3, sampleValue3);
-        publisher.publishCopyOf(object).or_else([](auto& error) {
-            // Do something with error.
-            std::cerr << "Unable to publishCopyOf, error: " << error << std::endl;
-        });
-        //! [API Usage #3]
-
-        //! [API Usage #4]
-        //  * Provide a callable that will be used to populate the loaned sample.
-        //  * The first argument of the callable must be T* and is the location that the callable should
-        //      write its result to.
-        publisher.publishResultOf(getRadarObject, ct).or_else([](auto& error) {
-            // Do something with error.
-            std::cerr << "Unable to publishResultOf, error: " << error << std::endl;
-        });
-        publisher
-            .publishResultOf([&sampleValue4](RadarObject* object) {
-                *object = RadarObject(sampleValue4, sampleValue4, sampleValue4);
-            })
-            .or_else([](auto& error) {
-                // Do something with error.
-                std::cerr << "Unable to publishResultOf, error: " << error << std::endl;
-            });
-        //! [API Usage #4]
-
-
-        std::cout << APP_NAME << " sent values: " << sampleValue1 << ", " << sampleValue2 << ", " << sampleValue3
-                  << ", " << ct << ", " << sampleValue4 << std::endl;
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    return 0;
+    std::cout << "must be equal " << before << " == " << after << std::endl;
+    IOX_LOG(INFO) << "Test log output";
 }
