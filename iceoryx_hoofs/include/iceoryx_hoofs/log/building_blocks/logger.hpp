@@ -21,7 +21,6 @@
 #include "iceoryx_hoofs/iceoryx_hoofs_types.hpp"
 
 #include <atomic>
-#include <cstdint>
 #include <cstring>
 #include <mutex>
 

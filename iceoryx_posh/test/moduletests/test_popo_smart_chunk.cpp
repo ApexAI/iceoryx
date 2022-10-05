@@ -14,7 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "test.hpp"
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
+
 #include "test_popo_smart_chunk_common.hpp"
 
 namespace

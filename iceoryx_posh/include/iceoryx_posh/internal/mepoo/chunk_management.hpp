@@ -21,8 +21,6 @@
 #include "iceoryx_hoofs/internal/memory/relative_pointer.hpp"
 
 #include <atomic>
-#include <cstdint>
-#include <utility>
 
 namespace iox
 {

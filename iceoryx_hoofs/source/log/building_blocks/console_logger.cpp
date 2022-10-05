@@ -21,7 +21,6 @@
 
 #include <cstdio>
 #include <cstring>
-#include <ctime>
 
 namespace iox
 {

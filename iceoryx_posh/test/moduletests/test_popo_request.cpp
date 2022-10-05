@@ -15,9 +15,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_hoofs/cxx/unique_ptr.hpp"
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
 #include "iceoryx_posh/testing/mocks/chunk_mock.hpp"
 
-#include "test.hpp"
 #include "test_popo_smart_chunk_common.hpp"
 
 namespace

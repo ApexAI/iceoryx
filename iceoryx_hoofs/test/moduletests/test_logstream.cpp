@@ -21,9 +21,8 @@
 #include "iceoryx_hoofs/testing/mocks/logger_mock.hpp"
 #include "iceoryx_hoofs/testing/test.hpp"
 
-#include <array>
-#include <cstdint>
 #include <limits>
+#include <array>
 
 namespace
 {

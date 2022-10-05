@@ -14,6 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
 #include "iceoryx_posh/popo/server.hpp"
 #include "iceoryx_posh/testing/mocks/chunk_mock.hpp"
 #include "mocks/server_mock.hpp"
