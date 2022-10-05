@@ -16,30 +16,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
-#include "iceoryx_hoofs/log/logging.hpp"
-
-uint64_t contentsOfThreadLocalStatic()
-{
-    thread_local static uint64_t blubb = 1234;
-    return blubb;
-}
 
 int main()
 {
-    IOX_LOG(INFO) << "Test log output";
-    uint64_t before = contentsOfThreadLocalStatic();
-
     auto shm = iox::posix::SharedMemoryObjectBuilder()
                    .permissions(iox::cxx::perms::owner_all)
                    .memorySizeInBytes(1024 * 1024 * 512)
                    .accessMode(iox::posix::AccessMode::READ_WRITE)
                    .openMode(iox::posix::OpenMode::PURGE_AND_CREATE)
                    .name("blubb")
-                   .create()
-                   .expect("failed to create shm");
-
-    uint64_t after = contentsOfThreadLocalStatic();
-
-    std::cout << "must be equal " << before << " == " << after << std::endl;
-    IOX_LOG(INFO) << "Test log output";
+                   .create();
 }
