@@ -100,6 +100,8 @@ cxx::expected<SharedMemoryObject, SharedMemoryObjectError> SharedMemoryObjectBui
         IOX_LOG(ERROR) << "Failed to map created shared memory into process!";
         return cxx::error<SharedMemoryObjectError>(SharedMemoryObjectError::MAPPING_SHARED_MEMORY_FAILED);
     }
+    std::cout << "mapped memory to: " << std::hex << memoryMap->getBaseAddress() << " length: " << std::dec
+              << m_memorySizeInBytes << std::endl;
 
     Allocator allocator(memoryMap->getBaseAddress(), m_memorySizeInBytes);
 
