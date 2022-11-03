@@ -18,6 +18,7 @@
 #ifndef IOX_HOOFS_LOG_LOGSTREAM_HPP
 #define IOX_HOOFS_LOG_LOGSTREAM_HPP
 
+#include "iceoryx_hoofs/cxx/string.hpp"
 #include "iceoryx_hoofs/cxx/type_traits.hpp"
 #include "iceoryx_hoofs/log/logger.hpp"
 
@@ -154,7 +155,13 @@ class LogStream
     /// @return a reference to the LogStream instance
     /// @todo iox-#1755 instead of using std::string we could also accept everything with a c_str() method
     /// and avoid the std::string dependency; alternatively this could be implemented as free function
-    LogStream& operator<<(const std::string& str) noexcept;
+    template <
+        typename T,
+        std::enable_if_t<(!std::is_same<T, bool>::value) && (!std::is_same<T, const char*>::value)
+                             && (!std::is_same<T, const void* const>::value) && (!std::is_arithmetic<T>::value)
+                             && (!cxx::is_invocable_r<LogStream&, T, LogStream&>::value) && (!std::is_enum<T>::value),
+                         bool> = 0>
+    LogStream& operator<<(const T& str) noexcept;
 
     /// @brief Logging support for boolean
     /// @param[in] val is the boolean to log
@@ -207,7 +214,7 @@ class LogStream
     /// };
     /// @endcode
     template <typename Callable,
-              typename = std::enable_if_t<cxx::is_invocable_r<LogStream&, Callable, LogStream&>::value>>
+              std::enable_if_t<cxx::is_invocable_r<LogStream&, Callable, LogStream&>::value, bool> = 0>
     LogStream& operator<<(const Callable& c) noexcept;
 
     /// @brief Logging support for LogLevel

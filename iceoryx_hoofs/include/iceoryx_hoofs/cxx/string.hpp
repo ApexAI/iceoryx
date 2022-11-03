@@ -34,20 +34,16 @@ namespace cxx
 
 template <typename T, typename ReturnType>
 using IsStringOrCharArrayOrChar =
-    typename std::enable_if<((is_cxx_string<T>::value || is_char_array<T>::value)
-                             || (std::is_same<T, std::string>::value || std::is_same<T, char>::value)),
+    typename std::enable_if<(is_cxx_string<T>::value || is_char_array<T>::value || std::is_same<T, char>::value),
                             ReturnType>::type;
 
 template <typename T, typename ReturnType>
-using IsStringOrCharArray = typename std::enable_if<((is_cxx_string<T>::value || is_char_array<T>::value)
-                                                     || std::is_same<T, std::string>::value),
-                                                    ReturnType>::type;
+using IsStringOrCharArray =
+    typename std::enable_if<(is_cxx_string<T>::value || is_char_array<T>::value), ReturnType>::type;
 
 template <typename T, typename ReturnType>
 using IsStdStringOrCharArrayOrChar =
-    typename std::enable_if<((is_char_array<T>::value || std::is_same<T, std::string>::value)
-                             || std::is_same<T, char>::value),
-                            ReturnType>::type;
+    typename std::enable_if<(is_char_array<T>::value || std::is_same<T, char>::value), ReturnType>::type;
 
 template <typename T, typename ReturnType>
 using IsCxxStringOrCharArray =
@@ -233,28 +229,6 @@ class string final
     // NOLINTNEXTLINE(hicpp-named-parameter, readability-named-parameter)
     string(TruncateToCapacity_t, const char* const other) noexcept;
 
-    /// @brief conversion constructor for std::string to string which truncates characters if the std::string size is
-    /// greater than the string capacity
-    ///
-    /// @param [in] TruncateToCapacity_t is a compile time variable which is used to distinguish between
-    /// constructors with certain behavior
-    /// @param [in] other is the std::string to convert
-    /// @attention truncates characters if the std::string size is greater than the string capacity
-    ///
-    /// @code
-    ///     #include "iceoryx_hoofs/cxx/string.hpp"
-    ///     using namespace iox::cxx;
-    ///
-    ///     int main()
-    ///     {
-    ///         std::string bar = "bar";
-    ///         string<4> fuu(TruncateToCapacity, bar);
-    ///     }
-    /// @endcode
-    // TruncateToCapacity_t is a compile time variable to distinguish between constructors
-    // NOLINTNEXTLINE(hicpp-named-parameter, readability-named-parameter)
-    string(TruncateToCapacity_t, const std::string& other) noexcept;
-
     /// @brief constructor from cstring to string. Constructs the string with the first count characters of the cstring
     /// including null characters. If count is greater than the string capacity the remainder of the characters are
     /// truncated.
@@ -345,15 +319,7 @@ class string final
     /// @return true if the assignment succeeds, otherwise false
     bool unsafe_assign(const char* const str) noexcept;
 
-    /// @brief assigns a std::string to string. The assignment fails if the std::string size is greater than the string
-    /// capacity.
-    ///
-    /// @param [in] str is the std::string to assign
-    ///
-    /// @return true if the assignment succeeds, otherwise false
-    bool unsafe_assign(const std::string& str) noexcept;
-
-    /// @brief compares self and an iox::cxx::string, std::string or char array
+    /// @brief compares self and an iox::cxx::string or char array
     ///
     /// @param [in] other is the string to compare with self
     ///
@@ -397,16 +363,6 @@ class string final
     /// @brief clears the content of the string
     constexpr void clear() noexcept;
 
-    // AXIVION Next Construct AutosarC++19_03-A13.5.2 , AutosarC++19_03-A13.5.3: used for interoperability with
-    // std::string
-    /// @brief converts the string to a std::string
-    ///
-    /// @return a std::string with data equivalent to those stored in the string
-
-    // @todo iox-#260 remove this conversion and implement toStdString method
-    // NOLINTNEXTLINE(hicpp-explicit-conversions)
-    operator std::string() const noexcept;
-
     /// @brief since there are two valid options for what should happen when appending a string larger than this'
     /// capacity (failing or truncating), the fixed string does not support operator+=; use append for truncating or
     /// unsafe_append for failing in that case
@@ -414,12 +370,12 @@ class string final
     // NOLINTNEXTLINE(hicpp-named-parameter, readability-named-parameter) method is disabled via static_assert
     string& operator+=(const T&) noexcept;
 
-    /// @brief appends a iox::cxx::string/string literal/std::string to the end of this. If this' capacity is too
+    /// @brief appends a iox::cxx::string/string literal to the end of this. If this' capacity is too
     /// small for appending the whole string (literal), the remainder of the characters are truncated.
     ///
     /// @param [in] TruncateToCapacity_t is a compile time variable which is used to make the user aware of the possible
     /// truncation
-    /// @param [in] str is the iox::cxx::string/string literal/std::string to append
+    /// @param [in] str is the iox::cxx::string/string literal to append
     ///
     /// @return reference to self
     ///
@@ -441,10 +397,10 @@ class string final
     // NOLINTNEXTLINE(hicpp-named-parameter, readability-named-parameter)
     string& append(TruncateToCapacity_t, char cstr) noexcept;
 
-    /// @brief appends a iox::cxx::string/string literal/char/std::string to the end of this. The appending fails if the
+    /// @brief appends a iox::cxx::string/string literal/char to the end of this. The appending fails if the
     /// sum of both sizes is greater than this' capacity.
     ///
-    /// @param [in] iox::cxx::string/string literal/char/std::string to append
+    /// @param [in] iox::cxx::string/string literal/char to append
     ///
     /// @return true if the appending succeeds, otherwise false
     template <typename T>
@@ -485,7 +441,7 @@ class string final
     /// @brief finds the first occurence of the given character sequence; returns the position of the first character of
     /// the found substring, returns iox::cxx::nullopt if no substring is found or if pos is greater than this' size
     ///
-    /// @param [in] str is the character sequence to search for; must be a cxx::string, string literal or std::string
+    /// @param [in] str is the character sequence to search for; must be a cxx::string or string literal
     /// @param [in] pos is the position at which to start the search
     ///
     /// @return an optional containing the position of the first character of the found substring, iox::cxx::nullopt if
@@ -497,7 +453,7 @@ class string final
     /// and returns its position; returns iox::cxx::nullopt if no character is found or if pos is greater than this'
     /// size
     ///
-    /// @param [in] str is the character sequence to search for; must be a cxx::string, string literal or std::string
+    /// @param [in] str is the character sequence to search for; must be a cxx::string or string literal
     /// @param [in] pos is the position at which to start the search
     ///
     /// @return an optional containing the position of the first character equal to one of the characters of the given
@@ -508,7 +464,7 @@ class string final
     /// @brief finds the last occurence of a character equal to one of the characters of the given character sequence
     /// and returns its position; returns iox::cxx::nullopt if no character is found
     ///
-    /// @param [in] str is the character sequence to search for; must be a cxx::string, string literal or std::string
+    /// @param [in] str is the character sequence to search for; must be a cxx::string or string literal
     /// @param [in] pos is the position at which to finish the search
     ///
     /// @return an optional containing the position of the last character equal to one of the characters of the given
@@ -572,18 +528,7 @@ class string final
     uint64_t m_rawstringSize{0U};
 };
 
-/// @brief outputs the fixed string on stream
-///
-/// @param [in] stream is the output stream
-/// @param [in] str is the fixed string
-///
-/// @return the stream output of the fixed string
-template <uint64_t Capacity>
-inline std::ostream& operator<<(std::ostream& stream, const string<Capacity>& str) noexcept;
-
-// AXIVION DISABLE STYLE AutosarC++19_03-A13.5.5: Comparison with std::string, char array or
-// char is also intended
-/// @brief checks if a lhs std::string, char array or char is equal to a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is equal to a rhs iox::cxx::string
 ///
 /// @param [in] rhs is the iox::cxx::string
 ///
@@ -591,45 +536,45 @@ inline std::ostream& operator<<(std::ostream& stream, const string<Capacity>& st
 template <typename T, uint64_t Capacity>
 IsStdStringOrCharArrayOrChar<T, bool> operator==(const T& lhs, const string<Capacity>& rhs) noexcept;
 
-/// @brief checks if a lhs std::string, char array or char is not equal to a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is not equal to a rhs iox::cxx::string
 ///
-/// @param [in] lhs is the std::string, char array or char
+/// @param [in] lhs is the char array or char
 /// @param [in] rhs is the iox::cxx::string
 ///
 /// @return true if the contents of lhs and rhs are not equal, otherwise false
 template <typename T, uint64_t Capacity>
 IsStdStringOrCharArrayOrChar<T, bool> operator!=(const T& lhs, const string<Capacity>& rhs) noexcept;
 
-/// @brief checks if a lhs std::string, char array or char is less than a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is less than a rhs iox::cxx::string
 ///
-/// @param [in] lhs is the std::string, char array or char
+/// @param [in] lhs is the  char array or char
 /// @param [in] rhs is the iox::cxx::string
 ///
 /// @return true if lhs is less than rhs, otherwise false
 template <typename T, uint64_t Capacity>
 IsStdStringOrCharArrayOrChar<T, bool> operator<(const T& lhs, const string<Capacity>& rhs) noexcept;
 
-/// @brief checks if a lhs std::string, char array or char is less than or equal to a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is less than or equal to a rhs iox::cxx::string
 ///
-/// @param [in] lhs is the std::string, char array or char
+/// @param [in] lhs is the char array or char
 /// @param [in] rhs is the iox::cxx::string
 ///
 /// @return true if lhs is less than or equal to rhs, otherwise false
 template <typename T, uint64_t Capacity>
 IsStdStringOrCharArrayOrChar<T, bool> operator<=(const T& lhs, const string<Capacity>& rhs) noexcept;
 
-/// @brief checks if a lhs std::string, char array or char is greater than a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is greater than a rhs iox::cxx::string
 ///
-/// @param [in] lhs is the std::string, char array or char
+/// @param [in] lhs is the char array or char
 /// @param [in] rhs is the iox::cxx::string
 ///
 /// @return true if lhs is greater than rhs, otherwise false
 template <typename T, uint64_t Capacity>
 IsStdStringOrCharArrayOrChar<T, bool> operator>(const T& lhs, const string<Capacity>& rhs) noexcept;
 
-/// @brief checks if a lhs std::string, char array or char is greater than or equal to a rhs iox::cxx::string
+/// @brief checks if a lhs char array or char is greater than or equal to a rhs iox::cxx::string
 ///
-/// @param [in] lhs is the std::string, char array or char
+/// @param [in] lhs is the char array or char
 /// @param [in] rhs is the iox::cxx::string
 ///
 /// @return true if lhs is greater than or equal to rhs, otherwise false

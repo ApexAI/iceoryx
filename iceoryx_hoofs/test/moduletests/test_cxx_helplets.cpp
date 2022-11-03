@@ -346,7 +346,7 @@ TEST(Helplets_test_isValidFileName, ValidLetterCombinationsAreValid)
             auto& s = combinations[index];
             s.append(1, static_cast<char>(i));
 
-            EXPECT_TRUE(isValidFileName(string<FILE_PATH_LENGTH>(TruncateToCapacity, s)));
+            EXPECT_TRUE(isValidFileName(string<FILE_PATH_LENGTH>(TruncateToCapacity, s.c_str(), s.size())));
         }
     }
 }
@@ -375,9 +375,12 @@ TEST(Helplets_test_isValidFileName, WhenOneInvalidCharacterIsContainedFileNameIs
         std::string invalidCharacterEnd = validName1 + validName2;
         invalidCharacterEnd.append(1, static_cast<char>(i));
 
-        string<FILE_PATH_LENGTH> invalidCharacterFrontTest(TruncateToCapacity, invalidCharacterFront);
-        string<FILE_PATH_LENGTH> invalidCharacterMiddleTest(TruncateToCapacity, invalidCharacterMiddle);
-        string<FILE_PATH_LENGTH> invalidCharacterEndTest(TruncateToCapacity, invalidCharacterEnd);
+        string<FILE_PATH_LENGTH> invalidCharacterFrontTest(
+            TruncateToCapacity, invalidCharacterFront.c_str(), invalidCharacterFront.size());
+        string<FILE_PATH_LENGTH> invalidCharacterMiddleTest(
+            TruncateToCapacity, invalidCharacterMiddle.c_str(), invalidCharacterMiddle.size());
+        string<FILE_PATH_LENGTH> invalidCharacterEndTest(
+            TruncateToCapacity, invalidCharacterEnd.c_str(), invalidCharacterEnd.size());
 
         EXPECT_FALSE(isValidFileName(invalidCharacterFrontTest));
         EXPECT_FALSE(isValidFileName(invalidCharacterMiddleTest));
@@ -530,9 +533,12 @@ TEST(Helplets_test_isValidPathToFile_isValidPathToDirectory_isValidPathEntry,
         invalidCharacterEnd.resize(invalidCharacterEnd.size() + 1);
         invalidCharacterEnd[invalidCharacterEnd.size() - 1] = static_cast<char>(i);
 
-        string<FILE_PATH_LENGTH> invalidCharacterFrontTest(TruncateToCapacity, invalidCharacterFront);
-        string<FILE_PATH_LENGTH> invalidCharacterMiddleTest(TruncateToCapacity, invalidCharacterMiddle);
-        string<FILE_PATH_LENGTH> invalidCharacterEndTest(TruncateToCapacity, invalidCharacterEnd);
+        string<FILE_PATH_LENGTH> invalidCharacterFrontTest(
+            TruncateToCapacity, invalidCharacterFront.c_str(), invalidCharacterFront.size());
+        string<FILE_PATH_LENGTH> invalidCharacterMiddleTest(
+            TruncateToCapacity, invalidCharacterMiddle.c_str(), invalidCharacterMiddle.size());
+        string<FILE_PATH_LENGTH> invalidCharacterEndTest(
+            TruncateToCapacity, invalidCharacterEnd.c_str(), invalidCharacterEnd.size());
 
         EXPECT_FALSE(isValidPathToFile(invalidCharacterFrontTest));
         EXPECT_FALSE(isValidPathToFile(invalidCharacterMiddleTest));

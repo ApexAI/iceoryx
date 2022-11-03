@@ -118,7 +118,12 @@ inline LogStream& LogStream::operator<<(const char* cstr) noexcept
 
 // AXIVION Next Construct AutosarC++19_03-M5.17.1 : This is not used as shift operator but as stream operator and does
 // not require to implement '<<='
-inline LogStream& LogStream::operator<<(const std::string& str) noexcept
+template <typename T,
+          std::enable_if_t<(!std::is_same<T, bool>::value) && (!std::is_same<T, const char*>::value)
+                               && (!std::is_same<T, const void* const>::value) && (!std::is_arithmetic<T>::value)
+                               && (!cxx::is_invocable_r<LogStream&, T, LogStream&>::value) && (!std::is_enum<T>::value),
+                           bool>>
+inline LogStream& LogStream::operator<<(const T& str) noexcept
 {
     m_logger.logString(str.c_str());
     m_isFlushed = false;
@@ -186,7 +191,7 @@ inline LogStream& LogStream::operator<<(const LogOct<T> val) noexcept
 
 // AXIVION Next Construct AutosarC++19_03-M5.17.1 : This is not used as shift operator but as stream operator and does
 // not require to implement '<<='
-template <typename Callable, typename>
+template <typename Callable, std::enable_if_t<cxx::is_invocable_r<LogStream&, Callable, LogStream&>::value, bool>>
 inline LogStream& LogStream::operator<<(const Callable& c) noexcept
 {
     return c(*this);
