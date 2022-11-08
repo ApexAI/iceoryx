@@ -14,32 +14,19 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
-#ifndef IOX_DUST_STD_STRING_COMPATABILITY_INL
-#define IOX_DUST_STD_STRING_COMPATABILITY_INL
+#ifndef IOX_DUST_STRING_CONVERSION_INL
+#define IOX_DUST_STRING_CONVERSION_INL
 
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 
 namespace iox
 {
 namespace cxx
 {
 
-// template <uint64_t Capacity>
-// inline string<Capacity>::operator std::string() const noexcept
-// {
-//     return std::string(c_str());
-// }
 
-
-// template <uint64_t Capacity>
-// // TruncateToCapacity_t is a compile time variable to distinguish between constructors
-// // NOLINTNEXTLINE(hicpp-named-parameter, readability-named-parameter)
-// inline string<Capacity>::string(TruncateToCapacity_t, const std::string& other) noexcept
-//     : string(TruncateToCapacity, other.c_str(), other.size())
-// {
-// }
 
 } // namespace cxx
 } // namespace iox
 
-#endif // IOX_DUST_STD_STRING_COMPATABILITY_INL
+#endif // IOX_DUST_STRING_CONVERSION_INL

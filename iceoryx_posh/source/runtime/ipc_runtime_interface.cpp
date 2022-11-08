@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_posh/internal/runtime/ipc_runtime_interface.hpp"
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 #include "iceoryx_hoofs/cxx/convert.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_access_rights.hpp"
 #include "iceoryx_posh/error_handling/error_handling.hpp"
@@ -147,7 +147,7 @@ IpcRuntimeInterface::IpcRuntimeInterface(const RuntimeName_t& roudiName,
 bool IpcRuntimeInterface::sendKeepalive() noexcept
 {
     return (m_sendKeepalive) ? m_RoudiIpcInterface.send({IpcMessageTypeToString(IpcMessageType::KEEPALIVE),
-                                                         cxx::convertFrom<RuntimeName_t, std::string>(m_runtimeName)})
+                                                         cxx::convert<RuntimeName_t, std::string>(m_runtimeName)})
                              : true;
 }
 

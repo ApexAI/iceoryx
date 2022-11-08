@@ -17,7 +17,7 @@
 
 #include "iceoryx_posh/roudi/roudi_config_toml_file_provider.hpp"
 #include "iceoryx_dust/cxx/file_reader.hpp"
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 #include "iceoryx_hoofs/cxx/string.hpp"
 #include "iceoryx_hoofs/cxx/vector.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_access_rights.hpp"
@@ -112,9 +112,9 @@ TomlRouDiConfigFileProvider::parse() noexcept
     for (auto segment : *segments)
     {
         auto writer = segment->get_as<std::string>("writer").value_or(
-            cxx::convertFrom<posix::PosixGroup::groupName_t, std::string>(groupOfCurrentProcess));
+            cxx::convert<posix::PosixGroup::groupName_t, std::string>(groupOfCurrentProcess));
         auto reader = segment->get_as<std::string>("reader").value_or(
-            cxx::convertFrom<posix::PosixGroup::groupName_t, std::string>(groupOfCurrentProcess));
+            cxx::convert<posix::PosixGroup::groupName_t, std::string>(groupOfCurrentProcess));
         iox::mepoo::MePooConfig mempoolConfig;
         auto mempools = segment->get_table_array("mempool");
         if (!mempools)

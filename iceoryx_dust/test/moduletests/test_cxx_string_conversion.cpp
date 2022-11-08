@@ -15,7 +15,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 
 #include "test.hpp"
 
@@ -41,7 +41,7 @@ TEST_F(StdString_test, Foo)
     ::testing::Test::RecordProperty("TEST_ID", "461b72d4-5f47-439e-832b-6f6fc9f27121");
     std::string stdString("Foo");
 
-    auto sut = convertFrom<std::string, string<10>>(stdString);
+    auto sut = convert<std::string, string<10>>(stdString);
 
     EXPECT_THAT(sut.c_str(), StrEq(stdString.c_str()));
 }

@@ -15,7 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_dust/posix_wrapper/named_pipe.hpp"
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 #include "iceoryx_hoofs/cxx/deadline_timer.hpp"
 #include "iceoryx_hoofs/cxx/helplets.hpp"
 
@@ -213,7 +213,7 @@ cxx::expected<IpcChannelError> NamedPipe::trySend(const std::string& message) co
 
     if (*result)
     {
-        IOX_DISCARD_RESULT(m_data->messages.push(cxx::convertFrom<std::string, Message_t>(message)));
+        IOX_DISCARD_RESULT(m_data->messages.push(cxx::convert<std::string, Message_t>(message)));
         cxx::Expects(!m_data->receiveSemaphore().post().has_error());
         return cxx::success<>();
     }
@@ -233,7 +233,7 @@ cxx::expected<IpcChannelError> NamedPipe::send(const std::string& message) const
     }
 
     cxx::Expects(!m_data->sendSemaphore().wait().has_error());
-    IOX_DISCARD_RESULT(m_data->messages.push(cxx::convertFrom<std::string, Message_t>(message)));
+    IOX_DISCARD_RESULT(m_data->messages.push(cxx::convert<std::string, Message_t>(message)));
     cxx::Expects(!m_data->receiveSemaphore().post().has_error());
 
     return cxx::success<>();
@@ -257,7 +257,7 @@ cxx::expected<IpcChannelError> NamedPipe::timedSend(const std::string& message,
 
     if (*result == SemaphoreWaitState::NO_TIMEOUT)
     {
-        IOX_DISCARD_RESULT(m_data->messages.push(cxx::convertFrom<std::string, Message_t>(message)));
+        IOX_DISCARD_RESULT(m_data->messages.push(cxx::convert<std::string, Message_t>(message)));
         cxx::Expects(!m_data->receiveSemaphore().post().has_error());
         return cxx::success<>();
     }

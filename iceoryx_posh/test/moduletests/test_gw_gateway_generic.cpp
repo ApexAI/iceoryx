@@ -15,7 +15,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "iceoryx_dust/cxx/std_string_compatability.hpp"
+#include "iceoryx_dust/cxx/string_conversion.hpp"
 #include "iceoryx_hoofs/cxx/convert.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
 #include "iceoryx_posh/gateway/channel.hpp"
@@ -149,9 +149,9 @@ TEST_F(GatewayGenericTest, HandlesMaxmimumChannelCapacity)
     {
         auto result = sut->addChannel(
             iox::capro::ServiceDescription(
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i))),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i))),
             StubbedIceoryxTerminal::Options());
         EXPECT_EQ(false, result.has_error());
     }
@@ -170,9 +170,9 @@ TEST_F(GatewayGenericTest, ThrowsErrorWhenExceedingMaximumChannelCapaicity)
     {
         auto result = sut->addChannel(
             iox::capro::ServiceDescription(
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
-                iox::cxx::convertFrom<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i))),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i)),
+                iox::cxx::convert<std::string, iox::capro::IdString_t>(iox::cxx::convert::toString(i))),
             StubbedIceoryxTerminal::Options());
         EXPECT_EQ(false, result.has_error());
     }
