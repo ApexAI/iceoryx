@@ -23,9 +23,23 @@ namespace iox
 {
 namespace cxx
 {
+template <typename F, typename T>
+inline constexpr T convert(const F value) noexcept
+{
+    return From<F, T>::convert(value);
+}
 
+template <uint64_t N>
+inline std::string From<string<N>, std::string>::convert(const string<N>& value)
+{
+    return std::string(value.c_str(), value.size());
+}
 
-
+template <uint64_t N>
+inline string<N> From<std::string, string<N>>::convert(const std::string& value) noexcept
+{
+    return string<N>(TruncateToCapacity, value.c_str(), value.size());
+}
 } // namespace cxx
 } // namespace iox
 

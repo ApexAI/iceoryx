@@ -34,16 +34,27 @@ class StdString_test : public Test
     void TearDown() override
     {
     }
+    static constexpr uint64_t CAPACITY{10};
 };
 
-TEST_F(StdString_test, Foo)
+TEST_F(StdString_test, StdStringCanBeConvertedToIoxString)
 {
     ::testing::Test::RecordProperty("TEST_ID", "461b72d4-5f47-439e-832b-6f6fc9f27121");
     std::string stdString("Foo");
 
-    auto sut = convert<std::string, string<10>>(stdString);
+    auto sut = convert<std::string, string<CAPACITY>>(stdString);
 
     EXPECT_THAT(sut.c_str(), StrEq(stdString.c_str()));
+}
+
+TEST_F(StdString_test, IoxStringCanBeConvertedToStdString)
+{
+    ::testing::Test::RecordProperty("TEST_ID", "698be7cc-f911-42be-b512-b5336eb1d4bd");
+    string<CAPACITY> ioxString("Bar");
+
+    auto sut = convert<string<CAPACITY>, std::string>(ioxString);
+
+    EXPECT_THAT(sut.c_str(), StrEq(ioxString.c_str()));
 }
 
 // /// @note string(TruncateToCapacity_t, const std::string& other) noexcept
@@ -275,106 +286,106 @@ TEST_F(StdString_test, Foo)
 //     EXPECT_THAT(this->testSubject.compare(foo), Lt(0));
 // }
 
-    // const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject < testStdString, Eq(false));
-    // EXPECT_THAT(this->testSubject <= testStdString, Eq(true));
-    // EXPECT_THAT(this->testSubject > testStdString, Eq(false));
-    // EXPECT_THAT(this->testSubject >= testStdString, Eq(true));
+// const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject < testStdString, Eq(false));
+// EXPECT_THAT(this->testSubject <= testStdString, Eq(true));
+// EXPECT_THAT(this->testSubject > testStdString, Eq(false));
+// EXPECT_THAT(this->testSubject >= testStdString, Eq(true));
 
-    // EXPECT_THAT(testStdString < this->testSubject, Eq(false));
-    // EXPECT_THAT(testStdString <= this->testSubject, Eq(true));
-    // EXPECT_THAT(testStdString > this->testSubject, Eq(false));
-    // EXPECT_THAT(testStdString >= this->testSubject, Eq(true));
+// EXPECT_THAT(testStdString < this->testSubject, Eq(false));
+// EXPECT_THAT(testStdString <= this->testSubject, Eq(true));
+// EXPECT_THAT(testStdString > this->testSubject, Eq(false));
+// EXPECT_THAT(testStdString >= this->testSubject, Eq(true));
 
-    // const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject == testStdString, Eq(false));
-    // EXPECT_THAT(testStdString == this->testSubject, Eq(false));
-    // EXPECT_THAT(this->testSubject != testStdString, Eq(true));
-    // EXPECT_THAT(testStdString != this->testSubject, Eq(true));
-
-
-    // std::string testStdString = "M";
-    // testStdString.reserve(STRINGCAP + 5U);
-    // EXPECT_THAT(this->testSubject == testStdString, Eq(true));
-    // EXPECT_THAT(testStdString == this->testSubject, Eq(true));
-    // EXPECT_THAT(this->testSubject != testStdString, Eq(false));
-    // EXPECT_THAT(testStdString != this->testSubject, Eq(false));
-
-    //     const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject == testStdString, Eq(false));
-    // EXPECT_THAT(testStdString == this->testSubject, Eq(false));
-    // EXPECT_THAT(this->testSubject != testStdString, Eq(true));
-    // EXPECT_THAT(testStdString != this->testSubject, Eq(true));
-
-    //     const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject == testStdString, Eq(true));
-    // EXPECT_THAT(testStdString == this->testSubject, Eq(true));
-    // EXPECT_THAT(this->testSubject != testStdString, Eq(false));
-    // EXPECT_THAT(testStdString != this->testSubject, Eq(false));
-
-    // EXPECT_THAT(sutGreater < testStdString, Eq(false));
-    // EXPECT_THAT(sutGreater <= testStdString, Eq(false));
-    // EXPECT_THAT(sutGreater > testStdString, Eq(true));
-    // EXPECT_THAT(sutGreater >= testStdString, Eq(true));
-    // EXPECT_THAT(testStdString < sutGreater, Eq(true));
-    // EXPECT_THAT(testStdString <= sutGreater, Eq(true));
-    // EXPECT_THAT(testStdString > sutGreater, Eq(false));
-    // EXPECT_THAT(testStdString >= sutGreater, Eq(false));
-
-    // EXPECT_THAT(sutLess < testStdString, Eq(true));
-    // EXPECT_THAT(sutLess <= testStdString, Eq(true));
-    // EXPECT_THAT(sutLess > testStdString, Eq(false));
-    // EXPECT_THAT(sutLess >= testStdString, Eq(false));
-    // EXPECT_THAT(testStdString < sutLess, Eq(false));
-    // EXPECT_THAT(testStdString <= sutLess, Eq(false));
-    // EXPECT_THAT(testStdString > sutLess, Eq(true));
-    // EXPECT_THAT(testStdString >= sutLess, Eq(true));
+// const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject == testStdString, Eq(false));
+// EXPECT_THAT(testStdString == this->testSubject, Eq(false));
+// EXPECT_THAT(this->testSubject != testStdString, Eq(true));
+// EXPECT_THAT(testStdString != this->testSubject, Eq(true));
 
 
-    // EXPECT_THAT(sutGreater < testStdString, Eq(false));
-    // EXPECT_THAT(sutGreater <= testStdString, Eq(false));
-    // EXPECT_THAT(sutGreater > testStdString, Eq(true));
-    // EXPECT_THAT(sutGreater >= testStdString, Eq(true));
-    // EXPECT_THAT(testStdString < sutGreater, Eq(true));
-    // EXPECT_THAT(testStdString <= sutGreater, Eq(true));
-    // EXPECT_THAT(testStdString > sutGreater, Eq(false));
-    // EXPECT_THAT(testStdString >= sutGreater, Eq(false));
+// std::string testStdString = "M";
+// testStdString.reserve(STRINGCAP + 5U);
+// EXPECT_THAT(this->testSubject == testStdString, Eq(true));
+// EXPECT_THAT(testStdString == this->testSubject, Eq(true));
+// EXPECT_THAT(this->testSubject != testStdString, Eq(false));
+// EXPECT_THAT(testStdString != this->testSubject, Eq(false));
 
-    // EXPECT_THAT(sutLess < testStdString, Eq(true));
-    // EXPECT_THAT(sutLess <= testStdString, Eq(true));
-    // EXPECT_THAT(sutLess > testStdString, Eq(false));
-    // EXPECT_THAT(sutLess >= testStdString, Eq(false));
-    // EXPECT_THAT(testStdString < sutLess, Eq(false));
-    // EXPECT_THAT(testStdString <= sutLess, Eq(false));
-    // EXPECT_THAT(testStdString > sutLess, Eq(true));
-    // EXPECT_THAT(testStdString >= sutLess, Eq(true));
+//     const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject == testStdString, Eq(false));
+// EXPECT_THAT(testStdString == this->testSubject, Eq(false));
+// EXPECT_THAT(this->testSubject != testStdString, Eq(true));
+// EXPECT_THAT(testStdString != this->testSubject, Eq(true));
 
-    // const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject < testStdString, Eq(false));
-    // EXPECT_THAT(this->testSubject <= testStdString, Eq(true));
-    // EXPECT_THAT(this->testSubject > testStdString, Eq(false));
-    // EXPECT_THAT(this->testSubject >= testStdString, Eq(true));
+//     const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject == testStdString, Eq(true));
+// EXPECT_THAT(testStdString == this->testSubject, Eq(true));
+// EXPECT_THAT(this->testSubject != testStdString, Eq(false));
+// EXPECT_THAT(testStdString != this->testSubject, Eq(false));
 
-    // EXPECT_THAT(testStdString < this->testSubject, Eq(false));
-    // EXPECT_THAT(testStdString <= this->testSubject, Eq(true));
-    // EXPECT_THAT(testStdString > this->testSubject, Eq(false));
-    // EXPECT_THAT(testStdString >= this->testSubject, Eq(true));
+// EXPECT_THAT(sutGreater < testStdString, Eq(false));
+// EXPECT_THAT(sutGreater <= testStdString, Eq(false));
+// EXPECT_THAT(sutGreater > testStdString, Eq(true));
+// EXPECT_THAT(sutGreater >= testStdString, Eq(true));
+// EXPECT_THAT(testStdString < sutGreater, Eq(true));
+// EXPECT_THAT(testStdString <= sutGreater, Eq(true));
+// EXPECT_THAT(testStdString > sutGreater, Eq(false));
+// EXPECT_THAT(testStdString >= sutGreater, Eq(false));
 
-    // const std::string testStdString;
-    // EXPECT_THAT(this->testSubject.compare(testStdString), Gt(0));
+// EXPECT_THAT(sutLess < testStdString, Eq(true));
+// EXPECT_THAT(sutLess <= testStdString, Eq(true));
+// EXPECT_THAT(sutLess > testStdString, Eq(false));
+// EXPECT_THAT(sutLess >= testStdString, Eq(false));
+// EXPECT_THAT(testStdString < sutLess, Eq(false));
+// EXPECT_THAT(testStdString <= sutLess, Eq(false));
+// EXPECT_THAT(testStdString > sutLess, Eq(true));
+// EXPECT_THAT(testStdString >= sutLess, Eq(true));
+
+
+// EXPECT_THAT(sutGreater < testStdString, Eq(false));
+// EXPECT_THAT(sutGreater <= testStdString, Eq(false));
+// EXPECT_THAT(sutGreater > testStdString, Eq(true));
+// EXPECT_THAT(sutGreater >= testStdString, Eq(true));
+// EXPECT_THAT(testStdString < sutGreater, Eq(true));
+// EXPECT_THAT(testStdString <= sutGreater, Eq(true));
+// EXPECT_THAT(testStdString > sutGreater, Eq(false));
+// EXPECT_THAT(testStdString >= sutGreater, Eq(false));
+
+// EXPECT_THAT(sutLess < testStdString, Eq(true));
+// EXPECT_THAT(sutLess <= testStdString, Eq(true));
+// EXPECT_THAT(sutLess > testStdString, Eq(false));
+// EXPECT_THAT(sutLess >= testStdString, Eq(false));
+// EXPECT_THAT(testStdString < sutLess, Eq(false));
+// EXPECT_THAT(testStdString <= sutLess, Eq(false));
+// EXPECT_THAT(testStdString > sutLess, Eq(true));
+// EXPECT_THAT(testStdString >= sutLess, Eq(true));
+
+// const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject < testStdString, Eq(false));
+// EXPECT_THAT(this->testSubject <= testStdString, Eq(true));
+// EXPECT_THAT(this->testSubject > testStdString, Eq(false));
+// EXPECT_THAT(this->testSubject >= testStdString, Eq(true));
+
+// EXPECT_THAT(testStdString < this->testSubject, Eq(false));
+// EXPECT_THAT(testStdString <= this->testSubject, Eq(true));
+// EXPECT_THAT(testStdString > this->testSubject, Eq(false));
+// EXPECT_THAT(testStdString >= this->testSubject, Eq(true));
+
+// const std::string testStdString;
+// EXPECT_THAT(this->testSubject.compare(testStdString), Gt(0));
 
 //     EXPECT_THAT(this->testSubject.compare(testStdString), Eq(0));
 
-    // const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Lt(0));
+// const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Lt(0));
 
-    // const std::string testStdString = &testCharArray[0];
-    // EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Gt(0));
+// const std::string testStdString = &testCharArray[0];
+// EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Gt(0));
 
 
-    // std::string testStdString(STRINGCAP, 'M');
-    // testStdString.reserve(STRINGCAP + 13U);
-    // EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Eq(0));
+// std::string testStdString(STRINGCAP, 'M');
+// testStdString.reserve(STRINGCAP + 13U);
+// EXPECT_THAT(this->testSubject.compare(testStdString.c_str()), Eq(0));
 // /// @note bool unsafe_assign(const std::string& str) noexcept
 // TYPED_TEST(stringTyped_test, UnsafeAssignOfSTDStringOfSize0ResultsInSize0)
 // {
@@ -427,7 +438,7 @@ TEST_F(StdString_test, Foo)
 //     EXPECT_THAT(this->testSubject.c_str(), StrEq("L"));
 // }
 
-    // std::string testStdString = 'a';
-    // res = this->testSubject.find_first_of(testStdString);
-    // EXPECT_THAT(res.has_value(), Eq(false));
+// std::string testStdString = 'a';
+// res = this->testSubject.find_first_of(testStdString);
+// EXPECT_THAT(res.has_value(), Eq(false));
 } // namespace

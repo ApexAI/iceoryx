@@ -28,28 +28,24 @@ namespace cxx
 template <typename Source, typename Destination>
 struct From;
 
+/// @brief Converts an object of type F to an object of type T
+/// @tparam F type of source
+/// @tparam T type of destination
+/// @param[value] value to convert
+/// @return converted value
 template <typename F, typename T>
-constexpr T convert(const F value) noexcept
-{
-    return From<F, T>::convert(value);
-}
+constexpr T convert(const F value) noexcept;
 
 template <uint64_t N>
 struct From<string<N>, std::string>
 {
-    static std::string convert(const string<N>& value)
-    {
-        return std::string(value.c_str(), value.size());
-    }
+    static std::string convert(const string<N>& value);
 };
 
 template <uint64_t N>
 struct From<std::string, string<N>>
 {
-    static string<N> convert(const std::string& value)
-    {
-        return string<N>(TruncateToCapacity, value.c_str(), value.size());
-    }
+    static string<N> convert(const std::string& value) noexcept;
 };
 
 } // namespace cxx
