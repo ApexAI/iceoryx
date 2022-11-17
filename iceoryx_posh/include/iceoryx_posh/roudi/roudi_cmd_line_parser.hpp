@@ -17,7 +17,9 @@
 #ifndef IOX_POSH_ROUDI_ROUDI_CMD_LINE_PARSER_HPP
 #define IOX_POSH_ROUDI_ROUDI_CMD_LINE_PARSER_HPP
 
+#include "iceoryx_dust/cli/command_line_argument_definition.hpp"
 #include "iceoryx_hoofs/cxx/expected.hpp"
+#include "iceoryx_hoofs/cxx/function.hpp"
 #include "iceoryx_hoofs/cxx/optional.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
@@ -33,6 +35,36 @@ enum class CmdLineParserResult
 {
     UNKNOWN_OPTION_USED,
     INFO_OUTPUT_ONLY
+};
+
+struct RoudiCommandLineArguments
+{
+    IOX_CLI_DEFINITION(RoudiCommandLineArguments);
+
+    IOX_CLI_SWITCH(version, 'v', "version", "Displays the programs version");
+    IOX_CLI_OPTIONAL(
+        uint32_t,
+        killDelay,
+        roudi::PROCESS_DEFAULT_KILL_DELAY.toSeconds(),
+        'k',
+        "kill-delay",
+        "Sets the delay when RouDi sends SIG_KILL, if apps haven't responded after trying SIGTERM first, in seconds.");
+    IOX_CLI_OPTIONAL(cxx::string<10>,
+                     compatibility,
+                     "off",
+                     'x',
+                     "compatibility",
+                     "Sets the compatibility check level between runtime and RouDi. Valid values are: off, major, "
+                     "minor, patch, commitId, buildData.");
+    IOX_CLI_OPTIONAL(
+        bool, monitoringMode, false, 'm', "monitoring-mode", "Enables/disables process alive monitoring mode.");
+    IOX_CLI_OPTIONAL(uint16_t, uniqueRoudiId, 0, 'u', "unique-roudi-id", "Set the unique RouDi id.");
+    IOX_CLI_OPTIONAL(cxx::string<10>,
+                     logLevel,
+                     "debug",
+                     'l',
+                     "log-level",
+                     "Set log level. Valid values are: off, trace, debug, info, warning, error, fatal");
 };
 
 class CmdLineParser
