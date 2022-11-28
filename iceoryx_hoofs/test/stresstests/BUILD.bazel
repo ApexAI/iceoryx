@@ -30,6 +30,7 @@ cc_binary(
 
 cc_test(
     name = "test_stress_sofi",
+    timeout = "long",  # 15 minutes
     srcs = ["sofi/test_stress_sofi.cpp"],
     linkopts = select({
         "//iceoryx_platform:linux": ["-ldl"],
@@ -46,6 +47,7 @@ cc_test(
 
 cc_test(
     name = "hoofs_stresstests",
+    timeout = "long",  # 15 minutes
     srcs = glob([
         "*.cpp",
         "*.hpp",
