@@ -41,9 +41,6 @@ bazel run //:buildifier_lint_check
 msg "Bazel build"
 bazel build //...
 
-# Evaluate test failure https://github.com/eclipse-iceoryx/iceoryx/issues/1547
-BAZEL_GTEST_FILTER="-Thread_test*"
-
 # We exclude the sofi stresstest in CI since we cannot set the CPU Affinity in the GitHub Action Runners
 msg "running tests"
-bazel test //... --deleted_packages=iceoryx_hoofs/test/stresstests  --test_output=all --test_arg=--gtest_filter="$BAZEL_GTEST_FILTER"
+bazel test //... --deleted_package  --test_output=all --test_timeout_filters=-long,-eternal
