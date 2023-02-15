@@ -105,6 +105,8 @@ iox_add_library(
         source/posix_wrapper/unix_domain_socket.cpp
         source/memory/relative_pointer_data.cpp
         time/source/duration.cpp
+        source/error_reporting/platform/default/default_error_handler.cpp
+        source/error_reporting/platform/default/test_error_handler.cpp
 )
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/iceoryx_hoofs_deployment.hpp.in"

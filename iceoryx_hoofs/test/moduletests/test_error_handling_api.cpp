@@ -8,7 +8,6 @@
 #include "error_reporting/module_b/error_reporting.hpp"
 
 #include "error_reporting/test_helper.hpp"
-
 #include "iceoryx_hoofs/cxx/expected.hpp"
 
 namespace
