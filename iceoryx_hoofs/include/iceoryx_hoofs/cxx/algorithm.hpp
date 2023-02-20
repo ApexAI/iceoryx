@@ -17,6 +17,9 @@
 #ifndef IOX_HOOFS_CXX_ALGORITHM_HPP
 #define IOX_HOOFS_CXX_ALGORITHM_HPP
 
+// cannot use here due to circular dependency (via expected, which is not strictly needed)
+// #include "iceoryx_hoofs/error_reporting/modules/hoofs/error_reporting.hpp"
+
 #include "iceoryx_hoofs/cxx/attributes.hpp"
 #include "iceoryx_hoofs/cxx/requires.hpp"
 #include "iceoryx_hoofs/cxx/type_traits.hpp"
@@ -171,6 +174,7 @@ struct greater_or_equal
         : m_value(t)
     {
         cxx::Expects(t >= Minimum);
+        // IOX_PRECONDITION(t >= Minimum, "");
     }
 
     // AXIVION Next Construct AutosarC++19_03-A13.5.2,AutosarC++19_03-A13.5.3:this class should behave like a T but

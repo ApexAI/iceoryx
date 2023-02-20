@@ -18,6 +18,9 @@
 #ifndef IOX_HOOFS_MEMORY_RELATIVE_POINTER_INL
 #define IOX_HOOFS_MEMORY_RELATIVE_POINTER_INL
 
+#include "iceoryx_hoofs/error_reporting/modules/hoofs/error_reporting.hpp"
+
+#include "iceoryx_hoofs/error_reporting/api.hpp"
 #include "iceoryx_hoofs/memory/relative_pointer.hpp"
 
 namespace iox
@@ -106,6 +109,7 @@ inline T* RelativePointer<T>::operator->() const noexcept
 {
     auto* const ptr{get()};
     cxx::Ensures(ptr != nullptr);
+    IOX_ASSUME(ptr != nullptr, "");
     return ptr;
 }
 
