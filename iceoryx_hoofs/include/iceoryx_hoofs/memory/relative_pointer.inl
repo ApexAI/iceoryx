@@ -18,8 +18,6 @@
 #ifndef IOX_HOOFS_MEMORY_RELATIVE_POINTER_INL
 #define IOX_HOOFS_MEMORY_RELATIVE_POINTER_INL
 
-#include "iceoryx_hoofs/error_reporting/modules/hoofs/error_reporting.hpp"
-
 #include "iceoryx_hoofs/error_reporting/api.hpp"
 #include "iceoryx_hoofs/memory/relative_pointer.hpp"
 
