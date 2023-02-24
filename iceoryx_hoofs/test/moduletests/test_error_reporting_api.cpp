@@ -1,3 +1,4 @@
+#include "iceoryx_hoofs/error_reporting/api.hpp"
 #include "test.hpp"
 #include <gtest/gtest.h>
 
@@ -197,6 +198,16 @@ TEST_F(ErrorReportingAPI_test, reportErrorsFromDifferentModules)
     ASSERT_NO_PANIC();
     ASSERT_ERROR(MyCodeA::OutOfBounds);
     ASSERT_ERROR(MyCodeB::OutOfMemory);
+}
+
+TEST_F(ErrorReportingAPI_test, panicAtUnreachableCode)
+{
+    ::testing::Test::RecordProperty("TEST_ID", "54e84082-42eb-4fd3-af30-2647f9616719");
+    auto f = []() { IOX_UNREACHABLE(); };
+
+    runInTestThread(f);
+
+    ASSERT_PANIC();
 }
 
 } // namespace
