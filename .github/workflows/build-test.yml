@@ -72,7 +72,7 @@ jobs:
   run-integration-test:
     # prevent stuck jobs consuming runners for 6 hours
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: pre-flight-check
     steps:
       - name: Setup ROS
