@@ -16,6 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_hoofs/error_handling/error_handling.hpp"
+#include "iceoryx_hoofs/testing/error_reporting/test_support.hpp"
 #include "iceoryx_hoofs/testing/fatal_failure.hpp"
 #include "iox/expected.hpp"
 #include "iox/string.hpp"
@@ -130,6 +131,10 @@ struct ClassWithMoveCtorAndNoMoveAssignment
 
 class expected_test : public Test
 {
+    void SetUp() override
+    {
+        TestErrorHandler::instance().reset();
+    }
 };
 
 enum class TestError : uint8_t
@@ -589,7 +594,9 @@ TEST_F(expected_test, AccessingErrorOfLValueErrorOnlyExpectedWhichContainsValueL
 
     auto sut = expected<TestError>::create_value();
 
-    IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { sut.get_error(); }, iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    // IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { sut.get_error(); }, iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    runInTestThread([&]() { sut.get_error(); });
+    ASSERT_PANIC();
 }
 
 TEST_F(expected_test, AccessingErrorOfConstLValueErrorOnlyExpectedWhichContainsValueLeadsToErrorHandlerCall)
@@ -598,7 +605,9 @@ TEST_F(expected_test, AccessingErrorOfConstLValueErrorOnlyExpectedWhichContainsV
 
     const auto sut = expected<TestError>::create_value();
 
-    IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { sut.get_error(); }, iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    // IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { sut.get_error(); }, iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    runInTestThread([&]() { sut.get_error(); });
+    ASSERT_PANIC();
 }
 
 TEST_F(expected_test, AccessingErrorOfRValueErrorOnlyExpectedWhichContainsValueLeadsToErrorHandlerCall)
@@ -607,8 +616,10 @@ TEST_F(expected_test, AccessingErrorOfRValueErrorOnlyExpectedWhichContainsValueL
 
     auto sut = expected<TestError>::create_value();
 
-    IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { std::move(sut).get_error(); },
-                                              iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    // IOX_EXPECT_FATAL_FAILURE<iox::HoofsError>([&] { std::move(sut).get_error(); },
+    // iox::HoofsError::EXPECTS_ENSURES_FAILED);
+    runInTestThread([&]() { std::move(sut).get_error(); });
+    ASSERT_PANIC();
 }
 
 TEST_F(expected_test, AccessingValueOfLValueExpectedWhichContainsErrorWithArrowOpLeadsToErrorHandlerCall)

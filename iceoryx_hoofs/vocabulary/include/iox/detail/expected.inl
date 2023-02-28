@@ -17,6 +17,7 @@
 #ifndef IOX_HOOFS_VOCABULARY_EXPECTED_INL
 #define IOX_HOOFS_VOCABULARY_EXPECTED_INL
 
+#include "iceoryx_hoofs/error_reporting/modules/hoofs/error_reporting.hpp"
 #include "iox/expected.hpp"
 
 namespace iox
@@ -385,7 +386,8 @@ inline ErrorType& expected<ErrorType>::get_error() & noexcept
 template <typename ErrorType>
 inline const ErrorType& expected<ErrorType>::get_error() const& noexcept
 {
-    cxx::ExpectsWithMsg(has_error(), "Trying to access an error but a value is stored!");
+    // cxx::ExpectsWithMsg(has_error(), "Trying to access an error but a value is stored!");
+    IOX_PRECONDITION(has_error());
     return get_error_unchecked();
 }
 
