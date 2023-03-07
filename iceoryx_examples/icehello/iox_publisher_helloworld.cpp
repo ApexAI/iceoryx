@@ -1,82 +1,85 @@
-// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_dust/cxx/std_string_support.hpp"
+#include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
+#include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
+#include "iox/into.hpp"
 
-//! [include topic]
-#include "topic_data.hpp"
-//! [include topic]
-
-//! [include sig watcher]
-#include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
-//! [include sig watcher]
-
-//! [include]
-#include "iceoryx_posh/popo/publisher.hpp"
-#include "iceoryx_posh/runtime/posh_runtime.hpp"
-//! [include]
-
+#include <cstdlib>
 #include <iostream>
+#include <sys/resource.h>
+#include <thread>
+#include <vector>
 
+using namespace iox::posix;
 
-int main()
+iox::posix::SharedMemory::Name_t generateName()
 {
-    //! [initialize runtime]
-    constexpr char APP_NAME[] = "iox-cpp-publisher-helloworld";
-    iox::runtime::PoshRuntime::initRuntime(APP_NAME);
-    //! [initialize runtime]
+    static uint64_t counter = 0;
 
-    //! [create publisher]
-    iox::popo::Publisher<RadarObject> publisher({"Radar", "FrontLeft", "Object"});
-    //! [create publisher]
+    return iox::into<iox::lossy<iox::posix::SharedMemory::Name_t>>(std::string("shm_test_")
+                                                                   + std::to_string(counter++));
+}
 
-    double ct = 0.0;
-    //! [wait for term]
-    while (!iox::posix::hasTerminationRequested())
-    //! [wait for term]
+int main(int argc, char* argv[])
+{
+    // sysctl -w vm.max_map_count=655300
+
+    if (argc <= 2)
     {
-        ++ct;
+        std::cerr << "provide the number of files and the shared memory object size\n";
+        return -1;
+    }
 
-        // Retrieve a sample from shared memory
-        //! [loan]
-        auto loanResult = publisher.loan();
-        //! [loan]
-        //! [publish]
-        if (!loanResult.has_error())
+    uint64_t number_of_files = std::stoi(argv[1]);
+    uint64_t shared_memory_size = std::stoi(argv[2]);
+    std::cout << "test system with " << number_of_files << " shared memory objects of size" << shared_memory_size
+              << std::endl;
+
+    struct rlimit limit;
+    posixCall(getrlimit)(RLIMIT_NOFILE, &limit)
+        .failureReturnValue(-1)
+        .evaluate()
+        .expect("Failed to acquire file handle limit.");
+
+    std::cout << "file limit: " << limit.rlim_cur << " / " << limit.rlim_max << std::endl;
+
+    limit.rlim_cur = number_of_files;
+    limit.rlim_max = number_of_files;
+
+    posixCall(setrlimit)(RLIMIT_NOFILE, &limit)
+        .failureReturnValue(-1)
+        .evaluate()
+        .expect("Failed to acquire file handle limit.");
+
+    std::cout << "new file limit: " << limit.rlim_cur << " / " << limit.rlim_max << std::endl;
+
+
+    std::vector<iox::posix::SharedMemoryObject> shms;
+
+    // add 10 to take care of the internal implicit file usages
+    for (uint64_t i = 0; i + 10 < number_of_files; ++i)
+    {
+        auto shm = iox::posix::SharedMemoryObjectBuilder()
+                       .memorySizeInBytes(shared_memory_size)
+                       .accessMode(iox::posix::AccessMode::READ_WRITE)
+                       .openMode(iox::posix::OpenMode::OPEN_OR_CREATE)
+                       .permissions(iox::perms::owner_all)
+                       .name(generateName())
+                       .create();
+
+        if (shm.has_error())
         {
-            auto& sample = loanResult.value();
-            // Sample can be held until ready to publish
-            sample->x = ct;
-            sample->y = ct;
-            sample->z = ct;
-            sample.publish();
+            std::cerr << "Failed to create shm_test_" << i << std::endl;
+            return -1;
         }
-        //! [publish]
-        //! [error]
         else
         {
-            auto error = loanResult.get_error();
-            // Do something with error
-            std::cerr << "Unable to loan sample, error code: " << error << std::endl;
+            std::cout << "Create and map shared memory: shm_test_" << i << std::endl;
         }
-        //! [error]
 
-        //! [msg]
-        std::cout << APP_NAME << " sent value: " << ct << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        //! [msg]
+        shms.emplace_back(std::move(shm.value()));
     }
+
+    std::cout << "Created and opened " << number_of_files << " successfully\n";
 
     return 0;
 }
