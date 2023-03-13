@@ -1,0 +1,102 @@
+******   MESSAGE QUEUE    ********
+waiting for follower
+Measurement for: 1 kB, 2 kB, 4 kB, 8 kB, 16 kB, 32 kB, 64 kB, 128 kB, 256 kB, 512 kB, 1024 kB, 2048 kB, 4096 kB
+
+#### Measurement Result ####
+10000 round trips for each payload.
+
+| Payload Size [kB] | Average Latency [��s] |
+|------------------:|---------------------:|
+|                 1 |                   14 |
+|                 2 |                   15 |
+|                 4 |                   18 |
+|                 8 |                   22 |
+|                16 |                   30 |
+|                32 |                   45 |
+|                64 |                   75 |
+|               128 |              1.4e+02 |
+|               256 |              2.6e+02 |
+|               512 |              5.1e+02 |
+|              1024 |                1e+03 |
+|              2048 |                2e+03 |
+|              4096 |                4e+03 |
+
+Finished!
+
+****** UNIX DOMAIN SOCKET ********
+waiting for follower
+Measurement for: 1 kB, 2 kB, 4 kB, 8 kB, 16 kB, 32 kB, 64 kB, 128 kB, 256 kB, 512 kB, 1024 kB, 2048 kB, 4096 kB
+
+#### Measurement Result ####
+10000 round trips for each payload.
+
+| Payload Size [kB] | Average Latency [��s] |
+|------------------:|---------------------:|
+|                 1 |                   22 |
+|                 2 |                   24 |
+|                 4 |                   25 |
+|                 8 |                   29 |
+|                16 |                   38 |
+|                32 |                   69 |
+|                64 |              1.3e+02 |
+|               128 |              2.4e+02 |
+|               256 |              4.8e+02 |
+|               512 |              9.4e+02 |
+|              1024 |              1.9e+03 |
+|              2048 |              3.7e+03 |
+|              4096 |              7.4e+03 |
+
+Finished!
+
+******      ICEORYX       ********
+Waiting for: subscription, subscriber [ success ]
+Measurement for: 1 kB, 2 kB, 4 kB, 8 kB, 16 kB, 32 kB, 64 kB, 128 kB, 256 kB, 512 kB, 1024 kB, 2048 kB, 4096 kB
+Waiting for: unsubscribe  [ finished ]
+
+#### Measurement Result ####
+10000 round trips for each payload.
+
+| Payload Size [kB] | Average Latency [��s] |
+|------------------:|---------------------:|
+|                 1 |                  3.5 |
+|                 2 |                  3.4 |
+|                 4 |                  3.4 |
+|                 8 |                  3.4 |
+|                16 |                  3.4 |
+|                32 |                  3.4 |
+|                64 |                  3.4 |
+|               128 |                  3.4 |
+|               256 |                  3.4 |
+|               512 |                  3.4 |
+|              1024 |                  3.4 |
+|              2048 |                  3.4 |
+|              4096 |                  3.4 |
+
+Finished!
+
+******   ICEORYX C API    ********
+Waiting for: subscription, subscriber [ success ]
+Measurement for: 1 kB, 2 kB, 4 kB, 8 kB, 16 kB, 32 kB, 64 kB, 128 kB, 256 kB, 512 kB, 1024 kB, 2048 kB, 4096 kB
+Waiting for: unsubscribe  [ finished ]
+
+#### Measurement Result ####
+10000 round trips for each payload.
+
+| Payload Size [kB] | Average Latency [��s] |
+|------------------:|---------------------:|
+|                 1 |                  3.6 |
+|                 2 |                  3.5 |
+|                 4 |                  3.5 |
+|                 8 |                  3.5 |
+|                16 |                  3.5 |
+|                32 |                  3.5 |
+|                64 |                  3.5 |
+|               128 |                  3.5 |
+|               256 |                  3.7 |
+|               512 |                  3.8 |
+|              1024 |                  3.6 |
+|              2048 |                  3.5 |
+|              4096 |                  3.6 |
+
+Finished!
+
