@@ -1,82 +1,215 @@
-// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
+#include "iox/bump_allocator.hpp"
+#include "shared_memory_concept.hpp"
 
-//! [include topic]
-#include "topic_data.hpp"
-//! [include topic]
+// abstract concept ... (abstract interface class)
+template <typename SMT, typename Allocator>
+class SMC
+{
+  public:
+    void func();
+    int bar();
 
-//! [include sig watcher]
-#include "iceoryx_dust/posix_wrapper/signal_watcher.hpp"
-//! [include sig watcher]
+  private:
+    SMT m_member;
+};
 
-//! [include]
-#include "iceoryx_posh/popo/publisher.hpp"
-#include "iceoryx_posh/runtime/posh_runtime.hpp"
-//! [include]
+using BumpAllocator = int;
+using PoolAllocator = float;
 
-#include <iostream>
+// something
+class SM1
+{
+  public:
+    void func()
+    {
+    }
 
+    void bla()
+    {
+    }
+};
+
+// less abstract concept depending only on allocator
+// required since partial template specialization is not allowed, see
+// template <typename Allocator>
+// void SMC<SM1, Allocator>::func()
+template <typename Allocator>
+class SMC<SM1, Allocator>
+{
+  public:
+    void func();
+    int bar();
+
+  private:
+    SM1 m_member;
+};
+
+// implementation of SMC for SM1
+template <typename Allocator>
+void SMC<SM1, Allocator>::func()
+{
+    m_member.func();
+    m_member.bla();
+    m_member.func();
+}
+
+template <>
+void SMC<SM1, BumpAllocator>::func()
+{
+    // empty if hoofs not ready, tests fail until implemented
+    m_member.func();
+    m_member.bla();
+    m_member.func();
+}
+
+
+// something else
+class SM2
+{
+  public:
+    void func2(int a, int b)
+    {
+    }
+};
+
+// implementation of SMC for SM2
+template <>
+void SMC<SM2, PoolAllocator>::func()
+{
+    m_member.func2(1, 2);
+}
+
+template <>
+int SMC<SM2, PoolAllocator>::bar()
+{
+    m_member.func2(1, 2);
+    return 1234;
+}
+
+class PosixSharedMemory
+{
+};
+
+template <>
+void SMC<PosixSharedMemory, BumpAllocator>::func()
+{
+}
+
+struct MarikaService
+{
+    using SharedMemory = SMC<PosixSharedMemory, BumpAllocator>;
+};
+
+struct ElfenService
+{
+    using SharedMemory = SMC<SM1, PoolAllocator>;
+};
 
 int main()
 {
-    //! [initialize runtime]
-    constexpr char APP_NAME[] = "iox-cpp-publisher-helloworld";
-    iox::runtime::PoshRuntime::initRuntime(APP_NAME);
-    //! [initialize runtime]
+    SMC<SM1, BumpAllocator> test1;
 
-    //! [create publisher]
-    iox::popo::Publisher<RadarObject> publisher({"Radar", "FrontLeft", "Object"});
-    //! [create publisher]
+    test1.func();
+    // test1.bar();
 
-    double ct = 0.0;
-    //! [wait for term]
-    while (!iox::posix::hasTerminationRequested())
-    //! [wait for term]
+    SMC<SM2, PoolAllocator> test2;
+    test2.func();
+    test2.bar();
+
+
+    using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::BumpAllocator>;
+    auto result = iox::cal::SharedMemoryBuilder()
+                      .name("shmem")
+                      .memorySizeInBytes(1)
+                      .permissions(iox::perms::owner_write)
+                      .create<SharedMemory>();
+    if (!result)
     {
-        ++ct;
-
-        // Retrieve a sample from shared memory
-        //! [loan]
-        auto loanResult = publisher.loan();
-        //! [loan]
-        //! [publish]
-        if (!loanResult.has_error())
-        {
-            auto& sample = loanResult.value();
-            // Sample can be held until ready to publish
-            sample->x = ct;
-            sample->y = ct;
-            sample->z = ct;
-            sample.publish();
-        }
-        //! [publish]
-        //! [error]
-        else
-        {
-            auto error = loanResult.get_error();
-            // Do something with error
-            std::cerr << "Unable to loan sample, error code: " << error << std::endl;
-        }
-        //! [error]
-
-        //! [msg]
-        std::cout << APP_NAME << " sent value: " << ct << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        //! [msg]
+        // handle creation error
     }
-
+    auto mem = result.value();
+    auto name = mem.getName();
+    std::cout << name.c_str() << std::endl;
+    std::cout << mem.getSizeInBytes() << std::endl;
     return 0;
 }
+
+// START: use case, additional config
+struct EmptyConfiguration
+{
+};
+
+struct Posix_SharedMemory // MemoryType
+{
+    using Configuration = EmptyConfiguration;
+};
+
+struct Gpu_SharedMemory // MemoryType
+{
+    using Configuration = std::string;
+};
+
+struct ZeroCopyService
+{
+    using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, BumpAllocator>;
+    using Configuration = std::string;
+};
+
+struct HighPerformanceUnsafeService
+{
+    using SharedMemory = iox::cal::SharedMemory<int, BumpAllocator>;
+    using Configuration = int;
+};
+
+template <typename ServiceType>
+struct Publisher
+{
+    static iox::expected<Publisher, iox::cal::SharedMemoryError> createPublisher(iox::cal::Name_t& service_description)
+    {
+        success<typename ServiceType::SharedMemory>(
+            iox::cal::SharedMemoryBuilder().name("data_segment").create<ServiceType::SharedMemory>());
+    }
+
+    iox::cal::Name_t& getName()
+    {
+        return m_dataSegment.name();
+    }
+    typename ServiceType::SharedMemory m_dataSegment;
+};
+
+HighPerformanceUnsafeService::Configuration get_high_perf_config()
+{
+}
+
+template <typename T>
+struct IceoryxService
+{
+    static iox::expected<IceoryxService, iox::cal::SharedMemoryError> create(const std::string&)
+    {
+    }
+
+    Publisher<ZeroCopyService>& createPublisher()
+    {
+    }
+    Publisher<ZeroCopyService>& createSubscriber()
+    {
+    }
+};
+
+
+void another_main()
+{
+    using Service = ZeroCopyService;
+    // using Service = HighPerformanceUnsafeService;
+    using Config = Service::Configuration;
+
+    auto service = IceoryxService<Service>::create("service name");
+
+    auto publisher = service->createPublisher();
+    auto subscriber = service->createSubscriber();
+
+    // auto publisher = Publisher<Service>::createPublisher("my_service").expect("failed to create publisher");
+}
+// END
+
