@@ -119,19 +119,32 @@ int main()
 
 
     using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::BumpAllocator>;
-    auto result = iox::cal::SharedMemoryBuilder()
-                      .name("shmem")
-                      .memorySizeInBytes(1)
-                      .permissions(iox::perms::owner_write)
-                      .create<SharedMemory>();
-    if (!result)
+    auto mem = iox::cal::SharedMemoryCreator()
+                   .memorySizeInBytes(1234)
+                   .permissions(iox::perms::owner_all)
+                   .create<SharedMemory>("shmem");
+
+    // auto mem2 = iox::cal::SharedMemoryCreator()
+    //.permissions(iox::perms::owner_write) //
+    //.user("Bla") //
+    //.group("blubb") //
+    //.accessMode(READ_WRITE)
+    //.memorySizeInBytes(1234)
+    //.create<SharedMemory>("name");
+
+    auto mem3 = iox::cal::SharedMemoryOpener()
+                    .accessMode(iox::posix::AccessMode::READ_WRITE)
+                    .requiredMemorySize(1234)
+                    .open<SharedMemory>("shmem");
+
+    if (!mem)
     {
         // handle creation error
     }
-    auto mem = result.value();
-    auto name = mem.getName();
+    auto name = mem->getName();
     std::cout << name.c_str() << std::endl;
-    std::cout << mem.getSizeInBytes() << std::endl;
+    std::cout << mem->getSizeInBytes() << std::endl;
+    std::cout << mem->getStartAddress() << std::endl;
     return 0;
 }
 
@@ -168,7 +181,7 @@ struct Publisher
     static iox::expected<Publisher, iox::cal::SharedMemoryError> createPublisher(iox::cal::Name_t& service_description)
     {
         success<typename ServiceType::SharedMemory>(
-            iox::cal::SharedMemoryBuilder().name("data_segment").create<ServiceType::SharedMemory>());
+            iox::cal::SharedMemoryCreator().template create<ServiceType::SharedMemory>("data_segment"));
     }
 
     iox::cal::Name_t& getName()
@@ -189,10 +202,10 @@ struct IceoryxService
     {
     }
 
-    Publisher<ZeroCopyService>& createPublisher()
+    Publisher<ZeroCopyService>&& createPublisher()
     {
     }
-    Publisher<ZeroCopyService>& createSubscriber()
+    Publisher<ZeroCopyService>&& createSubscriber()
     {
     }
 };
