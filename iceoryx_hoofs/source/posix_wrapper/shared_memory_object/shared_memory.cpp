@@ -249,6 +249,11 @@ bool SharedMemory::unlink() noexcept
     return true;
 }
 
+SharedMemory::Name_t& SharedMemory::getName() noexcept
+{
+    return m_name;
+}
+
 bool SharedMemory::close() noexcept
 {
     if (m_handle != INVALID_HANDLE)

@@ -1,5 +1,6 @@
 #include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
 #include "iox/bump_allocator.hpp"
+#include "posix_shared_memory.hpp"
 #include "shared_memory_concept.hpp"
 
 // abstract concept ... (abstract interface class)
@@ -140,12 +141,17 @@ int main()
     if (!mem)
     {
         // handle creation error
+        if (mem.get_error() == iox::cal::SharedMemoryError::SHARED_MEMORY_CREATION_FAILED)
+        {
+            std::cout << "Creation" << std::endl;
+            return EXIT_FAILURE;
+        }
     }
     auto name = mem->getName();
     std::cout << name.c_str() << std::endl;
     std::cout << mem->getSizeInBytes() << std::endl;
     std::cout << mem->getStartAddress() << std::endl;
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 // START: use case, additional config

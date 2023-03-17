@@ -200,5 +200,11 @@ bool SharedMemoryObject::hasOwnership() const noexcept
 {
     return m_sharedMemory.hasOwnership();
 }
+
+SharedMemory::Name_t& SharedMemoryObject::getName() noexcept
+{
+    return m_sharedMemory.getName();
+}
+
 } // namespace posix
 } // namespace iox

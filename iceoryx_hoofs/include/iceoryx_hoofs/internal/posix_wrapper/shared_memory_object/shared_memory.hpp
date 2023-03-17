@@ -85,6 +85,8 @@ class SharedMemory : public FileManagementInterface<SharedMemory>
     ///         SharedMemoryError when the underlying shm_unlink call failed.
     static expected<bool, SharedMemoryError> unlinkIfExist(const Name_t& name) noexcept;
 
+    Name_t& getName() noexcept;
+
     friend class SharedMemoryBuilder;
 
   private:
