@@ -46,11 +46,11 @@ class SharedMemory
     SharedMemory& operator=(SharedMemory&&) noexcept = default;
     ~SharedMemory() noexcept = default;
 
-    Name_t& getName();
+    const Name_t& getName() const;
 
-    uint64_t getSizeInBytes();
+    uint64_t getSizeInBytes() const;
 
-    void* getStartAddress();
+    const void* getStartAddress() const;
 
     friend class SharedMemoryCreator;
     friend class SharedMemoryOpener;

@@ -249,7 +249,7 @@ bool SharedMemory::unlink() noexcept
     return true;
 }
 
-SharedMemory::Name_t& SharedMemory::getName() noexcept
+const SharedMemory::Name_t& SharedMemory::getName() const noexcept
 {
     return m_name;
 }

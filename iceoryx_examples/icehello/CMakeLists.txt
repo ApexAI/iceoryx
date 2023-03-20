@@ -23,6 +23,8 @@ include(GNUInstallDirs)
 find_package(iceoryx_platform REQUIRED)
 find_package(iceoryx_posh CONFIG REQUIRED)
 find_package(iceoryx_hoofs CONFIG REQUIRED)
+find_package(iceoryx_hoofs_testing REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 include(IceoryxPackageHelper)
 include(IceoryxPlatform)
@@ -37,5 +39,5 @@ iox_add_executable(
 iox_add_executable(
     TARGET  iox-cpp-subscriber-helloworld
     FILES   ./iox_subscriber_helloworld.cpp
-    LIBS    iceoryx_posh::iceoryx_posh
+    LIBS    iceoryx_posh::iceoryx_posh GTest::gtest GTest::gmock
 )

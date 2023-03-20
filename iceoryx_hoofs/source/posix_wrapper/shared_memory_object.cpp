@@ -201,7 +201,7 @@ bool SharedMemoryObject::hasOwnership() const noexcept
     return m_sharedMemory.hasOwnership();
 }
 
-SharedMemory::Name_t& SharedMemoryObject::getName() noexcept
+const SharedMemory::Name_t& SharedMemoryObject::getName() const noexcept
 {
     return m_sharedMemory.getName();
 }

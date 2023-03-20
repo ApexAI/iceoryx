@@ -80,7 +80,7 @@ class SharedMemoryObject : public FileManagementInterface<SharedMemoryObject>
     ///        existing shared memory was opened.
     bool hasOwnership() const noexcept;
 
-    SharedMemory::Name_t& getName() noexcept;
+    const SharedMemory::Name_t& getName() const noexcept;
 
 
     friend class SharedMemoryObjectBuilder;

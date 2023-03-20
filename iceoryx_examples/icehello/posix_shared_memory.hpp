@@ -41,19 +41,19 @@ SharedMemoryError translateError(const posix::SharedMemoryObjectError error)
 }
 
 template <>
-Name_t& SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getName()
+const Name_t& SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getName() const
 {
     return m_memory.getName();
 }
 
 template <>
-uint64_t SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getSizeInBytes()
+uint64_t SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getSizeInBytes() const
 {
     return m_memory.get_size().expect("Failed to get shm size");
 }
 
 template <>
-void* SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getStartAddress()
+const void* SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getStartAddress() const
 {
     return m_memory.getBaseAddress();
 }
@@ -90,7 +90,7 @@ template <>
 expected<SharedMemory<posix::SharedMemoryObject, BumpAllocator>, SharedMemoryError>
 SharedMemoryOpener::open(const Name_t& name)
 {
-    // check requiredSize in SharedMemoryObject(Allocator)
+    // check requiredSize in SharedMemoryObject
 
     auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
                                   .name(name)
