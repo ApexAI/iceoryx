@@ -41,6 +41,18 @@ SharedMemoryError translateError(const posix::SharedMemoryObjectError error)
 }
 
 template <>
+expected<void*, SharedMemoryError>
+SharedMemory<posix::SharedMemoryObject, BumpAllocator>::allocate(const uint64_t size, const uint64_t alignment)
+{
+    auto mem = m_memory.allocate(size, alignment);
+    if (mem.has_error())
+    {
+        return error<SharedMemoryError>(SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+    }
+    return success<void*>(mem.value());
+}
+
+template <>
 const Name_t& SharedMemory<posix::SharedMemoryObject, BumpAllocator>::getName() const
 {
     return m_memory.getName();

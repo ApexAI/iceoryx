@@ -145,6 +145,48 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenRequiredSizeIsGreaterThanSharedMemory
     // implement when check is added to SharedMemoryObject
 }
 
+TYPED_TEST(SharedMemory_test, AllocateDoesReturnNotReturnNullptrWithAppropriateParameters)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    auto mem = SharedMemoryCreator()
+                   .memorySizeInBytes(sizeGreaterZero)
+                   .permissions(perms::others_read)
+                   .create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+
+    auto result = mem->allocate(sizeGreaterZero, 1);
+    ASSERT_FALSE(result.has_error());
+    EXPECT_THAT(result.value(), Ne(nullptr));
+}
+
+TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsTooLarge)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    auto mem = SharedMemoryCreator()
+                   .memorySizeInBytes(sizeGreaterZero)
+                   .permissions(perms::others_read)
+                   .create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+
+    auto result = mem->allocate(sizeGreaterZero + 1, 1);
+    ASSERT_TRUE(result.has_error());
+    EXPECT_EQ(result.get_error(), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+}
+
+TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsZero)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    auto mem = SharedMemoryCreator()
+                   .memorySizeInBytes(sizeGreaterZero)
+                   .permissions(perms::others_read)
+                   .create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+
+    auto result = mem->allocate(0, 1);
+    ASSERT_TRUE(result.has_error());
+    EXPECT_EQ(result.get_error(), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+}
+
 // creator: permissions = passed parameter?
 // creator: user = passed parameter?
 // creator: group = passed parameter?

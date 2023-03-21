@@ -30,6 +30,7 @@ enum class SharedMemoryError
 {
     SHARED_MEMORY_CREATION_FAILED,
     MAPPING_SHARED_MEMORY_FAILED,
+    SHARED_MEMORY_ALLOCATION_ERROR,
     INTERNAL_LOGIC_FAILURE,
     UNKNOWN,
 };
@@ -45,6 +46,8 @@ class SharedMemory
     SharedMemory(SharedMemory&&) noexcept = default;
     SharedMemory& operator=(SharedMemory&&) noexcept = default;
     ~SharedMemory() noexcept = default;
+
+    expected<void*, SharedMemoryError> allocate(const uint64_t size, const uint64_t alignment);
 
     const Name_t& getName() const;
 
