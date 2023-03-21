@@ -1,5 +1,5 @@
-#ifndef IOX_HOOFS_POSIX_SHARED_MEMORY_HPP
-#define IOX_HOOFS_POSIX_SHARED_MEMORY_HPP
+#ifndef IOX_CONCEPTS_SHARED_MEMORY_POSIX_SHARED_MEMORY_HPP
+#define IOX_CONCEPTS_SHARED_MEMORY_POSIX_SHARED_MEMORY_HPP
 
 #include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_access_rights.hpp"
@@ -31,7 +31,7 @@ SharedMemoryError translateError(const posix::SharedMemoryObjectError error)
     }
     if (error == posix::SharedMemoryObjectError::MAPPING_SHARED_MEMORY_FAILED)
     {
-        return SharedMemoryError::MAPPING_SHARED_MEMORY_FAILED;
+        return SharedMemoryError::SHARED_MEMORY_CREATION_FAILED;
     }
     if (error == posix::SharedMemoryObjectError::INTERNAL_LOGIC_FAILURE)
     {

@@ -1,5 +1,5 @@
-#ifndef IOX_HOOFS_SHARED_MEMORY_CONCEPT_HPP
-#define IOX_HOOFS_SHARED_MEMORY_CONCEPT_HPP
+#ifndef IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
+#define IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
 
 #include "iceoryx_hoofs/posix_wrapper/posix_access_rights.hpp"
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
@@ -47,6 +47,7 @@ class SharedMemory
     SharedMemory& operator=(SharedMemory&&) noexcept = default;
     ~SharedMemory() noexcept = default;
 
+    // really needed? can it be replaced with something like getAllocator()?
     expected<void*, SharedMemoryError> allocate(const uint64_t size, const uint64_t alignment);
 
     const Name_t& getName() const;
@@ -70,6 +71,7 @@ class SharedMemoryCreator
 
     IOX_BUILDER_PARAMETER(access_rights, permissions, perms::none)
 
+    // maybe change deault values once new implementations are available
     IOX_BUILDER_PARAMETER(posix::PosixUser, user, posix::PosixUser::getUserOfCurrentProcess())
 
     IOX_BUILDER_PARAMETER(posix::PosixGroup, group, posix::PosixGroup::getGroupOfCurrentProcess())
@@ -77,6 +79,8 @@ class SharedMemoryCreator
     IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_WRITE)
 
   public:
+    // Configuration parameter could be used when a shared memory specialization needs additional parameters, e.g. id
+    // for GPU shared memory; maybe not needed
     template <typename SharedMemory>
     expected<SharedMemory, SharedMemoryError> create(const Name_t& name,
                                                      const typename SharedMemory::memory_type::Configuration& config =

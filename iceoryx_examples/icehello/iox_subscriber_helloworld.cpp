@@ -4,6 +4,7 @@
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
 #include "iox/filesystem.hpp"
 #include "posix_shared_memory.hpp"
+#include "process_local.hpp"
 #include "shared_memory_concept.hpp"
 
 namespace
@@ -31,7 +32,8 @@ const Name_t validName{"valid_name"};
 const uint64_t sizeGreaterZero{1};
 const access_rights all{perms::all};
 
-using Implementations = Types<SharedMemory<posix::SharedMemoryObject, BumpAllocator>>;
+using Implementations =
+    Types<SharedMemory<posix::SharedMemoryObject, BumpAllocator>, SharedMemory<ProcessLocal, DummyAllocator>>;
 
 TYPED_TEST_SUITE(SharedMemory_test, Implementations, );
 
@@ -63,7 +65,7 @@ TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
     ASSERT_TRUE(mem.has_error());
 
     // change error code?
-    EXPECT_EQ(mem.get_error(), SharedMemoryError::MAPPING_SHARED_MEMORY_FAILED);
+    EXPECT_EQ(mem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
 }
 
 TYPED_TEST(SharedMemory_test, NameIsSetToPassedValidName)
@@ -107,20 +109,6 @@ TYPED_TEST(SharedMemory_test, OpenWorksWithAppropriateParameters)
     EXPECT_FALSE(openedMem.has_error());
 }
 
-TYPED_TEST(SharedMemory_test, OpenFailsWhenRequiredSizeIsZero)
-{
-    using Type = typename TestFixture::SharedMemoryType;
-    auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
-    ASSERT_FALSE(mem.has_error());
-
-    auto openedMem =
-        SharedMemoryOpener().requiredMemorySize(0).accessMode(posix::AccessMode::READ_ONLY).open<Type>(validName);
-    ASSERT_TRUE(openedMem.has_error());
-
-    // change error code?
-    EXPECT_EQ(openedMem.get_error(), SharedMemoryError::MAPPING_SHARED_MEMORY_FAILED);
-}
-
 TYPED_TEST(SharedMemory_test, OpenFailsWithInappropriateAccessMode)
 {
     using Type = typename TestFixture::SharedMemoryType;
@@ -145,7 +133,26 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenRequiredSizeIsGreaterThanSharedMemory
     // implement when check is added to SharedMemoryObject
 }
 
-TYPED_TEST(SharedMemory_test, AllocateDoesReturnNotReturnNullptrWithAppropriateParameters)
+TYPED_TEST(SharedMemory_test, OpenFailsWhenNameDoesNotMatch)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    auto mem = SharedMemoryCreator()
+                   .memorySizeInBytes(sizeGreaterZero)
+                   .permissions(perms::others_read)
+                   .create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+
+    auto openedMem = SharedMemoryOpener()
+                         .requiredMemorySize(sizeGreaterZero)
+                         .accessMode(posix::AccessMode::READ_WRITE)
+                         .open<Type>("other_name");
+    ASSERT_TRUE(openedMem.has_error());
+
+    // change error code?
+    EXPECT_EQ(openedMem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+}
+
+TYPED_TEST(SharedMemory_test, AllocateDoesNotReturnNullptrWithAppropriateParameters)
 {
     using Type = typename TestFixture::SharedMemoryType;
     auto mem = SharedMemoryCreator()
