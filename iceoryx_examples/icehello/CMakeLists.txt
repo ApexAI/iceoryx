@@ -39,5 +39,5 @@ iox_add_executable(
 iox_add_executable(
     TARGET  iox-cpp-subscriber-helloworld
     FILES   ./iox_subscriber_helloworld.cpp
-    LIBS    iceoryx_posh::iceoryx_posh GTest::gtest GTest::gmock
+    LIBS    iceoryx_posh::iceoryx_posh GTest::gtest GTest::gmock iceoryx_hoofs_testing
 )

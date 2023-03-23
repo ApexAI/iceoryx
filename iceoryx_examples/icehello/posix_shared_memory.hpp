@@ -87,7 +87,7 @@ SharedMemoryCreator::create(const Name_t& name, const posix::SharedMemoryObject:
                                   .memorySizeInBytes(m_memorySizeInBytes)
                                   .permissions(m_permissions)
                                   .accessMode(m_accessMode)
-                                  .openMode(posix::OpenMode::OPEN_OR_CREATE) // replace with m_user and m_group
+                                  .openMode(posix::OpenMode::EXCLUSIVE_CREATE) // replace with m_user and m_group
                                   .create();
 
     if (!sharedMemoryObject)
