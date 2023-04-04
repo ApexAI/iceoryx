@@ -49,4 +49,6 @@ iox_ssize_t iox_read(int fd, void* buf, size_t count);
 iox_ssize_t iox_write(int fd, const void* buf, size_t count);
 gid_t getgid();
 
+const long iox_page_size{sysconf(_SC_PAGESIZE)};
+
 #endif // IOX_HOOFS_WIN_PLATFORM_UNISTD_HPP

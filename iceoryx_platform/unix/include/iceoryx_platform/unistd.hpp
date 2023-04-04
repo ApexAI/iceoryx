@@ -32,4 +32,6 @@ iox_off_t iox_lseek(int fd, iox_off_t offset, int whence);
 iox_ssize_t iox_read(int fd, void* buf, size_t count);
 iox_ssize_t iox_write(int fd, const void* buf, size_t count);
 
+const long iox_page_size{sysconf(_SC_PAGESIZE)};
+
 #endif // IOX_HOOFS_UNIX_PLATFORM_UNISTD_HPP

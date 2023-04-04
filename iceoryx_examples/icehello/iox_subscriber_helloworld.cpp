@@ -34,7 +34,7 @@ const uint64_t sizeGreaterZero{1};
 const access_rights all{perms::all};
 
 using Implementations =
-    Types<SharedMemory<posix::SharedMemoryObject, BumpAllocator>, SharedMemory<ProcessLocal, DummyAllocator>>;
+    Types<SharedMemory<posix::SharedMemoryObject, BumpAllocator>, SharedMemory<ProcessLocal, ProcessLocalAllocator>>;
 
 TYPED_TEST_SUITE(SharedMemory_test, Implementations, );
 
@@ -81,12 +81,21 @@ TYPED_TEST(SharedMemory_test, MemorySizeIsAtLeastThePassedValidSize)
     EXPECT_THAT(mem->getSizeInBytes(), Ge(MEMORY_SIZE));
 }
 
-TYPED_TEST(SharedMemory_test, GetStartAdressDoesNotReturnNullptrAfterSuccessfulCreation)
+TYPED_TEST(SharedMemory_test, GetStartAddressDoesNotReturnNullptrAfterSuccessfulCreation)
 {
     using Type = typename TestFixture::SharedMemoryType;
     auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
     ASSERT_FALSE(mem.has_error());
     EXPECT_THAT(mem->getStartAddress(), Ne(nullptr));
+}
+
+TYPED_TEST(SharedMemory_test, StartAddressIsAlignedToPageSize)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+    auto p = reinterpret_cast<uintptr_t>(mem->getStartAddress());
+    EXPECT_THAT(p % static_cast<uint64_t>(iox_page_size), Eq(0));
 }
 
 TYPED_TEST(SharedMemory_test, OpenWorksWithAppropriateParameters)
@@ -146,6 +155,7 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenNameDoesNotMatch)
     EXPECT_EQ(openedMem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
 }
 
+// correct allocation will probably be tested separately for every allocator implementation
 TYPED_TEST(SharedMemory_test, AllocateDoesNotReturnNullptrWithAppropriateParameters)
 {
     using Type = typename TestFixture::SharedMemoryType;
@@ -209,6 +219,26 @@ TYPED_TEST(SharedMemory_test, AllocationIsCorrectlyAligned)
     ASSERT_FALSE(allocation_result.has_error());
     p = reinterpret_cast<uintptr_t>(allocation_result.value());
     EXPECT_THAT(p % (2 * MEMORY_ALIGNMENT), Eq(0));
+}
+
+TYPED_TEST(SharedMemory_test, OverAllocationFails)
+{
+    using Type = typename TestFixture::SharedMemoryType;
+    constexpr uint64_t MEMORY_SIZE{sizeof(int)};
+    constexpr uint64_t MEMORY_ALIGNMENT{alignof(int)};
+
+    auto mem =
+        SharedMemoryCreator().memorySizeInBytes(MEMORY_SIZE).permissions(perms::others_read).create<Type>(validName);
+    ASSERT_FALSE(mem.has_error());
+
+    auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
+    ASSERT_FALSE(allocation_result.has_error());
+    auto p = reinterpret_cast<uintptr_t>(allocation_result.value());
+    EXPECT_THAT(p % MEMORY_ALIGNMENT, Eq(0));
+
+    allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
+    ASSERT_TRUE(allocation_result.has_error());
+    EXPECT_EQ(allocation_result.get_error(), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
 }
 
 TYPED_TEST(SharedMemory_test, AllocateMemoryAndStoreDataWorks)

@@ -4,6 +4,7 @@
 #include "iceoryx_hoofs/internal/posix_wrapper/mutex.hpp"
 #include "iox/bump_allocator.hpp"
 #include "iox/filesystem.hpp"
+#include "iox/memory.hpp"
 #include "iox/vector.hpp"
 #include "shared_memory_concept.hpp"
 
@@ -85,15 +86,46 @@ enum class ProcessLocalError
     PROCESS_LOCAL_MEMORY_ALLOCATION_ERROR,
 };
 
+// ProcessLocalError used for simplicity
+struct ProcessLocalAllocator
+{
+    ProcessLocalAllocator(void* const startAddress, const uint64_t length) noexcept
+        : m_allocator(startAddress, length)
+    {
+    }
+
+    ProcessLocalAllocator(const ProcessLocalAllocator&) = delete;
+    ProcessLocalAllocator(ProcessLocalAllocator&&) noexcept = default;
+    ProcessLocalAllocator& operator=(const ProcessLocalAllocator&) noexcept = delete;
+    ProcessLocalAllocator& operator=(ProcessLocalAllocator&&) noexcept = default;
+    ~ProcessLocalAllocator() noexcept = default;
+
+    expected<void*, ProcessLocalError> allocate(const uint64_t size, const uint64_t alignment) noexcept
+    {
+        auto allocation_result = m_allocator.allocate(size, alignment);
+        if (allocation_result.has_error())
+        {
+            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_ALLOCATION_ERROR);
+        }
+        if (allocation_result.value() == nullptr)
+        {
+            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_ALLOCATION_ERROR);
+        }
+        return success<void*>(allocation_result.value());
+    }
+
+    BumpAllocator m_allocator;
+};
+
 class ProcessLocal
 {
   public:
     using Configuration = int;
 
-    ProcessLocal() = default;
     ProcessLocal(const ProcessLocal&) = delete;
     ProcessLocal& operator=(const ProcessLocal&) = delete;
     ProcessLocal(ProcessLocal&& other) noexcept
+        : m_allocator(other.m_memory, other.m_size)
     {
         *this = std::move(other);
     }
@@ -105,12 +137,13 @@ class ProcessLocal
             m_name = std::move(other.m_name);
             m_size = other.m_size;
             m_memory = other.m_memory;
+            m_allocator = std::move(other.m_allocator);
             m_isCreator = other.m_isCreator;
 
+            other.m_isCreator = false;
             other.m_memory = nullptr;
             other.m_size = 0;
             other.m_name.clear();
-            other.m_isCreator = false;
         }
         return *this;
     }
@@ -140,7 +173,7 @@ class ProcessLocal
                 {
                     memory_vector.erase(iter);
                 }
-                free(m_memory);
+                alignedFree(m_memory);
                 m_memory = nullptr;
             }
         }
@@ -148,13 +181,7 @@ class ProcessLocal
 
     expected<void*, ProcessLocalError> allocate(const uint64_t size, const uint64_t alignment) noexcept
     {
-        // call DummyAllocator::allocate()
-        if (size > m_size || size == 0)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_ALLOCATION_ERROR);
-        }
-        std::align(alignment, size, m_memory, m_size);
-        return success<void*>(m_memory);
+        return m_allocator.allocate(size, alignment);
     }
 
     const Name_t& getName() const noexcept
@@ -178,12 +205,13 @@ class ProcessLocal
     ProcessLocal(const Name_t& name, const uint64_t size, const access_rights permissions)
         : m_name(name)
         , m_size(size)
+        , m_allocator(m_memory, m_size)
     {
         std::lock_guard<posix::mutex> g(memory_vector_mutex);
         auto* iter = findNameInVector(m_name);
         if (iter == nullptr)
         {
-            m_memory = malloc(size);
+            m_memory = alignedAlloc(static_cast<uint64_t>(iox_page_size), size);
             m_isCreator = true;
 
             memory_vector.push_back(MemoryNameMap(m_name, permissions, m_memory));
@@ -193,11 +221,14 @@ class ProcessLocal
             m_memory = iter->m_memory;
             ++iter->referenceCounter;
         }
+
+        m_allocator = ProcessLocalAllocator(m_memory, m_size);
     }
 
     Name_t m_name;
     uint64_t m_size{0};
     void* m_memory{nullptr};
+    ProcessLocalAllocator m_allocator;
     bool m_isCreator{false};
 };
 
@@ -258,10 +289,6 @@ class ProcessLocalBuilder
     }
 };
 
-struct DummyAllocator
-{
-};
-
 
 // *************concept implementation*************************
 
@@ -287,8 +314,8 @@ SharedMemoryError translateError(const ProcessLocalError error)
 }
 
 template <>
-expected<void*, SharedMemoryError> SharedMemory<ProcessLocal, DummyAllocator>::allocate(const uint64_t size,
-                                                                                        const uint64_t alignment)
+expected<void*, SharedMemoryError> SharedMemory<ProcessLocal, ProcessLocalAllocator>::allocate(const uint64_t size,
+                                                                                               const uint64_t alignment)
 {
     auto mem = m_memory.allocate(size, alignment);
     if (mem.has_error())
@@ -299,31 +326,31 @@ expected<void*, SharedMemoryError> SharedMemory<ProcessLocal, DummyAllocator>::a
 }
 
 template <>
-const Name_t& SharedMemory<ProcessLocal, DummyAllocator>::getName() const
+const Name_t& SharedMemory<ProcessLocal, ProcessLocalAllocator>::getName() const
 {
     return m_memory.getName();
 }
 
 template <>
-uint64_t SharedMemory<ProcessLocal, DummyAllocator>::getSizeInBytes() const
+uint64_t SharedMemory<ProcessLocal, ProcessLocalAllocator>::getSizeInBytes() const
 {
     return m_memory.getSizeInBytes();
 }
 
 template <>
-const void* SharedMemory<ProcessLocal, DummyAllocator>::getStartAddress() const
+const void* SharedMemory<ProcessLocal, ProcessLocalAllocator>::getStartAddress() const
 {
     return m_memory.getStartAddress();
 }
 
 template <>
-SharedMemory<ProcessLocal, DummyAllocator>::SharedMemory(ProcessLocal&& memory)
+SharedMemory<ProcessLocal, ProcessLocalAllocator>::SharedMemory(ProcessLocal&& memory)
     : m_memory(std::move(memory))
 {
 }
 
 template <>
-expected<SharedMemory<ProcessLocal, DummyAllocator>, SharedMemoryError>
+expected<SharedMemory<ProcessLocal, ProcessLocalAllocator>, SharedMemoryError>
 SharedMemoryCreator::create(const Name_t& name, const ProcessLocal::Configuration& config)
 {
     // check configuration
@@ -336,12 +363,13 @@ SharedMemoryCreator::create(const Name_t& name, const ProcessLocal::Configuratio
         return error<SharedMemoryError>(translateError(mem.get_error()));
     }
 
-    return success<SharedMemory<ProcessLocal, DummyAllocator>>(
-        SharedMemory<ProcessLocal, DummyAllocator>(std::move(*mem)));
+    return success<SharedMemory<ProcessLocal, ProcessLocalAllocator>>(
+        SharedMemory<ProcessLocal, ProcessLocalAllocator>(std::move(*mem)));
 }
 
 template <>
-expected<SharedMemory<ProcessLocal, DummyAllocator>, SharedMemoryError> SharedMemoryOpener::open(const Name_t& name)
+expected<SharedMemory<ProcessLocal, ProcessLocalAllocator>, SharedMemoryError>
+SharedMemoryOpener::open(const Name_t& name)
 {
     auto mem = ProcessLocalBuilder().name(name).memorySizeInBytes(m_requiredMemorySize).accessMode(m_accessMode).open();
     if (!mem)
@@ -349,8 +377,8 @@ expected<SharedMemory<ProcessLocal, DummyAllocator>, SharedMemoryError> SharedMe
         return error<SharedMemoryError>(translateError(mem.get_error()));
     }
 
-    return success<SharedMemory<ProcessLocal, DummyAllocator>>(
-        SharedMemory<ProcessLocal, DummyAllocator>(std::move(*mem)));
+    return success<SharedMemory<ProcessLocal, ProcessLocalAllocator>>(
+        SharedMemory<ProcessLocal, ProcessLocalAllocator>(std::move(*mem)));
 }
 } // namespace cal
 } // namespace iox
