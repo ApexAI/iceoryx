@@ -119,7 +119,7 @@ int main()
     test2.bar();
 
 
-    using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::BumpAllocator>;
+    using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::cal::ShmBumpAllocator>;
     auto mem = iox::cal::SharedMemoryCreator()
                    .memorySizeInBytes(1234)
                    .permissions(iox::perms::owner_all)

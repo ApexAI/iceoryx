@@ -235,5 +235,4 @@ TEST_F(SharedMemoryObject_Test, SettingPermissionsWorks)
 }
 #endif
 
-
 } // namespace

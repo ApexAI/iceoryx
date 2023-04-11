@@ -11,20 +11,22 @@
 // move to concept_abstractions/shared_memory/concept.hpp
 // later: separate files for implementations
 // - concept_abstractions
-//    - shared_memory
-//      - concept.hpp
-//      - posix_shared_memory.hpp
-//      - posix_typed_memory.hpp
+//   - shared_memory
+//     - concept.hpp
+//     - posix_shared_memory.hpp
+//     - posix_typed_memory.hpp
 // - iceoryx_hoofs
-//    - posix
-//      - shared_memory
-//        - shared_memory.hpp
-//        - shared_memory_object.hpp
+//   - posix
+//     - shared_memory
+//       - shared_memory.hpp
+//       - shared_memory_object.hpp
 namespace iox
 {
 namespace cal
 {
 using Name_t = string<platform::IOX_MAX_SHM_NAME_LENGTH>;
+
+using ShmPointer = void*;
 
 enum class SharedMemoryError
 {
@@ -47,20 +49,23 @@ class SharedMemory
     SharedMemory& operator=(SharedMemory&&) noexcept = default;
     ~SharedMemory() noexcept = default;
 
-    // really needed? can it be replaced with something like getAllocator()?
-    expected<void*, SharedMemoryError> allocate(const uint64_t size, const uint64_t alignment);
+    const Name_t& getName() const noexcept;
 
-    const Name_t& getName() const;
+    uint64_t getSizeInBytes() const noexcept;
 
-    uint64_t getSizeInBytes() const;
+    uint64_t getStartAddress() const noexcept;
 
-    const void* getStartAddress() const;
+    // maybe return expected
+    ShmPointer allocate(uint64_t size, uint64_t alignment) noexcept;
+
+    // Shall every process be able to deallocate whole memory?
+    // void deallocate(ShmPointer value) noexcept;
 
     friend class SharedMemoryCreator;
     friend class SharedMemoryOpener;
 
   private:
-    SharedMemory(MemoryType&& memory);
+    SharedMemory(MemoryType&& memory) noexcept;
 
     MemoryType m_memory;
 };
@@ -76,15 +81,13 @@ class SharedMemoryCreator
 
     IOX_BUILDER_PARAMETER(posix::PosixGroup, group, posix::PosixGroup::getGroupOfCurrentProcess())
 
-    IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_WRITE)
-
   public:
     // Configuration parameter could be used when a shared memory specialization needs additional parameters, e.g. id
     // for GPU shared memory; maybe not needed
     template <typename SharedMemory>
     expected<SharedMemory, SharedMemoryError> create(const Name_t& name,
                                                      const typename SharedMemory::memory_type::Configuration& config =
-                                                         typename SharedMemory::memory_type::Configuration());
+                                                         typename SharedMemory::memory_type::Configuration()) noexcept;
 };
 
 class SharedMemoryOpener
@@ -95,7 +98,7 @@ class SharedMemoryOpener
 
   public:
     template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryError> open(const Name_t& name);
+    expected<SharedMemory, SharedMemoryError> open(const Name_t& name) noexcept;
 };
 
 } // namespace cal
