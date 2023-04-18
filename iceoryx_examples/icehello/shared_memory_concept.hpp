@@ -1,12 +1,12 @@
 #ifndef IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
 #define IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
 
-#include "iceoryx_hoofs/posix_wrapper/posix_access_rights.hpp"
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
 #include "iox/builder.hpp"
 #include "iox/expected.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/string.hpp"
+#include "shm_pointer.hpp"
 
 // move to concept_abstractions/shared_memory/concept.hpp
 // later: separate files for implementations
@@ -25,45 +25,34 @@ namespace iox
 namespace cal
 {
 using Name_t = string<platform::IOX_MAX_SHM_NAME_LENGTH>;
-using PtrDistance_t = uint64_t; // use NewType?
 
-class ShmPointer
+enum class SharedMemoryCreationError
 {
-  public:
-    ShmPointer() = default;
-    ShmPointer(const ShmPointer&) = delete;
-    ShmPointer& operator=(const ShmPointer&) = delete;
-    ShmPointer(ShmPointer&&) noexcept = default;
-    ShmPointer& operator=(ShmPointer&&) noexcept = default;
-    ~ShmPointer() noexcept = default;
-
-    ShmPointer(const uint64_t distance, void* const memory) noexcept
-        : m_distance_to_data(distance)
-        , m_mapped_ptr(memory)
-    {
-    }
-
-    PtrDistance_t distance() const noexcept
-    {
-        return m_distance_to_data;
-    }
-
-    void* mapped_ptr() const noexcept
-    {
-        return m_mapped_ptr;
-    }
-
-  private:
-    PtrDistance_t m_distance_to_data{0};
-    void* m_mapped_ptr{nullptr};
+    REQUESTED_ZERO_SIZED_MEMORY,
+    EMPTY_MEMORY_NAME_PROVIDED,
+    SHARED_MEMORY_ALREADY_EXISTS,
+    MAPPING_SHARED_MEMORY_FAILED,
+    SHARED_MEMORY_CREATION_FAILED,
+    INTERNAL_LOGIC_FAILURE,
+    UNKNOWN,
 };
 
-enum class SharedMemoryError
+enum class SharedMemoryOpenError
 {
-    SHARED_MEMORY_CREATION_FAILED,
+    REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE,
+    EMPTY_MEMORY_NAME_PROVIDED,
+    SHARED_MEMORY_DOES_NOT_EXIST,
+    PERMISSION_DENIED,
     MAPPING_SHARED_MEMORY_FAILED,
-    SHARED_MEMORY_ALLOCATION_ERROR,
+    SHARED_MEMORY_CREATION_FAILED, // has to be changed in SharedMemoryObject
     INTERNAL_LOGIC_FAILURE,
+    UNKNOWN,
+};
+
+enum class SharedMemoryAllocationError
+{
+    OUT_OF_MEMORY,
+    REQUESTED_ZERO_SIZED_MEMORY,
     UNKNOWN,
 };
 
@@ -72,6 +61,7 @@ class SharedMemory
 {
   public:
     using memory_type = MemoryType;
+    using allocator_type = Allocator;
 
     SharedMemory(const SharedMemory&) = delete;
     SharedMemory& operator=(const SharedMemory&) = delete;
@@ -85,17 +75,15 @@ class SharedMemory
 
     uint64_t getStartAddress() const noexcept;
 
-    // maybe return expected
-    ShmPointer allocate(uint64_t size, uint64_t alignment) noexcept;
+    expected<ShmPointer, SharedMemoryAllocationError> allocate(uint64_t size, uint64_t alignment) noexcept;
 
-    // Shall every process be able to deallocate whole memory?
-    void deallocate(ShmPointer value) noexcept;
+    void deallocate(PtrDistance_t value) noexcept;
 
     friend class SharedMemoryCreator;
     friend class SharedMemoryOpener;
 
   private:
-    SharedMemory(MemoryType&& memory) noexcept;
+    explicit SharedMemory(MemoryType&& memory) noexcept;
 
     MemoryType m_memory;
 };
@@ -104,31 +92,40 @@ class SharedMemoryCreator
 {
     IOX_BUILDER_PARAMETER(uint64_t, memorySizeInBytes, 0)
 
-    IOX_BUILDER_PARAMETER(access_rights, permissions, perms::none)
+    // trust everyone for now; change later to perms::none
+    IOX_BUILDER_PARAMETER(access_rights, permissions, perms::owner_all)
 
-    // maybe change deault values once new implementations are available
-    IOX_BUILDER_PARAMETER(posix::PosixUser, user, posix::PosixUser::getUserOfCurrentProcess())
-
-    IOX_BUILDER_PARAMETER(posix::PosixGroup, group, posix::PosixGroup::getGroupOfCurrentProcess())
+    // add builder parameter for PosixUser and PosixGroup later
 
   public:
     // Configuration parameter could be used when a shared memory specialization needs additional parameters, e.g. id
     // for GPU shared memory; maybe not needed
     template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryError> create(const Name_t& name,
-                                                     const typename SharedMemory::memory_type::Configuration& config =
-                                                         typename SharedMemory::memory_type::Configuration()) noexcept;
+    expected<SharedMemory, SharedMemoryCreationError>
+    create(const Name_t& name,
+           const typename SharedMemory::memory_type::Configuration& mem_config =
+               typename SharedMemory::memory_type::Configuration(),
+           const typename SharedMemory::allocator_type::Configuration& alloc_config =
+               typename SharedMemory::allocator_type::Configuration()) noexcept;
+
+    // template <typename SharedMemory>
+    // expected<SharedMemory, SharedMemoryCreationError>
+    // create(const Name_t& name,
+    // const typename SharedMemory::allocator_type::Configuration& alloc_config =
+    // typename SharedMemory::allocator_type::Configuration(),
+    // const typename SharedMemory::memory_type::Configuration& mem_config =
+    // typename SharedMemory::memory_type::Configuration()) noexcept;
 };
 
 class SharedMemoryOpener
 {
-    IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_ONLY)
-
     IOX_BUILDER_PARAMETER(uint64_t, requiredMemorySize, 0)
+
+    IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_ONLY)
 
   public:
     template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryError> open(const Name_t& name) noexcept;
+    expected<SharedMemory, SharedMemoryOpenError> open(const Name_t& name) noexcept;
 };
 
 } // namespace cal

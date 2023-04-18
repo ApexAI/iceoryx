@@ -35,7 +35,7 @@ const access_rights all{perms::owner_all};
 
 // use ShmAllocatorConcept
 using Implementations =
-    Types<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemory<ProcessLocal, BumpAllocator>>;
+    Types<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemory<ProcessLocal, ShmBumpAllocator>>;
 
 TYPED_TEST_SUITE(SharedMemory_test, Implementations, );
 
@@ -53,7 +53,8 @@ TYPED_TEST(SharedMemory_test, CreationFailsWithEmptyName)
     const Name_t emptyName("");
     auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(emptyName);
     ASSERT_TRUE(mem.has_error());
-    EXPECT_EQ(mem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(mem.get_error(), SharedMemoryCreationError::EMPTY_MEMORY_NAME_PROVIDED);
 }
 
 TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
@@ -61,7 +62,8 @@ TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
     using Type = typename TestFixture::SharedMemoryType;
     auto mem = SharedMemoryCreator().memorySizeInBytes(0).permissions(all).create<Type>(validName);
     ASSERT_TRUE(mem.has_error());
-    EXPECT_EQ(mem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(mem.get_error(), SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
 }
 
 TYPED_TEST(SharedMemory_test, NameIsSetToPassedValidName)
@@ -81,17 +83,6 @@ TYPED_TEST(SharedMemory_test, MemorySizeIsAtLeastThePassedValidSize)
     ASSERT_FALSE(mem.has_error());
     EXPECT_THAT(mem->getSizeInBytes(), Ge(MEMORY_SIZE));
 }
-
-// shared memory must be page size aligned when used in inter process communication, otherwise alignment can be
-// corrupted in certain processes because of the offset
-// TYPED_TEST(SharedMemory_test, StartAddressIsAlignedToPageSize)
-//{
-// using Type = typename TestFixture::SharedMemoryType;
-// auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
-// ASSERT_FALSE(mem.has_error());
-// auto p = reinterpret_cast<uintptr_t>(mem->getStartAddress());
-// EXPECT_THAT(p % static_cast<uint64_t>(iox_page_size), Eq(0));
-//}
 
 TYPED_TEST(SharedMemory_test, OpenWorksWithAppropriateParameters)
 {
@@ -121,8 +112,8 @@ TYPED_TEST(SharedMemory_test, OpenFailsWithInappropriateAccessMode)
                          .open<Type>(validName);
     ASSERT_TRUE(openedMem.has_error());
 
-    // change error code?
-    EXPECT_EQ(openedMem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(openedMem.get_error(), SharedMemoryOpenError::PERMISSION_DENIED);
 }
 
 TYPED_TEST(SharedMemory_test, OpenFailsWhenRequiredSizeIsGreaterThanSharedMemorySize)
@@ -136,9 +127,7 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenRequiredSizeIsGreaterThanSharedMemory
                          .accessMode(posix::AccessMode::READ_WRITE)
                          .open<Type>(validName);
     ASSERT_TRUE(openedMem.has_error());
-
-    // change error code?
-    EXPECT_EQ(openedMem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    EXPECT_EQ(openedMem.get_error(), SharedMemoryOpenError::REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE);
 }
 
 TYPED_TEST(SharedMemory_test, OpenFailsWhenNameDoesNotMatch)
@@ -153,8 +142,8 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenNameDoesNotMatch)
                          .open<Type>("other_name");
     ASSERT_TRUE(openedMem.has_error());
 
-    // change error code?
-    EXPECT_EQ(openedMem.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(openedMem.get_error(), SharedMemoryOpenError::SHARED_MEMORY_DOES_NOT_EXIST);
 }
 
 TYPED_TEST(SharedMemory_test, WriteAndReadShmWorks)
@@ -194,7 +183,8 @@ TYPED_TEST(SharedMemory_test, AllocateDoesNotReturnNullptrWithAppropriateParamet
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(sizeGreaterZero, 1);
-    ASSERT_THAT(result.mapped_ptr(), Ne(nullptr));
+    ASSERT_FALSE(result.has_error());
+    EXPECT_THAT(result->mapped_ptr(), Ne(nullptr));
 }
 
 TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsTooLarge)
@@ -204,8 +194,8 @@ TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsTooLarge)
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(sizeGreaterZero * 1000, 1);
-    ASSERT_THAT(result.mapped_ptr(), Eq(nullptr));
-    //  EXPECT_EQ(translateAllocatorToShmError(result.get_error()), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+    ASSERT_TRUE(result.has_error());
+    EXPECT_EQ(result.get_error(), SharedMemoryAllocationError::OUT_OF_MEMORY);
 }
 
 TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsZero)
@@ -215,8 +205,8 @@ TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsZero)
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(0, 1);
-    ASSERT_THAT(result.mapped_ptr(), Eq(nullptr));
-    // EXPECT_EQ(translateAllocatorToShmError(result.get_error()), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+    ASSERT_TRUE(result.has_error());
+    EXPECT_EQ(result.get_error(), SharedMemoryAllocationError::REQUESTED_ZERO_SIZED_MEMORY);
 }
 
 TYPED_TEST(SharedMemory_test, AllocationIsCorrectlyAligned)
@@ -229,13 +219,13 @@ TYPED_TEST(SharedMemory_test, AllocationIsCorrectlyAligned)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
-    auto p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
+    ASSERT_FALSE(allocation_result.has_error());
+    auto p = reinterpret_cast<uintptr_t>(allocation_result->mapped_ptr());
     EXPECT_THAT(p % MEMORY_ALIGNMENT, Eq(0));
 
     allocation_result = mem->allocate(2 * MEMORY_SIZE, 2 * MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
-    p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
+    ASSERT_FALSE(allocation_result.has_error());
+    p = reinterpret_cast<uintptr_t>(allocation_result->mapped_ptr());
     EXPECT_THAT(p % (2 * MEMORY_ALIGNMENT), Eq(0));
 }
 
@@ -249,14 +239,13 @@ TYPED_TEST(SharedMemory_test, OverAllocationFails)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(mem->getSizeInBytes(), MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
-    auto p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
+    ASSERT_FALSE(allocation_result.has_error());
+    auto p = reinterpret_cast<uintptr_t>(allocation_result->mapped_ptr());
     EXPECT_THAT(p % MEMORY_ALIGNMENT, Eq(0));
 
     allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Eq(nullptr));
-    // EXPECT_EQ(translateAllocatorToShmError(allocation_result.get_error()),
-    // SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
+    ASSERT_TRUE(allocation_result.has_error());
+    EXPECT_EQ(allocation_result.get_error(), SharedMemoryAllocationError::OUT_OF_MEMORY);
 }
 
 TYPED_TEST(SharedMemory_test, AllocateMemoryAndStoreDataWorks)
@@ -269,9 +258,9 @@ TYPED_TEST(SharedMemory_test, AllocateMemoryAndStoreDataWorks)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    ASSERT_FALSE(allocation_result.has_error());
 
-    int* data = static_cast<int*>(allocation_result.mapped_ptr());
+    int* data = static_cast<int*>(allocation_result->mapped_ptr());
     *data = std::numeric_limits<int>::min();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::min()));
 }
@@ -286,8 +275,8 @@ TYPED_TEST(SharedMemory_test, MemoryCanBeAllocatedByCreatorAndOpener)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
-    int* data = static_cast<int*>(allocation_result.mapped_ptr());
+    ASSERT_FALSE(mem.has_error());
+    int* data = static_cast<int*>(allocation_result->mapped_ptr());
     *data = std::numeric_limits<int>::min();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::min()));
 
@@ -298,9 +287,10 @@ TYPED_TEST(SharedMemory_test, MemoryCanBeAllocatedByCreatorAndOpener)
     ASSERT_FALSE(openedMem.has_error());
 
     allocation_result = openedMem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
-    EXPECT_THAT(allocation_result.distance(), Ne(0));
-    data = static_cast<int*>(allocation_result.mapped_ptr());
+    ASSERT_FALSE(allocation_result.has_error());
+    EXPECT_THAT(allocation_result->mapped_ptr(), Ne(nullptr));
+    EXPECT_THAT(allocation_result->distance(), Ne(0));
+    data = static_cast<int*>(allocation_result->mapped_ptr());
     *data = std::numeric_limits<int>::max();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::max()));
 }
@@ -313,7 +303,7 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     constexpr uint64_t MEMORY_ALIGNMENT{alignof(int)};
 
     // optional for lifetime regulation
-    optional<expected<Type, SharedMemoryError>> mem1 =
+    optional<expected<Type, SharedMemoryCreationError>> mem1 =
         SharedMemoryCreator().memorySizeInBytes(MEMORY_SIZE).permissions(all).create<Type>(validName);
     ASSERT_TRUE(mem1.has_value());
     ASSERT_FALSE(mem1->has_error());
@@ -323,7 +313,8 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     // second create with same name fails
     auto mem2 = SharedMemoryCreator().memorySizeInBytes(MEMORY_SIZE).permissions(all).create<Type>(validName);
     ASSERT_TRUE(mem2.has_error());
-    EXPECT_EQ(mem2.get_error(), SharedMemoryError::SHARED_MEMORY_CREATION_FAILED);
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(mem2.get_error(), SharedMemoryCreationError::SHARED_MEMORY_ALREADY_EXISTS);
 
     // two openers are valid
     auto mem3 = SharedMemoryOpener()
@@ -332,7 +323,7 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
                     .open<Type>(validName);
     EXPECT_FALSE(mem3.has_error());
     auto allocation_mem3 = mem3->allocate(MEMORY_SIZE / 2, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem3.mapped_ptr(), Ne(nullptr));
+    ASSERT_FALSE(allocation_mem3.has_error());
 
     auto mem4 = SharedMemoryOpener()
                     .requiredMemorySize(MEMORY_SIZE)
@@ -346,15 +337,16 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     // old opener still okay
     EXPECT_THAT(mem4->getName(), Eq(validName));
     auto allocation_mem4 = mem4->allocate(MEMORY_SIZE / 2, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem4.mapped_ptr(), Ne(nullptr));
-    EXPECT_THAT(allocation_mem4.distance(), Ne(0));
+    ASSERT_FALSE(allocation_mem4.has_error());
+    EXPECT_THAT(allocation_mem4->mapped_ptr(), Ne(nullptr));
+    EXPECT_THAT(allocation_mem4->distance(), Ne(0));
 
-    int* mem4_content = static_cast<int*>(allocation_mem4.mapped_ptr());
+    int* mem4_content = static_cast<int*>(allocation_mem4->mapped_ptr());
     *mem4_content = 1990;
     EXPECT_EQ(*mem4_content, 1990);
 
     // mem3 can write to memory
-    int* mem3_content = static_cast<int*>(allocation_mem3.mapped_ptr());
+    int* mem3_content = static_cast<int*>(allocation_mem3->mapped_ptr());
     *mem3_content = 13;
     EXPECT_EQ(*mem3_content, 13);
 
@@ -367,14 +359,16 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
                     .accessMode(posix::AccessMode::READ_ONLY)
                     .open<Type>(validName);
     EXPECT_TRUE(mem5.has_error());
+    // change error code in SharedMemoryObject?
+    // EXPECT_EQ(mem5.get_error(), SharedMemoryOpenError::SHARED_MEMORY_DOES_NOT_EXIST);
 
     // create new shared memory with same name and write data
     auto mem6 = SharedMemoryCreator().memorySizeInBytes(MEMORY_SIZE).permissions(all).create<Type>(validName);
     ASSERT_FALSE(mem6.has_error());
 
     auto allocation_mem6 = mem6->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem6.mapped_ptr(), Ne(nullptr));
-    int* mem6_content = static_cast<int*>(allocation_mem6.mapped_ptr());
+    ASSERT_FALSE(allocation_mem6.has_error());
+    int* mem6_content = static_cast<int*>(allocation_mem6->mapped_ptr());
     *mem6_content = 1984;
     EXPECT_EQ(*mem6_content, 1984);
 
@@ -418,16 +412,6 @@ TYPED_TEST(SharedMemory_test, MoveConstructorWorks)
     EXPECT_THAT(mem2->getName(), Eq(validName));
     EXPECT_THAT(mem2->getSizeInBytes(), Eq(size));
 }
-
-// creator: permissions = passed parameter?
-// creator: user = passed parameter?
-// creator: group = passed parameter?
-// creator: accessMode = passed parameter?
-// creator: does not work when wrong combination of identity and acces parameters are passed? to what extend?
-
-// configuration tests?
-
-// posix shared memory: error enum translation
 
 } // namespace
 

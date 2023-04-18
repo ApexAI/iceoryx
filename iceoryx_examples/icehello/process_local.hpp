@@ -2,14 +2,13 @@
 #define IOX_CONCEPTS_SHARED_MEMORY_PROCESS_LOCAL_HPP
 
 #include "iceoryx_hoofs/internal/concurrent/smart_lock.hpp"
-#include "iceoryx_hoofs/internal/posix_wrapper/mutex.hpp"
-#include "iox/bump_allocator.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/memory.hpp"
 #include "iox/scope_guard.hpp"
 #include "iox/vector.hpp"
-#include "shared_memory_allocator.hpp"
 #include "shared_memory_concept.hpp"
+#include "shm_bump_allocator.hpp"
+#include "shm_pointer.hpp"
 
 #include <atomic>
 
@@ -17,24 +16,16 @@ namespace iox
 {
 namespace cal
 {
-// **** Allocator not yet thread safe!!
-
-// *****concrete implementation of ProcessLocal memory******
-
-enum class ProcessLocalError
-{
-    PROCESS_LOCAL_MEMORY_CREATION_FAILED,
-    PROCESS_LOCAL_MEMORY_NAME_ALREADY_EXISTS,
-    OPEN_PROCESS_LOCAL_MEMORY_FAILED,
-};
-
 struct ProcessLocalMembers
 {
+    // shared memory must be page size aligned when used in inter process communication, otherwise alignment can be
+    // corrupted in certain processes because of the offset
     ProcessLocalMembers(const uint64_t size, const access_rights& permissions) noexcept
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
         : m_memory(reinterpret_cast<uint64_t*>(alignedAlloc(static_cast<uint64_t>(iox_page_size), size)))
         , m_size(size)
         , m_permissions(permissions)
-        , m_allocator(BumpAllocator(m_memory, m_size))
+        , m_allocator(ShmBumpAllocator(m_memory, m_size))
     {
         ++m_refCounter;
     }
@@ -42,7 +33,7 @@ struct ProcessLocalMembers
     void* m_memory{nullptr};
     uint64_t m_size{0};
     access_rights m_permissions{perms::none};
-    BumpAllocator m_allocator{m_memory, m_size};
+    ShmBumpAllocator m_allocator{m_memory, m_size};
     std::atomic<uint64_t> m_refCounter{0};
 };
 
@@ -113,15 +104,17 @@ class ProcessLocal
 
     uint64_t getStartAddress() const noexcept
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
         return reinterpret_cast<uint64_t>(m_plm->m_memory);
     }
 
-    BumpAllocator& getAllocator() const noexcept
+    ShmBumpAllocator& getAllocator() const noexcept
     {
         return m_plm->m_allocator;
     }
 
-    friend class ProcessLocalBuilder;
+    friend class SharedMemoryCreator;
+    friend class SharedMemoryOpener;
 
   private:
     ProcessLocal(ProcessLocalMembers* const plm, const Name_t& name, const bool isOwner) noexcept
@@ -154,173 +147,132 @@ class ProcessLocal
     }};
 };
 
-class ProcessLocalBuilder
-{
-    IOX_BUILDER_PARAMETER(Name_t, name, "")
-
-    IOX_BUILDER_PARAMETER(uint64_t, memorySizeInBytes, 0)
-
-    IOX_BUILDER_PARAMETER(access_rights, permissions, perms::none)
-
-    IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_ONLY)
-
-    optional<posix::mutex> builderMutex;
-
-  public:
-    expected<ProcessLocal, ProcessLocalError> create() noexcept
-    {
-        if (m_memorySizeInBytes == 0)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_CREATION_FAILED);
-        }
-
-        if (m_name.empty())
-        {
-            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_CREATION_FAILED);
-        }
-
-        if (memory_vector->size() == MAX_PROCESS_LOCAL_MEMORY)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_CREATION_FAILED);
-        }
-
-        auto guardedVector = memory_vector.getScopeGuard();
-        auto* iter = findNameInVector(m_name, *guardedVector);
-        if (iter != nullptr)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::PROCESS_LOCAL_MEMORY_NAME_ALREADY_EXISTS);
-        }
-
-        ProcessLocalMembers* plm = new ProcessLocalMembers(m_memorySizeInBytes, m_permissions);
-        memory_vector->push_back(ShmProcessLocalMap(m_name, plm));
-        ProcessLocal pl(plm, m_name, true);
-        return success<ProcessLocal>(std::move(pl));
-    }
-
-    expected<ProcessLocal, ProcessLocalError> open() noexcept
-    {
-        if (m_name.empty())
-        {
-            return error<ProcessLocalError>(ProcessLocalError::OPEN_PROCESS_LOCAL_MEMORY_FAILED);
-        }
-
-        auto guardedVector = memory_vector.getScopeGuard();
-        auto* iter = findNameInVector(m_name, *guardedVector);
-        if (iter == nullptr)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::OPEN_PROCESS_LOCAL_MEMORY_FAILED);
-        }
-
-        // check permissions
-        if (m_accessMode == posix::AccessMode::READ_WRITE && iter->m_plm->m_permissions == perms::owner_read)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::OPEN_PROCESS_LOCAL_MEMORY_FAILED);
-        }
-
-        // check size
-        if (m_memorySizeInBytes > iter->m_plm->m_size)
-        {
-            return error<ProcessLocalError>(ProcessLocalError::OPEN_PROCESS_LOCAL_MEMORY_FAILED);
-        }
-
-        ++iter->m_plm->m_refCounter;
-        ProcessLocal pl(iter->m_plm, m_name, false);
-        return success<ProcessLocal>(std::move(pl));
-    }
-};
-
-
-// *************concept implementation*************************
-// will probably be moved to:
-// - concept_abstractions
-//   - shared_memory
-//     - process_local.hpp
-
-SharedMemoryError translateError(const ProcessLocalError error) noexcept
-{
-    if (error == ProcessLocalError::PROCESS_LOCAL_MEMORY_CREATION_FAILED)
-    {
-        return SharedMemoryError::SHARED_MEMORY_CREATION_FAILED;
-    }
-    if (error == ProcessLocalError::PROCESS_LOCAL_MEMORY_NAME_ALREADY_EXISTS)
-    {
-        return SharedMemoryError::SHARED_MEMORY_CREATION_FAILED;
-    }
-    if (error == ProcessLocalError::OPEN_PROCESS_LOCAL_MEMORY_FAILED)
-    {
-        return SharedMemoryError::SHARED_MEMORY_CREATION_FAILED;
-    }
-    return SharedMemoryError::UNKNOWN;
-}
 
 template <>
-const Name_t& SharedMemory<ProcessLocal, BumpAllocator>::getName() const noexcept
+const Name_t& SharedMemory<ProcessLocal, ShmBumpAllocator>::getName() const noexcept
 {
     return m_memory.getName();
 }
 
 template <>
-uint64_t SharedMemory<ProcessLocal, BumpAllocator>::getSizeInBytes() const noexcept
+uint64_t SharedMemory<ProcessLocal, ShmBumpAllocator>::getSizeInBytes() const noexcept
 {
     return m_memory.getSizeInBytes();
 }
 
 template <>
-uint64_t SharedMemory<ProcessLocal, BumpAllocator>::getStartAddress() const noexcept
+uint64_t SharedMemory<ProcessLocal, ShmBumpAllocator>::getStartAddress() const noexcept
 {
     return m_memory.getStartAddress();
 }
 
 template <>
-ShmPointer SharedMemory<ProcessLocal, BumpAllocator>::allocate(uint64_t size, uint64_t alignment) noexcept
+expected<ShmPointer, SharedMemoryAllocationError>
+SharedMemory<ProcessLocal, ShmBumpAllocator>::allocate(uint64_t size, uint64_t alignment) noexcept
 {
-    auto res = m_memory.getAllocator().allocate(size, alignment);
-    if (res.has_error())
+    auto distance = m_memory.getAllocator().allocate(size, alignment);
+    if (distance.has_error())
     {
-        return ShmPointer();
+        switch (distance.get_error())
+        {
+        case ShmBumpAllocatorError::REQUESTED_ZERO_SIZED_MEMORY:
+            IOX_LOG(WARN) << "Cannot allocate memory of size 0.";
+            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::REQUESTED_ZERO_SIZED_MEMORY);
+        case ShmBumpAllocatorError::OUT_OF_MEMORY:
+            IOX_LOG(WARN) << "Insufficient memory available.";
+            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::OUT_OF_MEMORY);
+        default:
+            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::UNKNOWN);
+        }
     }
-    return ShmPointer(reinterpret_cast<PtrDistance_t>(*res) - getStartAddress(), *res);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
+    return success<ShmPointer>(ShmPointer(*distance, reinterpret_cast<void*>(getStartAddress() + *distance)));
 }
 
 template <>
-void SharedMemory<ProcessLocal, BumpAllocator>::deallocate(ShmPointer value) noexcept = delete;
+void SharedMemory<ProcessLocal, ShmBumpAllocator>::deallocate(PtrDistance_t value) noexcept = delete;
 
 template <>
-SharedMemory<ProcessLocal, BumpAllocator>::SharedMemory(ProcessLocal&& memory) noexcept
+SharedMemory<ProcessLocal, ShmBumpAllocator>::SharedMemory(ProcessLocal&& memory) noexcept
     : m_memory(std::move(memory))
 {
 }
 
 template <>
-expected<SharedMemory<ProcessLocal, BumpAllocator>, SharedMemoryError>
-SharedMemoryCreator::create(const Name_t& name, const ProcessLocal::Configuration& config) noexcept
+expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError> SharedMemoryCreator::create(
+    const Name_t& name, const ProcessLocal::Configuration&, const ShmBumpAllocator::Configuration&) noexcept
 {
-    // check configuration
+    // check configurations
 
-    auto mem =
-        ProcessLocalBuilder().name(name).memorySizeInBytes(m_memorySizeInBytes).permissions(m_permissions).create();
-
-    if (!mem)
+    if (m_memorySizeInBytes == 0)
     {
-        return error<SharedMemoryError>(translateError(mem.get_error()));
+        IOX_LOG(WARN) << "Cannot acquire memory of size 0.";
+        return error<SharedMemoryCreationError>(SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
     }
 
-    return success<SharedMemory<ProcessLocal, BumpAllocator>>(
-        SharedMemory<ProcessLocal, BumpAllocator>(std::move(*mem)));
+    if (name.empty())
+    {
+        IOX_LOG(WARN) << "Cannot acquire memory with empty name.";
+        return error<SharedMemoryCreationError>(SharedMemoryCreationError::EMPTY_MEMORY_NAME_PROVIDED);
+    }
+
+    if (memory_vector->size() == MAX_PROCESS_LOCAL_MEMORY)
+    {
+        IOX_LOG(WARN) << "Cannot acquire memory since limit is reached.";
+        return error<SharedMemoryCreationError>(SharedMemoryCreationError::SHARED_MEMORY_CREATION_FAILED);
+    }
+
+    auto guardedVector = memory_vector.getScopeGuard();
+    auto* iter = findNameInVector(name, *guardedVector);
+    if (iter != nullptr)
+    {
+        IOX_LOG(WARN) << "Cannot acquire memory since " << name << " it already exists.";
+        return error<SharedMemoryCreationError>(SharedMemoryCreationError::SHARED_MEMORY_ALREADY_EXISTS);
+    }
+
+    auto* plm = new ProcessLocalMembers(m_memorySizeInBytes, m_permissions);
+    memory_vector->push_back(ShmProcessLocalMap(name, plm));
+    ProcessLocal pl(plm, name, true);
+    return success<SharedMemory<ProcessLocal, ShmBumpAllocator>>(
+        SharedMemory<ProcessLocal, ShmBumpAllocator>(std::move(pl)));
 }
 
 template <>
-expected<SharedMemory<ProcessLocal, BumpAllocator>, SharedMemoryError>
+expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryOpenError>
 SharedMemoryOpener::open(const Name_t& name) noexcept
 {
-    auto mem = ProcessLocalBuilder().name(name).memorySizeInBytes(m_requiredMemorySize).accessMode(m_accessMode).open();
-    if (!mem)
+    if (name.empty())
     {
-        return error<SharedMemoryError>(translateError(mem.get_error()));
+        IOX_LOG(WARN) << "Cannot open memory with empty name.";
+        return error<SharedMemoryOpenError>(SharedMemoryOpenError::EMPTY_MEMORY_NAME_PROVIDED);
     }
 
-    return success<SharedMemory<ProcessLocal, BumpAllocator>>(
-        SharedMemory<ProcessLocal, BumpAllocator>(std::move(*mem)));
+    auto guardedVector = memory_vector.getScopeGuard();
+    auto* iter = findNameInVector(name, *guardedVector);
+    if (iter == nullptr)
+    {
+        IOX_LOG(WARN) << "Cannot open memory since " << name << " does not exist.";
+        return error<SharedMemoryOpenError>(SharedMemoryOpenError::SHARED_MEMORY_DOES_NOT_EXIST);
+    }
+
+    // permission check for test purpose; will be implemented in more detail later
+    if (m_accessMode == posix::AccessMode::READ_WRITE && iter->m_plm->m_permissions == perms::owner_read)
+    {
+        IOX_LOG(WARN) << "Cannot open memory due to unsufficient permissions.";
+        return error<SharedMemoryOpenError>(SharedMemoryOpenError::PERMISSION_DENIED);
+    }
+
+    if (m_requiredMemorySize > iter->m_plm->m_size)
+    {
+        IOX_LOG(WARN) << "Cannot open memory of required size " << m_requiredMemorySize
+                      << " since it exceeds the actual size of " << iter->m_plm->m_size;
+        return error<SharedMemoryOpenError>(SharedMemoryOpenError::REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE);
+    }
+
+    ++iter->m_plm->m_refCounter;
+    ProcessLocal pl(iter->m_plm, name, false);
+    return success<SharedMemory<ProcessLocal, ShmBumpAllocator>>(
+        SharedMemory<ProcessLocal, ShmBumpAllocator>(std::move(pl)));
 }
 } // namespace cal
 } // namespace iox

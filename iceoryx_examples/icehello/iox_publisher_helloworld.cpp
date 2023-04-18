@@ -141,7 +141,7 @@ int main()
     if (!mem)
     {
         // handle creation error
-        if (mem.get_error() == iox::cal::SharedMemoryError::SHARED_MEMORY_CREATION_FAILED)
+        if (mem.get_error() == iox::cal::SharedMemoryCreationError::SHARED_MEMORY_CREATION_FAILED)
         {
             std::cout << "Creation" << std::endl;
             return EXIT_FAILURE;
@@ -184,7 +184,8 @@ struct HighPerformanceUnsafeService
 template <typename ServiceType>
 struct Publisher
 {
-    static iox::expected<Publisher, iox::cal::SharedMemoryError> createPublisher(iox::cal::Name_t& service_description)
+    static iox::expected<Publisher, iox::cal::SharedMemoryCreationError>
+    createPublisher(iox::cal::Name_t& service_description)
     {
         success<typename ServiceType::SharedMemory>(
             iox::cal::SharedMemoryCreator().template create<ServiceType::SharedMemory>("data_segment"));
@@ -204,7 +205,7 @@ HighPerformanceUnsafeService::Configuration get_high_perf_config()
 template <typename T>
 struct IceoryxService
 {
-    static iox::expected<IceoryxService, iox::cal::SharedMemoryError> create(const std::string&)
+    static iox::expected<IceoryxService, iox::cal::SharedMemoryCreationError> create(const std::string&)
     {
     }
 
