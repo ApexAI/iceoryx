@@ -25,8 +25,38 @@ namespace iox
 namespace cal
 {
 using Name_t = string<platform::IOX_MAX_SHM_NAME_LENGTH>;
+using PtrDistance_t = uint64_t; // use NewType?
 
-using ShmPointer = void*;
+class ShmPointer
+{
+  public:
+    ShmPointer() = default;
+    ShmPointer(const ShmPointer&) = delete;
+    ShmPointer& operator=(const ShmPointer&) = delete;
+    ShmPointer(ShmPointer&&) noexcept = default;
+    ShmPointer& operator=(ShmPointer&&) noexcept = default;
+    ~ShmPointer() noexcept = default;
+
+    ShmPointer(const uint64_t distance, void* const memory) noexcept
+        : m_distance_to_data(distance)
+        , m_mapped_ptr(memory)
+    {
+    }
+
+    PtrDistance_t distance() const noexcept
+    {
+        return m_distance_to_data;
+    }
+
+    void* mapped_ptr() const noexcept
+    {
+        return m_mapped_ptr;
+    }
+
+  private:
+    PtrDistance_t m_distance_to_data{0};
+    void* m_mapped_ptr{nullptr};
+};
 
 enum class SharedMemoryError
 {
@@ -59,7 +89,7 @@ class SharedMemory
     ShmPointer allocate(uint64_t size, uint64_t alignment) noexcept;
 
     // Shall every process be able to deallocate whole memory?
-    // void deallocate(ShmPointer value) noexcept;
+    void deallocate(ShmPointer value) noexcept;
 
     friend class SharedMemoryCreator;
     friend class SharedMemoryOpener;

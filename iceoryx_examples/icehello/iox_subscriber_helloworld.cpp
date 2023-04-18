@@ -194,7 +194,7 @@ TYPED_TEST(SharedMemory_test, AllocateDoesNotReturnNullptrWithAppropriateParamet
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(sizeGreaterZero, 1);
-    ASSERT_THAT(result, Ne(nullptr));
+    ASSERT_THAT(result.mapped_ptr(), Ne(nullptr));
 }
 
 TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsTooLarge)
@@ -204,7 +204,7 @@ TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsTooLarge)
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(sizeGreaterZero * 1000, 1);
-    ASSERT_THAT(result, Eq(nullptr));
+    ASSERT_THAT(result.mapped_ptr(), Eq(nullptr));
     //  EXPECT_EQ(translateAllocatorToShmError(result.get_error()), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
 }
 
@@ -215,7 +215,7 @@ TYPED_TEST(SharedMemory_test, AllocateFailsWhenPassedSizeIsZero)
     ASSERT_FALSE(mem.has_error());
 
     auto result = mem->allocate(0, 1);
-    ASSERT_THAT(result, Eq(nullptr));
+    ASSERT_THAT(result.mapped_ptr(), Eq(nullptr));
     // EXPECT_EQ(translateAllocatorToShmError(result.get_error()), SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
 }
 
@@ -229,13 +229,13 @@ TYPED_TEST(SharedMemory_test, AllocationIsCorrectlyAligned)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
-    auto p = reinterpret_cast<uintptr_t>(allocation_result);
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    auto p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
     EXPECT_THAT(p % MEMORY_ALIGNMENT, Eq(0));
 
     allocation_result = mem->allocate(2 * MEMORY_SIZE, 2 * MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
-    p = reinterpret_cast<uintptr_t>(allocation_result);
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
     EXPECT_THAT(p % (2 * MEMORY_ALIGNMENT), Eq(0));
 }
 
@@ -249,12 +249,12 @@ TYPED_TEST(SharedMemory_test, OverAllocationFails)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(mem->getSizeInBytes(), MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
-    auto p = reinterpret_cast<uintptr_t>(allocation_result);
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    auto p = reinterpret_cast<uintptr_t>(allocation_result.mapped_ptr());
     EXPECT_THAT(p % MEMORY_ALIGNMENT, Eq(0));
 
     allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Eq(nullptr));
+    ASSERT_THAT(allocation_result.mapped_ptr(), Eq(nullptr));
     // EXPECT_EQ(translateAllocatorToShmError(allocation_result.get_error()),
     // SharedMemoryError::SHARED_MEMORY_ALLOCATION_ERROR);
 }
@@ -269,9 +269,9 @@ TYPED_TEST(SharedMemory_test, AllocateMemoryAndStoreDataWorks)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
 
-    int* data = static_cast<int*>(allocation_result);
+    int* data = static_cast<int*>(allocation_result.mapped_ptr());
     *data = std::numeric_limits<int>::min();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::min()));
 }
@@ -286,8 +286,8 @@ TYPED_TEST(SharedMemory_test, MemoryCanBeAllocatedByCreatorAndOpener)
     ASSERT_FALSE(mem.has_error());
 
     auto allocation_result = mem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
-    int* data = static_cast<int*>(allocation_result);
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    int* data = static_cast<int*>(allocation_result.mapped_ptr());
     *data = std::numeric_limits<int>::min();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::min()));
 
@@ -298,8 +298,9 @@ TYPED_TEST(SharedMemory_test, MemoryCanBeAllocatedByCreatorAndOpener)
     ASSERT_FALSE(openedMem.has_error());
 
     allocation_result = openedMem->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_result, Ne(nullptr));
-    data = static_cast<int*>(allocation_result);
+    ASSERT_THAT(allocation_result.mapped_ptr(), Ne(nullptr));
+    EXPECT_THAT(allocation_result.distance(), Ne(0));
+    data = static_cast<int*>(allocation_result.mapped_ptr());
     *data = std::numeric_limits<int>::max();
     EXPECT_THAT(*data, Eq(std::numeric_limits<int>::max()));
 }
@@ -331,7 +332,7 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
                     .open<Type>(validName);
     EXPECT_FALSE(mem3.has_error());
     auto allocation_mem3 = mem3->allocate(MEMORY_SIZE / 2, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem3, Ne(nullptr));
+    ASSERT_THAT(allocation_mem3.mapped_ptr(), Ne(nullptr));
 
     auto mem4 = SharedMemoryOpener()
                     .requiredMemorySize(MEMORY_SIZE)
@@ -345,14 +346,15 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     // old opener still okay
     EXPECT_THAT(mem4->getName(), Eq(validName));
     auto allocation_mem4 = mem4->allocate(MEMORY_SIZE / 2, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem4, Ne(nullptr));
+    ASSERT_THAT(allocation_mem4.mapped_ptr(), Ne(nullptr));
+    EXPECT_THAT(allocation_mem4.distance(), Ne(0));
 
-    int* mem4_content = static_cast<int*>(allocation_mem4);
+    int* mem4_content = static_cast<int*>(allocation_mem4.mapped_ptr());
     *mem4_content = 1990;
     EXPECT_EQ(*mem4_content, 1990);
 
     // mem3 can write to memory
-    int* mem3_content = static_cast<int*>(allocation_mem3);
+    int* mem3_content = static_cast<int*>(allocation_mem3.mapped_ptr());
     *mem3_content = 13;
     EXPECT_EQ(*mem3_content, 13);
 
@@ -371,8 +373,8 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     ASSERT_FALSE(mem6.has_error());
 
     auto allocation_mem6 = mem6->allocate(MEMORY_SIZE, MEMORY_ALIGNMENT);
-    ASSERT_THAT(allocation_mem6, Ne(nullptr));
-    int* mem6_content = static_cast<int*>(allocation_mem6);
+    ASSERT_THAT(allocation_mem6.mapped_ptr(), Ne(nullptr));
+    int* mem6_content = static_cast<int*>(allocation_mem6.mapped_ptr());
     *mem6_content = 1984;
     EXPECT_EQ(*mem6_content, 1984);
 

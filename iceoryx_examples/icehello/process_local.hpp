@@ -277,16 +277,13 @@ ShmPointer SharedMemory<ProcessLocal, BumpAllocator>::allocate(uint64_t size, ui
     auto res = m_memory.getAllocator().allocate(size, alignment);
     if (res.has_error())
     {
-        return nullptr;
+        return ShmPointer();
     }
-    return *res;
+    return ShmPointer(reinterpret_cast<PtrDistance_t>(*res) - getStartAddress(), *res);
 }
 
-// template <>
-// void SharedMemory<ProcessLocal, BumpAllocator>::deallocate(ShmPointer value) noexcept
-//{
-// m_allocator->deallocate();
-//}
+template <>
+void SharedMemory<ProcessLocal, BumpAllocator>::deallocate(ShmPointer value) noexcept = delete;
 
 template <>
 SharedMemory<ProcessLocal, BumpAllocator>::SharedMemory(ProcessLocal&& memory) noexcept

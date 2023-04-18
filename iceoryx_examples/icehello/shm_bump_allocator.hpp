@@ -18,6 +18,7 @@
 
 #include "iceoryx_hoofs/cxx/expected.hpp"
 #include "iox/memory.hpp"
+#include "shared_memory_concept.hpp"
 
 #include <cstdint>
 
@@ -51,7 +52,7 @@ class ShmBumpAllocator final
     /// @param[in] alignment of the memory to allocate
     /// @return an expected containing a pointer to the memory if allocation was successful, otherwise
     /// ShmBumpAllocatorError
-    expected<void*, ShmBumpAllocatorError> allocate(const uint64_t size, const uint64_t alignment) noexcept;
+    expected<PtrDistance_t, ShmBumpAllocatorError> allocate(const uint64_t size, const uint64_t alignment) noexcept;
 
     /// @brief mark the memory as unused
     void deallocate() noexcept;
@@ -72,8 +73,8 @@ ShmBumpAllocator::ShmBumpAllocator(void* const startAddress, const uint64_t leng
 
 // NOLINTJUSTIFICATION allocation interface requires size and alignment as integral types
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-expected<void*, ShmBumpAllocatorError> ShmBumpAllocator::allocate(const uint64_t size,
-                                                                  const uint64_t alignment) noexcept
+expected<PtrDistance_t, ShmBumpAllocatorError> ShmBumpAllocator::allocate(const uint64_t size,
+                                                                          const uint64_t alignment) noexcept
 {
     if (size == 0)
     {
@@ -104,7 +105,7 @@ expected<void*, ShmBumpAllocatorError> ShmBumpAllocator::allocate(const uint64_t
         return error<ShmBumpAllocatorError>(ShmBumpAllocatorError::OUT_OF_MEMORY);
     }
 
-    return success<void*>(allocation);
+    return success<uint64_t>(alignedPosition);
 }
 
 void ShmBumpAllocator::deallocate() noexcept

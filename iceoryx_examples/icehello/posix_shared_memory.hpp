@@ -65,22 +65,26 @@ ShmPointer SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::allocate(u
 {
     // works when m_allocator->allocate() returns creator allocate address
     // -> m_allocator->allocate() should return distance so that this allocate() m_memory.getBaseAddress() + distance
+    // auto* allocator = reinterpret_cast<ShmBumpAllocator*>(m_memory.getBaseAddress());
+    // auto res = allocator->allocate(size, alignment);
+    // if (res.has_error())
+    //{
+    // return nullptr;
+    //}
+    // return reinterpret_cast<ShmPointer>(reinterpret_cast<uint64_t>(*res)
+    //+ reinterpret_cast<uint64_t>(m_memory.getBaseAddress())
+    //+ sizeof(ShmBumpAllocator));
     auto* allocator = reinterpret_cast<ShmBumpAllocator*>(m_memory.getBaseAddress());
-    auto res = allocator->allocate(size, alignment);
-    if (res.has_error())
+    auto distance = allocator->allocate(size, alignment);
+    if (distance.has_error())
     {
-        return nullptr;
+        return ShmPointer();
     }
-    return reinterpret_cast<ShmPointer>(reinterpret_cast<uint64_t>(*res)
-                                        + reinterpret_cast<uint64_t>(m_memory.getBaseAddress())
-                                        + sizeof(ShmBumpAllocator));
+    return ShmPointer(*distance, reinterpret_cast<void*>(getStartAddress() + *distance));
 }
 
-// template <>
-// void SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::deallocate(ShmPointer value) noexcept
-//{
-// m_allocator->deallocate();
-//}
+template <>
+void SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::deallocate(ShmPointer value) noexcept = delete;
 
 template <>
 SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::SharedMemory(posix::SharedMemoryObject&& memory) noexcept
