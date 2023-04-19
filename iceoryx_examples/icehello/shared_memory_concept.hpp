@@ -29,7 +29,7 @@ using Name_t = string<platform::IOX_MAX_SHM_NAME_LENGTH>;
 enum class SharedMemoryCreationError
 {
     REQUESTED_ZERO_SIZED_MEMORY,
-    EMPTY_MEMORY_NAME_PROVIDED,
+    EMPTY_MEMORY_NAME_PROVIDED, // not possible with FileName
     SHARED_MEMORY_ALREADY_EXISTS,
     MAPPING_SHARED_MEMORY_FAILED,
     SHARED_MEMORY_CREATION_FAILED,
@@ -40,11 +40,11 @@ enum class SharedMemoryCreationError
 enum class SharedMemoryOpenError
 {
     REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE,
-    EMPTY_MEMORY_NAME_PROVIDED,
+    EMPTY_MEMORY_NAME_PROVIDED, // not possible with FileName
     SHARED_MEMORY_DOES_NOT_EXIST,
     PERMISSION_DENIED,
     MAPPING_SHARED_MEMORY_FAILED,
-    SHARED_MEMORY_CREATION_FAILED, // has to be changed in SharedMemoryObject
+    OPEN_SHARED_MEMORY_FAILED,
     INTERNAL_LOGIC_FAILURE,
     UNKNOWN,
 };

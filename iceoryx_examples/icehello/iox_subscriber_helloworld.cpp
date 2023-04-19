@@ -62,8 +62,7 @@ TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
     using Type = typename TestFixture::SharedMemoryType;
     auto mem = SharedMemoryCreator().memorySizeInBytes(0).permissions(all).create<Type>(validName);
     ASSERT_TRUE(mem.has_error());
-    // change error code in SharedMemoryObject?
-    // EXPECT_EQ(mem.get_error(), SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
+    EXPECT_EQ(mem.get_error(), SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
 }
 
 TYPED_TEST(SharedMemory_test, NameIsSetToPassedValidName)

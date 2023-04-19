@@ -48,7 +48,7 @@ SharedMemoryOpenError translateOpenError(const posix::SharedMemoryObjectError er
     switch (error)
     {
     case posix::SharedMemoryObjectError::SHARED_MEMORY_CREATION_FAILED:
-        return SharedMemoryOpenError::SHARED_MEMORY_CREATION_FAILED;
+        return SharedMemoryOpenError::OPEN_SHARED_MEMORY_FAILED;
     case posix::SharedMemoryObjectError::MAPPING_SHARED_MEMORY_FAILED:
         return SharedMemoryOpenError::MAPPING_SHARED_MEMORY_FAILED;
     case posix::SharedMemoryObjectError::REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE:
@@ -123,13 +123,11 @@ SharedMemoryCreator::create(const Name_t& name,
 {
     // check configurations
 
-    // ****should be done in SharedMemoryObject
     if (m_memorySizeInBytes == 0)
     {
         IOX_LOG(WARN) << "Cannot acquire memory of size 0.";
-        return error<SharedMemoryCreationError>(SharedMemoryCreationError::SHARED_MEMORY_CREATION_FAILED);
+        return error<SharedMemoryCreationError>(SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
     }
-    //   ****
 
     // overflow unrealistic
     uint64_t effective_memory_size = m_memorySizeInBytes + sizeof(ShmBumpAllocator);
@@ -171,14 +169,15 @@ template <>
 expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryOpenError>
 SharedMemoryOpener::open(const Name_t& name) noexcept
 {
-    // check requiredSize in SharedMemoryObject
+    // note: allocator types have to match; add check once shared memory allocator concept is implemented
+
     // overflow unrealistic
     uint64_t effective_memory_size = m_requiredMemorySize + sizeof(ShmBumpAllocator);
 
     auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
                                   .name(name)
-                                  .memorySizeInBytes(effective_memory_size) // replace with requiredMemorySize()
-                                  .permissions(perms::owner_all) // remove? Opener shouldn't not set permissions
+                                  .memorySizeInBytes(effective_memory_size)
+                                  .permissions(perms::owner_all) // remove? Opener should not set permissions
                                   .accessMode(m_accessMode)
                                   .openMode(posix::OpenMode::OPEN_EXISTING)
                                   .create();
