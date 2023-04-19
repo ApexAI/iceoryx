@@ -238,6 +238,15 @@ expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError
 }
 
 template <>
+expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError>
+SharedMemoryCreator::create(const Name_t& name,
+                            const ShmBumpAllocator::Configuration& alloc_config,
+                            const ProcessLocal::Configuration& mem_config) noexcept
+{
+    return create<SharedMemory<ProcessLocal, ShmBumpAllocator>>(name, mem_config, alloc_config);
+}
+
+template <>
 expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryOpenError>
 SharedMemoryOpener::open(const Name_t& name) noexcept
 {

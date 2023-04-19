@@ -159,6 +159,15 @@ SharedMemoryCreator::create(const Name_t& name,
 }
 
 template <>
+expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryCreationError>
+SharedMemoryCreator::create(const Name_t& name,
+                            const ShmBumpAllocator::Configuration& alloc_config,
+                            const posix::SharedMemoryObject::Configuration& mem_config) noexcept
+{
+    return create<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>>(name, mem_config, alloc_config);
+}
+
+template <>
 expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryOpenError>
 SharedMemoryOpener::open(const Name_t& name) noexcept
 {

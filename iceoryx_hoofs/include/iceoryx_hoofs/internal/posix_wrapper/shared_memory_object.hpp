@@ -58,7 +58,11 @@ class SharedMemoryObject : public FileManagementInterface<SharedMemoryObject>
 {
   public:
     using Builder = SharedMemoryObjectBuilder;
-    using Configuration = int;
+
+    struct SharedMemoryObjectConfig
+    {
+    };
+    using Configuration = SharedMemoryObjectConfig;
 
     static constexpr const void* const NO_ADDRESS_HINT = nullptr;
     SharedMemoryObject(const SharedMemoryObject&) = delete;

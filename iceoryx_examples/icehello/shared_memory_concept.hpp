@@ -108,13 +108,12 @@ class SharedMemoryCreator
            const typename SharedMemory::allocator_type::Configuration& alloc_config =
                typename SharedMemory::allocator_type::Configuration()) noexcept;
 
-    // template <typename SharedMemory>
-    // expected<SharedMemory, SharedMemoryCreationError>
-    // create(const Name_t& name,
-    // const typename SharedMemory::allocator_type::Configuration& alloc_config =
-    // typename SharedMemory::allocator_type::Configuration(),
-    // const typename SharedMemory::memory_type::Configuration& mem_config =
-    // typename SharedMemory::memory_type::Configuration()) noexcept;
+    template <typename SharedMemory>
+    expected<SharedMemory, SharedMemoryCreationError>
+    create(const Name_t& name,
+           const typename SharedMemory::allocator_type::Configuration& alloc_config,
+           const typename SharedMemory::memory_type::Configuration& mem_config =
+               typename SharedMemory::memory_type::Configuration()) noexcept;
 };
 
 class SharedMemoryOpener

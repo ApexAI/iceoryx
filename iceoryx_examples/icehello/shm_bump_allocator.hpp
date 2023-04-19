@@ -43,7 +43,10 @@ enum class ShmBumpAllocatorError : uint8_t
 class ShmBumpAllocator final
 {
   public:
-    using Configuration = int;
+    struct ShmBumpAllocatorConfig
+    {
+    };
+    using Configuration = ShmBumpAllocatorConfig;
 
     /// @brief c'tor
     /// @param[in] startAddress of the memory this allocator manages

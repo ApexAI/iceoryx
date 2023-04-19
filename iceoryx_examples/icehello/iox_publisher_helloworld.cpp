@@ -120,10 +120,28 @@ int main()
 
 
     using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::cal::ShmBumpAllocator>;
+    using alloc_config = iox::cal::ShmBumpAllocator::Configuration;
+    using mem_config = iox::posix::SharedMemoryObject::Configuration;
     auto mem = iox::cal::SharedMemoryCreator()
                    .memorySizeInBytes(1234)
                    .permissions(iox::perms::owner_all)
                    .create<SharedMemory>("shmem");
+    auto mem1 = iox::cal::SharedMemoryCreator()
+                    .memorySizeInBytes(1)
+                    .permissions(iox::perms::owner_all)
+                    .create<SharedMemory>("a", mem_config(), alloc_config());
+    auto mem2 = iox::cal::SharedMemoryCreator()
+                    .memorySizeInBytes(1)
+                    .permissions(iox::perms::owner_all)
+                    .create<SharedMemory>("b", alloc_config(), mem_config());
+    auto mem4 = iox::cal::SharedMemoryCreator()
+                    .memorySizeInBytes(1)
+                    .permissions(iox::perms::owner_all)
+                    .create<SharedMemory>("c", mem_config());
+    auto mem5 = iox::cal::SharedMemoryCreator()
+                    .memorySizeInBytes(1)
+                    .permissions(iox::perms::owner_all)
+                    .create<SharedMemory>("d", alloc_config());
 
     // auto mem2 = iox::cal::SharedMemoryCreator()
     //.permissions(iox::perms::owner_write) //
