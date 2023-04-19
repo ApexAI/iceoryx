@@ -23,6 +23,7 @@
 #include "iox/builder.hpp"
 #include "iox/bump_allocator.hpp"
 #include "iox/file_management_interface.hpp"
+#include "iox/file_name.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/optional.hpp"
 
@@ -84,8 +85,7 @@ class SharedMemoryObject : public FileManagementInterface<SharedMemoryObject>
     ///        existing shared memory was opened.
     bool hasOwnership() const noexcept;
 
-    const SharedMemory::Name_t& getName() const noexcept;
-
+    const FileName& getName() const noexcept;
 
     friend class SharedMemoryObjectBuilder;
 

@@ -6,6 +6,7 @@
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
 #include "iox/attributes.hpp"
 #include "iox/expected.hpp"
+#include "iox/file_name.hpp"
 #include "iox/filesystem.hpp"
 #include "shared_memory_concept.hpp"
 #include "shm_bump_allocator.hpp"
@@ -61,7 +62,7 @@ SharedMemoryOpenError translateOpenError(const posix::SharedMemoryObjectError er
 }
 
 template <>
-const Name_t& SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::getName() const noexcept
+const FileName& SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::getName() const noexcept
 {
     return m_memory.getName();
 }
@@ -117,7 +118,7 @@ SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::SharedMemory(posix::S
 
 template <>
 expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryCreationError>
-SharedMemoryCreator::create(const Name_t& name,
+SharedMemoryCreator::create(const FileName& name,
                             const posix::SharedMemoryObject::Configuration&,
                             const ShmBumpAllocator::Configuration&) noexcept
 {
@@ -133,7 +134,7 @@ SharedMemoryCreator::create(const Name_t& name,
     uint64_t effective_memory_size = m_memorySizeInBytes + sizeof(ShmBumpAllocator);
 
     auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
-                                  .name(name)
+                                  .name(name.as_string())
                                   .memorySizeInBytes(effective_memory_size)
                                   .permissions(m_permissions)
                                   .accessMode(posix::AccessMode::READ_WRITE)
@@ -158,7 +159,7 @@ SharedMemoryCreator::create(const Name_t& name,
 
 template <>
 expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryCreationError>
-SharedMemoryCreator::create(const Name_t& name,
+SharedMemoryCreator::create(const FileName& name,
                             const ShmBumpAllocator::Configuration& alloc_config,
                             const posix::SharedMemoryObject::Configuration& mem_config) noexcept
 {
@@ -167,7 +168,7 @@ SharedMemoryCreator::create(const Name_t& name,
 
 template <>
 expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryOpenError>
-SharedMemoryOpener::open(const Name_t& name) noexcept
+SharedMemoryOpener::open(const FileName& name) noexcept
 {
     // note: allocator types have to match; add check once shared memory allocator concept is implemented
 
@@ -175,7 +176,7 @@ SharedMemoryOpener::open(const Name_t& name) noexcept
     uint64_t effective_memory_size = m_requiredMemorySize + sizeof(ShmBumpAllocator);
 
     auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
-                                  .name(name)
+                                  .name(name.as_string())
                                   .memorySizeInBytes(effective_memory_size)
                                   .permissions(perms::owner_all) // remove? Opener should not set permissions
                                   .accessMode(m_accessMode)

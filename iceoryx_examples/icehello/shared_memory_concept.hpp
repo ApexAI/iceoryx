@@ -4,6 +4,7 @@
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
 #include "iox/builder.hpp"
 #include "iox/expected.hpp"
+#include "iox/file_name.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/string.hpp"
 #include "shm_pointer.hpp"
@@ -29,7 +30,6 @@ using Name_t = string<platform::IOX_MAX_SHM_NAME_LENGTH>;
 enum class SharedMemoryCreationError
 {
     REQUESTED_ZERO_SIZED_MEMORY,
-    EMPTY_MEMORY_NAME_PROVIDED, // not possible with FileName
     SHARED_MEMORY_ALREADY_EXISTS,
     MAPPING_SHARED_MEMORY_FAILED,
     SHARED_MEMORY_CREATION_FAILED,
@@ -40,7 +40,6 @@ enum class SharedMemoryCreationError
 enum class SharedMemoryOpenError
 {
     REQUESTED_SIZE_EXCEEDS_ACTUAL_SIZE,
-    EMPTY_MEMORY_NAME_PROVIDED, // not possible with FileName
     SHARED_MEMORY_DOES_NOT_EXIST,
     PERMISSION_DENIED,
     MAPPING_SHARED_MEMORY_FAILED,
@@ -69,7 +68,7 @@ class SharedMemory
     SharedMemory& operator=(SharedMemory&&) noexcept = default;
     ~SharedMemory() noexcept = default;
 
-    const Name_t& getName() const noexcept;
+    const FileName& getName() const noexcept;
 
     uint64_t getSizeInBytes() const noexcept;
 
@@ -102,7 +101,7 @@ class SharedMemoryCreator
     // for GPU shared memory; maybe not needed
     template <typename SharedMemory>
     expected<SharedMemory, SharedMemoryCreationError>
-    create(const Name_t& name,
+    create(const FileName& name,
            const typename SharedMemory::memory_type::Configuration& mem_config =
                typename SharedMemory::memory_type::Configuration(),
            const typename SharedMemory::allocator_type::Configuration& alloc_config =
@@ -110,7 +109,7 @@ class SharedMemoryCreator
 
     template <typename SharedMemory>
     expected<SharedMemory, SharedMemoryCreationError>
-    create(const Name_t& name,
+    create(const FileName& name,
            const typename SharedMemory::allocator_type::Configuration& alloc_config,
            const typename SharedMemory::memory_type::Configuration& mem_config =
                typename SharedMemory::memory_type::Configuration()) noexcept;
@@ -124,7 +123,7 @@ class SharedMemoryOpener
 
   public:
     template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryOpenError> open(const Name_t& name) noexcept;
+    expected<SharedMemory, SharedMemoryOpenError> open(const FileName& name) noexcept;
 };
 
 } // namespace cal

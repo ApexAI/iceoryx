@@ -122,26 +122,32 @@ int main()
     using SharedMemory = iox::cal::SharedMemory<iox::posix::SharedMemoryObject, iox::cal::ShmBumpAllocator>;
     using alloc_config = iox::cal::ShmBumpAllocator::Configuration;
     using mem_config = iox::posix::SharedMemoryObject::Configuration;
+
+    const auto name = iox::FileName::create("shmem").expect("Name is not a valid file name.");
     auto mem = iox::cal::SharedMemoryCreator()
                    .memorySizeInBytes(1234)
                    .permissions(iox::perms::owner_all)
-                   .create<SharedMemory>("shmem");
+                   .create<SharedMemory>(name);
+    const auto name_a = iox::FileName::create("a").expect("Name is not a valid file name.");
     auto mem1 = iox::cal::SharedMemoryCreator()
                     .memorySizeInBytes(1)
                     .permissions(iox::perms::owner_all)
-                    .create<SharedMemory>("a", mem_config(), alloc_config());
+                    .create<SharedMemory>(name_a, mem_config(), alloc_config());
+    const auto name_b = iox::FileName::create("b").expect("Name is not a valid file name.");
     auto mem2 = iox::cal::SharedMemoryCreator()
                     .memorySizeInBytes(1)
                     .permissions(iox::perms::owner_all)
-                    .create<SharedMemory>("b", alloc_config(), mem_config());
+                    .create<SharedMemory>(name_b, alloc_config(), mem_config());
+    const auto name_c = iox::FileName::create("c").expect("Name is not a valid file name.");
     auto mem4 = iox::cal::SharedMemoryCreator()
                     .memorySizeInBytes(1)
                     .permissions(iox::perms::owner_all)
-                    .create<SharedMemory>("c", mem_config());
+                    .create<SharedMemory>(name_c, mem_config());
+    const auto name_d = iox::FileName::create("d").expect("Name is not a valid file name.");
     auto mem5 = iox::cal::SharedMemoryCreator()
                     .memorySizeInBytes(1)
                     .permissions(iox::perms::owner_all)
-                    .create<SharedMemory>("d", alloc_config());
+                    .create<SharedMemory>(name_d, alloc_config());
 
     // auto mem2 = iox::cal::SharedMemoryCreator()
     //.permissions(iox::perms::owner_write) //
@@ -154,7 +160,7 @@ int main()
     auto mem3 = iox::cal::SharedMemoryOpener()
                     .accessMode(iox::posix::AccessMode::READ_WRITE)
                     .requiredMemorySize(1234)
-                    .open<SharedMemory>("shmem");
+                    .open<SharedMemory>(name);
 
     if (!mem)
     {
@@ -165,8 +171,7 @@ int main()
             return EXIT_FAILURE;
         }
     }
-    auto name = mem->getName();
-    std::cout << name.c_str() << std::endl;
+    std::cout << mem->getName().as_string().c_str() << std::endl;
     std::cout << mem->getSizeInBytes() << std::endl;
     std::cout << mem->getStartAddress() << std::endl;
     return EXIT_SUCCESS;

@@ -2,6 +2,7 @@
 #define IOX_CONCEPTS_SHARED_MEMORY_PROCESS_LOCAL_HPP
 
 #include "iceoryx_hoofs/internal/concurrent/smart_lock.hpp"
+#include "iox/file_name.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/memory.hpp"
 #include "iox/scope_guard.hpp"
@@ -39,19 +40,19 @@ struct ProcessLocalMembers
 
 struct ShmProcessLocalMap
 {
-    ShmProcessLocalMap(const Name_t& name, ProcessLocalMembers* const plm) noexcept
+    ShmProcessLocalMap(const FileName& name, ProcessLocalMembers* const plm) noexcept
         : m_name(name)
         , m_plm(plm)
     {
     }
 
-    Name_t m_name;
+    FileName m_name;
     ProcessLocalMembers* m_plm;
 };
 constexpr uint32_t MAX_PROCESS_LOCAL_MEMORY{5};
 concurrent::smart_lock<vector<ShmProcessLocalMap, MAX_PROCESS_LOCAL_MEMORY>, std::recursive_mutex> memory_vector;
 
-ShmProcessLocalMap* findNameInVector(const Name_t& name,
+ShmProcessLocalMap* findNameInVector(const FileName& name,
                                      vector<ShmProcessLocalMap, MAX_PROCESS_LOCAL_MEMORY>& vec) noexcept
 {
     for (auto* iter = vec.begin(); iter != vec.end(); ++iter)
@@ -72,8 +73,12 @@ class ProcessLocal
     ProcessLocal(const ProcessLocal&) = delete;
     ProcessLocal& operator=(const ProcessLocal&) = delete;
     ProcessLocal(ProcessLocal&& other) noexcept
+        : m_plm(other.m_plm)
+        , m_name(std::move(other.m_name))
+        , m_isOwner(other.m_isOwner)
     {
-        *this = std::move(other);
+        other.m_isOwner = false;
+        other.m_plm = nullptr;
     }
     ProcessLocal& operator=(ProcessLocal&& other) noexcept
     {
@@ -84,7 +89,6 @@ class ProcessLocal
             m_isOwner = other.m_isOwner;
 
             other.m_isOwner = false;
-            other.m_name.clear();
             other.m_plm = nullptr;
         }
         return *this;
@@ -92,7 +96,7 @@ class ProcessLocal
 
     ~ProcessLocal() noexcept = default;
 
-    const Name_t& getName() const noexcept
+    const FileName& getName() const noexcept
     {
         return m_name;
     }
@@ -117,7 +121,7 @@ class ProcessLocal
     friend class SharedMemoryOpener;
 
   private:
-    ProcessLocal(ProcessLocalMembers* const plm, const Name_t& name, const bool isOwner) noexcept
+    ProcessLocal(ProcessLocalMembers* const plm, const FileName& name, const bool isOwner) noexcept
         : m_plm(plm)
         , m_name(name)
         , m_isOwner(isOwner)
@@ -125,7 +129,7 @@ class ProcessLocal
     }
 
     ProcessLocalMembers* m_plm{nullptr};
-    Name_t m_name;
+    FileName m_name;
     bool m_isOwner{false};
     ScopeGuard m_guard{[this]() {
         if (m_plm != nullptr)
@@ -149,7 +153,7 @@ class ProcessLocal
 
 
 template <>
-const Name_t& SharedMemory<ProcessLocal, ShmBumpAllocator>::getName() const noexcept
+const FileName& SharedMemory<ProcessLocal, ShmBumpAllocator>::getName() const noexcept
 {
     return m_memory.getName();
 }
@@ -200,7 +204,7 @@ SharedMemory<ProcessLocal, ShmBumpAllocator>::SharedMemory(ProcessLocal&& memory
 
 template <>
 expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError> SharedMemoryCreator::create(
-    const Name_t& name, const ProcessLocal::Configuration&, const ShmBumpAllocator::Configuration&) noexcept
+    const FileName& name, const ProcessLocal::Configuration&, const ShmBumpAllocator::Configuration&) noexcept
 {
     // check configurations
 
@@ -208,12 +212,6 @@ expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError
     {
         IOX_LOG(WARN) << "Cannot acquire memory of size 0.";
         return error<SharedMemoryCreationError>(SharedMemoryCreationError::REQUESTED_ZERO_SIZED_MEMORY);
-    }
-
-    if (name.empty())
-    {
-        IOX_LOG(WARN) << "Cannot acquire memory with empty name.";
-        return error<SharedMemoryCreationError>(SharedMemoryCreationError::EMPTY_MEMORY_NAME_PROVIDED);
     }
 
     if (memory_vector->size() == MAX_PROCESS_LOCAL_MEMORY)
@@ -226,7 +224,7 @@ expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError
     auto* iter = findNameInVector(name, *guardedVector);
     if (iter != nullptr)
     {
-        IOX_LOG(WARN) << "Cannot acquire memory since " << name << " it already exists.";
+        IOX_LOG(WARN) << "Cannot acquire memory since " << name.as_string() << " it already exists.";
         return error<SharedMemoryCreationError>(SharedMemoryCreationError::SHARED_MEMORY_ALREADY_EXISTS);
     }
 
@@ -239,7 +237,7 @@ expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError
 
 template <>
 expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryCreationError>
-SharedMemoryCreator::create(const Name_t& name,
+SharedMemoryCreator::create(const FileName& name,
                             const ShmBumpAllocator::Configuration& alloc_config,
                             const ProcessLocal::Configuration& mem_config) noexcept
 {
@@ -248,19 +246,13 @@ SharedMemoryCreator::create(const Name_t& name,
 
 template <>
 expected<SharedMemory<ProcessLocal, ShmBumpAllocator>, SharedMemoryOpenError>
-SharedMemoryOpener::open(const Name_t& name) noexcept
+SharedMemoryOpener::open(const FileName& name) noexcept
 {
-    if (name.empty())
-    {
-        IOX_LOG(WARN) << "Cannot open memory with empty name.";
-        return error<SharedMemoryOpenError>(SharedMemoryOpenError::EMPTY_MEMORY_NAME_PROVIDED);
-    }
-
     auto guardedVector = memory_vector.getScopeGuard();
     auto* iter = findNameInVector(name, *guardedVector);
     if (iter == nullptr)
     {
-        IOX_LOG(WARN) << "Cannot open memory since " << name << " does not exist.";
+        IOX_LOG(WARN) << "Cannot open memory since " << name.as_string() << " does not exist.";
         return error<SharedMemoryOpenError>(SharedMemoryOpenError::SHARED_MEMORY_DOES_NOT_EXIST);
     }
 

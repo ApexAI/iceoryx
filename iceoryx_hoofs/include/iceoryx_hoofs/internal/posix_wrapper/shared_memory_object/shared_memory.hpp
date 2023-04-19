@@ -21,6 +21,7 @@
 #include "iox/builder.hpp"
 #include "iox/expected.hpp"
 #include "iox/file_management_interface.hpp"
+#include "iox/file_name.hpp"
 #include "iox/filesystem.hpp"
 #include "iox/optional.hpp"
 #include "iox/string.hpp"
@@ -85,7 +86,7 @@ class SharedMemory : public FileManagementInterface<SharedMemory>
     ///         SharedMemoryError when the underlying shm_unlink call failed.
     static expected<bool, SharedMemoryError> unlinkIfExist(const Name_t& name) noexcept;
 
-    const Name_t& getName() const noexcept;
+    const FileName& getName() const noexcept;
 
     friend class SharedMemoryBuilder;
 
@@ -102,7 +103,7 @@ class SharedMemory : public FileManagementInterface<SharedMemory>
     friend struct FileManagementInterface<SharedMemory>;
     int32_t get_file_handle() const noexcept;
 
-    Name_t m_name;
+    FileName m_name;
     int m_handle{INVALID_HANDLE};
     bool m_hasOwnership{false};
 };

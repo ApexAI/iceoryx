@@ -156,7 +156,7 @@ expected<SharedMemory, SharedMemoryError> SharedMemoryBuilder::create() noexcept
 }
 
 SharedMemory::SharedMemory(const Name_t& name, const int handle, const bool hasOwnership) noexcept
-    : m_name{name}
+    : m_name{FileName::create(string<platform::IOX_MAX_FILENAME_LENGTH>(TruncateToCapacity, name.c_str())).expect("")}
     , m_handle{handle}
     , m_hasOwnership{hasOwnership}
 {
@@ -176,13 +176,15 @@ void SharedMemory::destroy() noexcept
 void SharedMemory::reset() noexcept
 {
     m_hasOwnership = false;
-    m_name = Name_t();
     m_handle = INVALID_HANDLE;
 }
 
 SharedMemory::SharedMemory(SharedMemory&& rhs) noexcept
+    : m_name(std::move(rhs.m_name))
+    , m_handle(rhs.m_handle)
+    , m_hasOwnership(rhs.m_hasOwnership)
 {
-    *this = std::move(rhs);
+    rhs.reset();
 }
 
 SharedMemory& SharedMemory::operator=(SharedMemory&& rhs) noexcept
@@ -236,7 +238,7 @@ bool SharedMemory::unlink() noexcept
 {
     if (m_hasOwnership)
     {
-        auto unlinkResult = unlinkIfExist(m_name);
+        auto unlinkResult = unlinkIfExist(m_name.as_string());
         if (unlinkResult.has_error() || !unlinkResult.value())
         {
             IOX_LOG(ERROR) << "Unable to unlink SharedMemory (shm_unlink failed).";
@@ -249,7 +251,7 @@ bool SharedMemory::unlink() noexcept
     return true;
 }
 
-const SharedMemory::Name_t& SharedMemory::getName() const noexcept
+const FileName& SharedMemory::getName() const noexcept
 {
     return m_name;
 }

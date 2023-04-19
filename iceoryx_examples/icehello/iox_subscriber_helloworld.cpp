@@ -29,11 +29,10 @@ class SharedMemory_test : public Test
     }
 };
 
-const Name_t validName{"valid_name"};
+const auto validName = FileName::create("valid_name").expect("Name is not a valid file name.");
 const uint64_t sizeGreaterZero{1};
 const access_rights all{perms::owner_all};
 
-// use ShmAllocatorConcept
 using Implementations =
     Types<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemory<ProcessLocal, ShmBumpAllocator>>;
 
@@ -44,17 +43,6 @@ TYPED_TEST(SharedMemory_test, CreationWorksWithAppropriateParameters)
     using Type = typename TestFixture::SharedMemoryType;
     auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
     EXPECT_FALSE(mem.has_error());
-}
-
-// can be removed once FileName is implemented and used in shared memory concept
-TYPED_TEST(SharedMemory_test, CreationFailsWithEmptyName)
-{
-    using Type = typename TestFixture::SharedMemoryType;
-    const Name_t emptyName("");
-    auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(emptyName);
-    ASSERT_TRUE(mem.has_error());
-    // change error code in SharedMemoryObject?
-    // EXPECT_EQ(mem.get_error(), SharedMemoryCreationError::EMPTY_MEMORY_NAME_PROVIDED);
 }
 
 TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
@@ -68,10 +56,10 @@ TYPED_TEST(SharedMemory_test, CreationFailsWhenMemorySizeIsZero)
 TYPED_TEST(SharedMemory_test, NameIsSetToPassedValidName)
 {
     using Type = typename TestFixture::SharedMemoryType;
-    const Name_t name("some_name");
+    const auto name = FileName::create("some_name").expect("Name is not a valid file name.");
     auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(name);
     ASSERT_FALSE(mem.has_error());
-    EXPECT_THAT(mem->getName(), Eq(name));
+    EXPECT_THAT(name, Eq(mem->getName()));
 }
 
 TYPED_TEST(SharedMemory_test, MemorySizeIsAtLeastThePassedValidSize)
@@ -135,10 +123,11 @@ TYPED_TEST(SharedMemory_test, OpenFailsWhenNameDoesNotMatch)
     auto mem = SharedMemoryCreator().memorySizeInBytes(sizeGreaterZero).permissions(all).create<Type>(validName);
     ASSERT_FALSE(mem.has_error());
 
+    const auto other_name = FileName::create("other_name").expect("Name is not a valid file name.");
     auto openedMem = SharedMemoryOpener()
                          .requiredMemorySize(sizeGreaterZero)
                          .accessMode(posix::AccessMode::READ_ONLY)
-                         .open<Type>("other_name");
+                         .open<Type>(other_name);
     ASSERT_TRUE(openedMem.has_error());
 
     // change error code in SharedMemoryObject?
@@ -306,7 +295,7 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
         SharedMemoryCreator().memorySizeInBytes(MEMORY_SIZE).permissions(all).create<Type>(validName);
     ASSERT_TRUE(mem1.has_value());
     ASSERT_FALSE(mem1->has_error());
-    EXPECT_THAT(mem1->value().getName(), Eq(validName));
+    EXPECT_THAT(validName, Eq(mem1->value().getName()));
     EXPECT_THAT(mem1->value().getSizeInBytes(), Ge(MEMORY_SIZE));
 
     // second create with same name fails
@@ -334,7 +323,7 @@ TYPED_TEST(SharedMemory_test, SeveralCreateAndOpenCalls)
     mem1.reset();
 
     // old opener still okay
-    EXPECT_THAT(mem4->getName(), Eq(validName));
+    EXPECT_THAT(validName, Eq(mem4->getName()));
     auto allocation_mem4 = mem4->allocate(MEMORY_SIZE / 2, MEMORY_ALIGNMENT);
     ASSERT_FALSE(allocation_mem4.has_error());
     EXPECT_THAT(allocation_mem4->mapped_ptr(), Ne(nullptr));
@@ -384,7 +373,7 @@ TYPED_TEST(SharedMemory_test, SelfMoveAssignmentExcluded)
     const auto size = mem->getSizeInBytes();
 
     mem = std::move(mem);
-    EXPECT_THAT(mem->getName(), Eq(validName));
+    EXPECT_THAT(validName, Eq(mem->getName()));
     EXPECT_THAT(mem->getSizeInBytes(), Eq(size));
 }
 
@@ -396,7 +385,7 @@ TYPED_TEST(SharedMemory_test, MoveAssignmentWorks)
     const auto size = mem1->getSizeInBytes();
 
     auto mem2 = std::move(mem1);
-    EXPECT_THAT(mem2->getName(), Eq(validName));
+    EXPECT_THAT(validName, Eq(mem2->getName()));
     EXPECT_THAT(mem2->getSizeInBytes(), Eq(size));
 }
 
@@ -408,7 +397,7 @@ TYPED_TEST(SharedMemory_test, MoveConstructorWorks)
     const auto size = mem1->getSizeInBytes();
 
     auto mem2{std::move(mem1)};
-    EXPECT_THAT(mem2->getName(), Eq(validName));
+    EXPECT_THAT(validName, Eq(mem2->getName()));
     EXPECT_THAT(mem2->getSizeInBytes(), Eq(size));
 }
 
