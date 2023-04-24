@@ -1,6 +1,8 @@
 #ifndef IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
 #define IOX_CONCEPTS_SHARED_MEMORY_CONCEPT_HPP
 
+#include "shm_bump_allocator.hpp"
+
 #include "iceoryx_hoofs/posix_wrapper/types.hpp"
 #include "iox/builder.hpp"
 #include "iox/expected.hpp"
@@ -9,18 +11,6 @@
 #include "iox/string.hpp"
 #include "shm_pointer.hpp"
 
-// move to concept_abstractions/shared_memory/concept.hpp
-// later: separate files for implementations
-// - concept_abstractions
-//   - shared_memory
-//     - concept.hpp
-//     - posix_shared_memory.hpp
-//     - posix_typed_memory.hpp
-// - iceoryx_hoofs
-//   - posix
-//     - shared_memory
-//       - shared_memory.hpp
-//       - shared_memory_object.hpp
 namespace iox
 {
 namespace cal
@@ -56,17 +46,18 @@ enum class SharedMemoryAllocationError
 };
 
 template <typename MemoryType, typename Allocator>
-class SharedMemory
+class SharedMemoryConcept
 {
   public:
     using memory_type = MemoryType;
     using allocator_type = Allocator;
 
-    SharedMemory(const SharedMemory&) = delete;
-    SharedMemory& operator=(const SharedMemory&) = delete;
-    SharedMemory(SharedMemory&&) noexcept = default;
-    SharedMemory& operator=(SharedMemory&&) noexcept = default;
-    ~SharedMemory() noexcept = default;
+    SharedMemoryConcept() = default;
+    SharedMemoryConcept(const SharedMemoryConcept&) = delete;
+    SharedMemoryConcept& operator=(const SharedMemoryConcept&) = delete;
+    SharedMemoryConcept(SharedMemoryConcept&&) noexcept = default;
+    SharedMemoryConcept& operator=(SharedMemoryConcept&&) noexcept = default;
+    ~SharedMemoryConcept() noexcept = default;
 
     const FileName& getName() const noexcept;
 
@@ -78,15 +69,18 @@ class SharedMemory
 
     void deallocate(PtrDistance_t value) noexcept;
 
+    template <template <typename> class ShmConcept>
     friend class SharedMemoryCreator;
+    template <template <typename> class ShmConcept>
     friend class SharedMemoryOpener;
 
   private:
-    explicit SharedMemory(MemoryType&& memory) noexcept;
+    explicit SharedMemoryConcept(MemoryType&& memory) noexcept;
 
     MemoryType m_memory;
 };
 
+template <template <typename> class ShmConcept>
 class SharedMemoryCreator
 {
     IOX_BUILDER_PARAMETER(uint64_t, memorySizeInBytes, 0)
@@ -99,22 +93,29 @@ class SharedMemoryCreator
   public:
     // Configuration parameter could be used when a shared memory specialization needs additional parameters, e.g. id
     // for GPU shared memory; maybe not needed
-    template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryCreationError>
-    create(const FileName& name,
-           const typename SharedMemory::memory_type::Configuration& mem_config =
-               typename SharedMemory::memory_type::Configuration(),
-           const typename SharedMemory::allocator_type::Configuration& alloc_config =
-               typename SharedMemory::allocator_type::Configuration()) noexcept;
 
-    template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryCreationError>
-    create(const FileName& name,
-           const typename SharedMemory::allocator_type::Configuration& alloc_config,
-           const typename SharedMemory::memory_type::Configuration& mem_config =
-               typename SharedMemory::memory_type::Configuration()) noexcept;
+    // template <typename AllocatorType>
+    // expected<typename ShmConcept<AllocatorType>::memory_type, SharedMemoryCreationError> create(
+    // const FileName& name,
+    // const typename ShmConcept<AllocatorType>::memory_type::Configuration& mem_config =
+    // typename ShmConcept<AllocatorType>::memory_type::Configuration(),
+    // const typename AllocatorType::Configuration& alloc_config = typename AllocatorType::Configuration()) noexcept;
+    template <typename AllocatorType>
+    expected<ShmConcept<AllocatorType>, SharedMemoryCreationError> create(
+        const FileName& name,
+        const typename ShmConcept<AllocatorType>::memory_type::Configuration& mem_config =
+            typename ShmConcept<AllocatorType>::memory_type::Configuration(),
+        const typename AllocatorType::Configuration& alloc_config = typename AllocatorType::Configuration()) noexcept;
+
+    // template <typename AllocatorType>
+    // expected<typename ShmConcept::template memory_type<AllocatorType>, SharedMemoryCreationError>
+    // create(const FileName& name,
+    // const typename AllocatorType::Configuration& alloc_config,
+    // const typename ShmConcept::template memory_type<AllocatorType>::Configuration& mem_config =
+    // typename ShmConcept::template memory_type<AllocatorType>::Configuration()) noexcept;
 };
 
+template <typename ShmConcept>
 class SharedMemoryOpener
 {
     IOX_BUILDER_PARAMETER(uint64_t, requiredMemorySize, 0)
@@ -122,8 +123,9 @@ class SharedMemoryOpener
     IOX_BUILDER_PARAMETER(posix::AccessMode, accessMode, posix::AccessMode::READ_ONLY)
 
   public:
-    template <typename SharedMemory>
-    expected<SharedMemory, SharedMemoryOpenError> open(const FileName& name) noexcept;
+    template <typename AllocatorType>
+    expected<typename ShmConcept::template memory_type<AllocatorType>, SharedMemoryOpenError>
+    open(const FileName& name) noexcept;
 };
 
 } // namespace cal

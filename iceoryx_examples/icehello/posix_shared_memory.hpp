@@ -12,17 +12,6 @@
 #include "shm_bump_allocator.hpp"
 #include "shm_pointer.hpp"
 
-// later: separate files for implementations, e.g. posix_shared_memory.hpp
-// - concept_abstractions
-//    - shared_memory
-//      - concept.hpp
-//      - posix_shared_memory.hpp
-//      - posix_typed_memory.hpp
-// - iceoryx_hoofs
-//    - posix
-//      - shared_memory
-//        - shared_memory.hpp
-//        - shared_memory_object.hpp
 namespace iox
 {
 namespace cal
@@ -61,66 +50,95 @@ SharedMemoryOpenError translateOpenError(const posix::SharedMemoryObjectError er
     }
 }
 
-template <>
-const FileName& SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::getName() const noexcept
+template <typename AllocatorType>
+class PosixSharedMemory
 {
-    return m_memory.getName();
-}
+  public:
+    using memory_type = posix::SharedMemoryObject;
 
-template <>
-uint64_t SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::getSizeInBytes() const noexcept
-{
-    return m_memory.get_size().expect("Failed to get shm size") - sizeof(ShmBumpAllocator);
-}
-
-template <>
-uint64_t SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::getStartAddress() const noexcept
-{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
-    return reinterpret_cast<uint64_t>(m_memory.getBaseAddress()) + sizeof(ShmBumpAllocator);
-}
-
-template <>
-expected<ShmPointer, SharedMemoryAllocationError>
-SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::allocate(uint64_t size, uint64_t alignment) noexcept
-{
-    // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
-    auto* allocator = reinterpret_cast<ShmBumpAllocator*>(m_memory.getBaseAddress());
-    auto distance = allocator->allocate(size, alignment);
-    if (distance.has_error())
+    struct PosixShmConfig
     {
-        switch (distance.get_error())
-        {
-        case ShmBumpAllocatorError::REQUESTED_ZERO_SIZED_MEMORY:
-            IOX_LOG(WARN) << "Cannot allocate memory of size 0.";
-            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::REQUESTED_ZERO_SIZED_MEMORY);
-        case ShmBumpAllocatorError::OUT_OF_MEMORY:
-            IOX_LOG(WARN) << "Insufficient memory available.";
-            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::OUT_OF_MEMORY);
-        default:
-            IOX_LOG(WARN) << "Cannot allocate memory since an unknown error occured.";
-            return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::UNKNOWN);
-        }
+    };
+    using Configuration = PosixShmConfig;
+    using allocator_type = AllocatorType;
+
+    PosixSharedMemory() = default;
+    PosixSharedMemory(const PosixSharedMemory&) = delete;
+    PosixSharedMemory& operator=(const PosixSharedMemory&) = delete;
+    PosixSharedMemory(PosixSharedMemory&&) noexcept = default;
+    PosixSharedMemory& operator=(PosixSharedMemory&&) noexcept = default;
+    ~PosixSharedMemory() noexcept = default;
+
+    const FileName& getName() const noexcept
+    {
+        return m_memory.getName();
     }
-    return success<ShmPointer>(ShmPointer(*distance, reinterpret_cast<void*>(getStartAddress() + *distance)));
-    // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
-}
 
-// Shall every process be able to deallocate whole memory?
-template <>
-void SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::deallocate(PtrDistance_t value) noexcept = delete;
+    uint64_t getSizeInBytes() const noexcept
+    {
+        return m_memory.get_size().expect("Failed to get shm size") - sizeof(ShmBumpAllocator);
+    }
+
+    uint64_t getStartAddress() const noexcept
+    {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
+        return reinterpret_cast<uint64_t>(m_memory.getBaseAddress()) + sizeof(ShmBumpAllocator);
+    }
+
+    expected<ShmPointer, SharedMemoryAllocationError> allocate(uint64_t size, uint64_t alignment) noexcept
+    {
+        // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
+        auto* allocator = reinterpret_cast<ShmBumpAllocator*>(m_memory.getBaseAddress());
+        auto distance = allocator->allocate(size, alignment);
+        if (distance.has_error())
+        {
+            switch (distance.get_error())
+            {
+            case ShmBumpAllocatorError::REQUESTED_ZERO_SIZED_MEMORY:
+                IOX_LOG(WARN) << "Cannot allocate memory of size 0.";
+                return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::REQUESTED_ZERO_SIZED_MEMORY);
+            case ShmBumpAllocatorError::OUT_OF_MEMORY:
+                IOX_LOG(WARN) << "Insufficient memory available.";
+                return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::OUT_OF_MEMORY);
+            default:
+                IOX_LOG(WARN) << "Cannot allocate memory since an unknown error occured.";
+                return error<SharedMemoryAllocationError>(SharedMemoryAllocationError::UNKNOWN);
+            }
+        }
+        return success<ShmPointer>(ShmPointer(*distance, reinterpret_cast<void*>(getStartAddress() + *distance)));
+        // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
+    }
+
+    void deallocate(PtrDistance_t value) noexcept = delete;
+
+    template <template <typename> class ShmConcept>
+    friend class SharedMemoryCreator;
+    // friend class SharedMemoryOpener;
+
+  private:
+    explicit PosixSharedMemory(posix::SharedMemoryObject&& memory) noexcept
+        : m_memory(std::move(memory))
+    {
+    }
+
+    posix::SharedMemoryObject m_memory;
+};
+
+// maybe not necessary any longer
+//// struct PosixSharedMemoryConcept
+//// {
+////     template <typename AllocatorType>
+////     using memory_type = PosixSharedMemory<AllocatorType>;
+//// };
 
 template <>
-SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>::SharedMemory(posix::SharedMemoryObject&& memory) noexcept
-    : m_memory(std::move(memory))
-{
-}
-
-template <>
-expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryCreationError>
-SharedMemoryCreator::create(const FileName& name,
-                            const posix::SharedMemoryObject::Configuration&,
-                            const ShmBumpAllocator::Configuration&) noexcept
+template <typename AllocatorType>
+expected<PosixSharedMemory<AllocatorType>, SharedMemoryCreationError>
+// expected<typename PosixSharedMemory<AllocatorType>::memory_type, SharedMemoryCreationError>
+SharedMemoryCreator<PosixSharedMemory>::create(
+    const FileName& name,
+    const typename PosixSharedMemory<AllocatorType>::memory_type::Configuration&,
+    const typename AllocatorType::Configuration&) noexcept
 {
     // check configurations
 
@@ -131,7 +149,7 @@ SharedMemoryCreator::create(const FileName& name,
     }
 
     // overflow unrealistic
-    uint64_t effective_memory_size = m_memorySizeInBytes + sizeof(ShmBumpAllocator);
+    uint64_t effective_memory_size = m_memorySizeInBytes + sizeof(AllocatorType);
 
     auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
                                   .name(name.as_string())
@@ -149,48 +167,11 @@ SharedMemoryCreator::create(const FileName& name,
 
     new (sharedMemoryObject->getBaseAddress())
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast) required for low level memory management
-        ShmBumpAllocator(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(sharedMemoryObject->getBaseAddress())
-                                                 + sizeof(ShmBumpAllocator)),
-                         m_memorySizeInBytes);
+        AllocatorType(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(sharedMemoryObject->getBaseAddress())
+                                              + sizeof(AllocatorType)),
+                      m_memorySizeInBytes);
 
-    return success<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>>(
-        SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>(std::move(*sharedMemoryObject)));
-}
-
-template <>
-expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryCreationError>
-SharedMemoryCreator::create(const FileName& name,
-                            const ShmBumpAllocator::Configuration& alloc_config,
-                            const posix::SharedMemoryObject::Configuration& mem_config) noexcept
-{
-    return create<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>>(name, mem_config, alloc_config);
-}
-
-template <>
-expected<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>, SharedMemoryOpenError>
-SharedMemoryOpener::open(const FileName& name) noexcept
-{
-    // note: allocator types have to match; add check once shared memory allocator concept is implemented
-
-    // overflow unrealistic
-    uint64_t effective_memory_size = m_requiredMemorySize + sizeof(ShmBumpAllocator);
-
-    auto sharedMemoryObject = posix::SharedMemoryObjectBuilder()
-                                  .name(name.as_string())
-                                  .memorySizeInBytes(effective_memory_size)
-                                  .permissions(perms::owner_all) // remove? Opener should not set permissions
-                                  .accessMode(m_accessMode)
-                                  .openMode(posix::OpenMode::OPEN_EXISTING)
-                                  .create();
-
-    if (!sharedMemoryObject)
-    {
-        IOX_LOG(WARN) << "Open SharedMemoryObject failed.";
-        return error<SharedMemoryOpenError>(translateOpenError(sharedMemoryObject.get_error()));
-    }
-
-    return success<SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>>(
-        SharedMemory<posix::SharedMemoryObject, ShmBumpAllocator>(std::move(*sharedMemoryObject)));
+    return success<PosixSharedMemory<AllocatorType>>(PosixSharedMemory<AllocatorType>(std::move(*sharedMemoryObject)));
 }
 
 } // namespace cal
